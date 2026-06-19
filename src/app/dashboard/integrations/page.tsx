@@ -58,10 +58,10 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
   },
   {
     phase: "Remarketing", key: "predictivedata", label: "PredictiveData — Data Append",
-    blurb: "Enrich leads (DOB, address, contact) for remarketing and to share with agents post-sale.",
-    dataFlow: "appended fields → each lead's record + agent CRM",
-    steps: ["Request API access at predictivedata.org.", "Copy your API key & endpoint.", "Save, then Test connection."],
-    fields: [{ name: "apiKey", label: "PredictiveData API Key", type: "password", placeholder: "pd_xxx" }, { name: "endpoint", label: "Endpoint URL", placeholder: "https://api.predictivedata.org/v1/append" }],
+    blurb: "Enrich every lead in real time (name, age/DOB, address, income, credit range, interests) by phone or email.",
+    dataFlow: "auto-appends new callers & form leads → each lead's record + Appended Data",
+    steps: ["Get your API key + website slug from your PredictiveData account.", "Paste both below. The website slug identifies your account.", "Save, then Test connection — new leads enrich automatically by phone."],
+    fields: [{ name: "apiKey", label: "PredictiveData API Key", type: "password", placeholder: "your api key" }, { name: "website", label: "Website Slug", placeholder: "your-account-slug" }],
   },
   {
     phase: "Paid acquisition", key: "google_ads", label: "Google Ads + Google TV/Video", oauth: true,

@@ -94,14 +94,26 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ key: strin
     }
     // Providers without a universal verification endpoint: confirm required fields are present.
     case "zapmail": { ok = !need("apiKey").length; message = ok ? "Keys saved. Cold-email sequencing armed." : "Missing: apiKey"; break; }
-    case "predictivedata": { ok = !need("apiKey", "endpoint").length; message = ok ? "Keys saved. Append ready." : `Missing: ${need("apiKey", "endpoint").join(", ")}`; break; }
+    case "predictivedata": {
+      const miss = need("apiKey", "website");
+      if (miss.length) { message = `Missing: ${miss.join(", ")}`; break; }
+      // Real auth check: a lookup with valid creds returns success (even with no match).
+      const r = await ping("https://app.retargetiq.com/api/v2/GetDataByPhone", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ api_key: cfg.apiKey, website: cfg.website, phone: "5555555555" }),
+      });
+      let authOk = r.ok;
+      try { if (r.body && JSON.parse(r.body).success === false) authOk = false; } catch {}
+      ok = authOk; message = ok ? "PredictiveData connected. Leads will enrich automatically." : `PredictiveData rejected the credentials (HTTP ${r.code}). Check the API key and website slug.`;
+      break;
+    }
     case "vibe": { ok = !need("apiKey").length; message = ok ? "Keys saved. CTV ready." : "Missing: apiKey"; break; }
     case "affiliate": { ok = !need("apiKey").length; message = ok ? "Keys saved. Exit-traffic offers armed." : "Missing: apiKey"; break; }
     default: { message = "No test available for this integration."; }
   }
 
   // For providers we can only field-check, treat success as "saved" (amber→ok); live-pinged ones are "verified".
-  const liveTested = ["twilio", "groq", "xai", "claude", "stripe", "klaviyo", "facebook"].includes(key);
+  const liveTested = ["twilio", "groq", "xai", "claude", "stripe", "klaviyo", "facebook", "predictivedata"].includes(key);
   const status = ok ? (liveTested ? "verified" : "saved") : (Object.keys(cfg).length ? "failed" : "unconfigured");
   await db.integration.upsert({
     where: { key },

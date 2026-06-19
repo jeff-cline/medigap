@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { headers } from "next/headers";
+import { appendLeadBackground } from "@/lib/predictivedata";
 
 export async function POST(req: NextRequest) {
   const b = await req.json().catch(() => ({}));
@@ -18,6 +19,7 @@ export async function POST(req: NextRequest) {
   if (Array.isArray(b.answers)) {
     await db.leadAnswer.createMany({ data: b.answers.map((a: { q: string; a: string }) => ({ leadId: lead.id, question: a.q, answer: a.a })) });
   }
-  // TODO: trigger Zapmail seq #1 + Klaviyo profile + PredictiveData append + agent-bid routing.
+  appendLeadBackground(lead.id); // real-time PredictiveData enrichment
+  // TODO: trigger Zapmail seq #1 + Klaviyo profile + agent-bid routing.
   return NextResponse.json({ ok: true, id: lead.id });
 }

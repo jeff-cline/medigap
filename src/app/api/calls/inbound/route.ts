@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { routeCall, getSettings } from "@/lib/logic";
 import { normalizePhone } from "@/lib/sms";
 import { getVoiceAgent, getAIProvider, esc } from "@/lib/voice";
+import { appendLeadBackground } from "@/lib/predictivedata";
 
 // Twilio Voice webhook for 1-800-MEDIGAP → https://medigap.plus/api/calls/inbound
 const BASE = "https://medigap.plus";
@@ -19,7 +20,10 @@ export async function POST(req: NextRequest) {
 
   const last10 = (normalizePhone(from) || from).replace(/\D/g, "").slice(-10);
   let lead = last10 ? await db.lead.findFirst({ where: { phone: { contains: last10 } } }) : null;
-  if (!lead && from) lead = await db.lead.create({ data: { phone: normalizePhone(from) || from, name: "Inbound caller", source: "house", vertical: "medicare", state, zip } });
+  if (!lead && from) {
+    lead = await db.lead.create({ data: { phone: normalizePhone(from) || from, name: "Inbound caller", source: "house", vertical: "medicare", state, zip } });
+    appendLeadBackground(lead.id); // real-time enrichment by phone while the call is live
+  }
 
   const call = await db.call.create({ data: { leadId: lead?.id, zip, state, status: "in-progress", source: "house", providerSid: callSid, fromNumber: from } });
 

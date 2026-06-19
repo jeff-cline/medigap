@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Card, Badge, Section, Stat } from "@/components/ui";
 import LeadActions from "@/components/LeadActions";
+import AppendButton from "@/components/AppendButton";
 import { db } from "@/lib/db";
 import { getSession, isRealGod } from "@/lib/auth";
 import { usd, usd2, cst, cstFull, mmss, fmtPhone } from "@/lib/format";
@@ -147,7 +148,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         </Card>
       </Section>
 
-      <Section title="Appended Data" desc="PredictiveData enrichment + captured intent.">
+      <Section title="Appended Data" desc="PredictiveData enrichment + captured intent." action={<AppendButton leadId={lead.id} />}>
         <Card>
           {appended ? (
             <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
