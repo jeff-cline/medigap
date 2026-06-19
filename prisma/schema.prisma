@@ -109,9 +109,13 @@ model Call {
   durationSec Int      @default(0)
   status      String   @default("ringing") // ringing|connected|completed|missed
   source      String   @default("organic") // house|paid|organic
+  disposition String   @default("sold") // sold|default|missed — default = house call, no agent bought it
+  realized    Boolean  @default(true) // false for default/house calls until collected
+  forwardedTo String   @default("") // number the call was bridged to
+  providerSid String   @default("") // Twilio CallSid
   moneyWord   String?  // detected money word that re-routed the flow
   bidWinnerId String?  // agent that won the call auction
-  priceCents  Int      @default(0) // what the winning agent paid
+  priceCents  Int      @default(0) // what the winning agent paid (or house default price)
   recordingUrl String?
   transcript  String?
   siteId      String?
@@ -210,9 +214,10 @@ model Investor {
 model LedgerEntry {
   id        String   @id @default(cuid())
   type      String   // revenue|spend
-  category  String   // call|click|lead|adspend|seat|upsell|risk|fee
-  channel   String   @default("") // google|facebook|tv|organic|stripe
+  category  String   // call|default_call|click|lead|adspend|seat|upsell|risk|fee|sms
+  channel   String   @default("") // google|facebook|tv|organic|stripe|house|auction
   amountCents Int
+  realized  Boolean  @default(true) // false = unrealized (e.g. house/default-call revenue not yet collected)
   note      String   @default("")
   siteId    String?
   createdAt DateTime @default(now())

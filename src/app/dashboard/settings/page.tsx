@@ -39,6 +39,10 @@ export default async function SettingsPage() {
         autoApproveAgent={bool(s.autoApproveAgent, true)}
         autoApproveAdvertiser={bool(s.autoApproveAdvertiser, true)}
         autoApproveInvestor={bool(s.autoApproveInvestor, false)}
+        defaultCallPriceCents={numv(s.defaultCallPriceCents, 7744)}
+        defaultForwardNumber={s.defaultForwardNumber ?? "9728006670"}
+        showUnrealized={bool(s.showUnrealized, true)}
+        callWhisper={bool(s.callWhisper, true)}
       />
     </>
   );

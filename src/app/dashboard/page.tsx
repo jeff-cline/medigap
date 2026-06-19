@@ -42,7 +42,7 @@ export default async function DashboardHome() {
       )}
 
       <div className="grid gap-4 md:grid-cols-4 mb-6">
-        <Stat label="Revenue (MTD)" value={usd(m.revenue)} sub="all units" tone="up" />
+        <Stat label="Revenue (MTD)" value={usd(m.revenue)} sub={m.unrealized > 0 ? `${usd(m.realized)} realized + ${usd(m.unrealized)} unrealized${m.showUnrealized ? "" : " (excl.)"}` : "all units"} tone="up" />
         <Stat label="Spend (MTD)" value={usd(m.spend)} sub="ads + ops" tone="down" />
         <Stat label="Profit (MTD)" value={usd(m.profit)} sub="revenue − spend" tone={m.profit >= 0 ? "up" : "down"} />
         <Stat label="Arbitrage Ratio" value={`${m.roi.toFixed(2)}x`} sub={`target ${target.toFixed(1)}x ($1→$${target.toFixed(0)})`} tone="gold" />

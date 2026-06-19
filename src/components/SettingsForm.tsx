@@ -14,6 +14,10 @@ export type SettingsProps = {
   autoApproveAgent: boolean;
   autoApproveAdvertiser: boolean;
   autoApproveInvestor: boolean;
+  defaultCallPriceCents: number;
+  defaultForwardNumber: string;
+  showUnrealized: boolean;
+  callWhisper: boolean;
 };
 
 function Field({ label, sub, children }: { label: string; sub?: string; children: React.ReactNode }) {
@@ -57,6 +61,10 @@ export default function SettingsForm(props: SettingsProps) {
   const [autoAgent, setAutoAgent] = useState(props.autoApproveAgent);
   const [autoAdvertiser, setAutoAdvertiser] = useState(props.autoApproveAdvertiser);
   const [autoInvestor, setAutoInvestor] = useState(props.autoApproveInvestor);
+  const [defaultCallPrice, setDefaultCallPrice] = useState((props.defaultCallPriceCents / 100).toString());
+  const [forwardNumber, setForwardNumber] = useState(props.defaultForwardNumber);
+  const [showUnrealized, setShowUnrealized] = useState(props.showUnrealized);
+  const [whisper, setWhisper] = useState(props.callWhisper);
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,6 +88,10 @@ export default function SettingsForm(props: SettingsProps) {
       autoApproveAgent: String(autoAgent),
       autoApproveAdvertiser: String(autoAdvertiser),
       autoApproveInvestor: String(autoInvestor),
+      defaultCallPriceCents: String(Math.round((parseFloat(defaultCallPrice) || 0) * 100)),
+      defaultForwardNumber: forwardNumber.replace(/[^\d+]/g, ""),
+      showUnrealized: String(showUnrealized),
+      callWhisper: String(whisper),
     };
     try {
       const res = await fetch("/api/settings", {
@@ -113,6 +125,22 @@ export default function SettingsForm(props: SettingsProps) {
             <input type="number" step="0.1" value={arbitrage} onChange={(e) => setArbitrage(e.target.value)} className={inputCls} />
           </Field>
         </div>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-semibold mb-1">Calls &amp; House Revenue</h2>
+        <p className="text-sm text-[var(--muted)] mb-4">Calls no agent buys are forwarded to your house number and booked at the default price as <b>unrealized</b> revenue.</p>
+        <div className="card p-5 grid gap-4 md:grid-cols-2">
+          <Field label="Default (House) Call Price ($)" sub="Booked to your God account for every unsold/default call.">
+            <input type="number" step="0.01" value={defaultCallPrice} onChange={(e) => setDefaultCallPrice(e.target.value)} className={inputCls} />
+          </Field>
+          <Field label="Default Forward Number" sub="Where unsold calls are bridged (e.g. 972-800-6670).">
+            <input type="tel" value={forwardNumber} onChange={(e) => setForwardNumber(e.target.value)} className={inputCls} />
+          </Field>
+          <Toggle label="Show Unrealized revenue in totals (forwards & backwards)" checked={showUnrealized} onChange={setShowUnrealized} />
+          <Toggle label="Whisper to agent on connect" checked={whisper} onChange={setWhisper} />
+        </div>
+        <p className="mt-2 text-xs text-[var(--muted)]">Turning Show Unrealized off recomputes every dashboard total to realized-only — accounting always sees it flagged UNREALIZED regardless.</p>
       </section>
 
       <section>

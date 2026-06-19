@@ -16,24 +16,52 @@ export function pickWinner(bids: BidLike[], ctx: { zip?: string; state?: string 
   return eligible.sort((a, b) => b.amountCents - a.amountCents || b.stars - a.stars)[0];
 }
 
-// Route a (real or simulated) inbound call through the auction and bill the winner.
-export async function routeCall(input: { zip: string; state: string; leadId?: string; source?: string; moneyWord?: string }) {
-  const minBid = parseInt((await db.setting.findUnique({ where: { key: "minCallBidCents" } }))?.value || "2500", 10);
+// Route a (real or simulated) inbound call through the auction.
+// If an agent wins → SOLD call (realized revenue at the bid price).
+// If nobody wins → DEFAULT/house call → forward to the house number, book the house
+// default price as UNREALIZED revenue to the God account, and flag it.
+export async function routeCall(input: { zip: string; state: string; leadId?: string; source?: string; moneyWord?: string; providerSid?: string; fromNumber?: string }) {
+  const s = await getSettings();
   const bidRows = await db.agentBid.findMany({ where: { active: true }, include: { agent: true } });
-  const bids: (BidLike & { id: string })[] = bidRows.map((b) => ({ id: b.id, agentId: b.agentId, amountCents: b.amountCents, stars: b.agent.stars, active: b.active, dailyCap: b.dailyCap, scope: b.scope, scopeValue: b.scopeValue }));
-  const winner = pickWinner(bids, { zip: input.zip, state: input.state });
-  const priceCents = winner ? Math.max(winner.amountCents, minBid) : 0;
+  const bids: (BidLike & { id: string; phone: string })[] = bidRows.map((b) => ({ id: b.id, agentId: b.agentId, amountCents: b.amountCents, stars: b.agent.stars, active: b.active, dailyCap: b.dailyCap, scope: b.scope, scopeValue: b.scopeValue, phone: b.agent.phone }));
+  const winner = pickWinner(bids, { zip: input.zip, state: input.state }) as (BidLike & { phone: string }) | null;
+
+  let disposition: "sold" | "default";
+  let priceCents: number;
+  let realized: boolean;
+  let forwardedTo: string;
+  let channel: string;
+
+  if (winner) {
+    disposition = "sold";
+    priceCents = Math.max(winner.amountCents, s.minCallBidCents);
+    realized = true;
+    forwardedTo = winner.phone || "";
+    channel = "auction";
+  } else {
+    disposition = "default";
+    priceCents = s.defaultCallPriceCents; // house default, e.g. $77.44
+    realized = false; // UNREALIZED until collected
+    forwardedTo = s.defaultForwardNumber; // e.g. 972-800-6670
+    channel = "house";
+  }
+
   const call = await db.call.create({
     data: {
       leadId: input.leadId, zip: input.zip, state: input.state, status: "completed",
-      source: input.source || "organic", moneyWord: input.moneyWord,
-      bidWinnerId: winner?.agentId, priceCents,
+      source: input.source || (winner ? "paid" : "house"), moneyWord: input.moneyWord,
+      bidWinnerId: winner?.agentId, priceCents, disposition, realized, forwardedTo,
+      providerSid: input.providerSid || "", fromNumber: input.fromNumber || "",
     },
   });
-  if (winner && priceCents > 0) {
-    await db.ledgerEntry.create({ data: { type: "revenue", category: "call", channel: "auction", amountCents: priceCents, note: `Call ${call.id} → agent ${winner.agentId}` } });
+  if (priceCents > 0) {
+    await db.ledgerEntry.create({ data: {
+      type: "revenue", category: winner ? "call" : "default_call", channel,
+      amountCents: priceCents, realized,
+      note: winner ? `Call ${call.id} → agent ${winner.agentId}` : `Default/house call ${call.id} → ${forwardedTo} (unrealized)`,
+    } });
   }
-  return { call, winner, priceCents };
+  return { call, winner, priceCents, disposition, realized, forwardedTo };
 }
 
 // ---- Investor profit waterfall ----
@@ -51,17 +79,22 @@ export function waterfall(i: WaterfallInput) {
 }
 
 // ---- Network P&L from the ledger ----
+// Respects the global showUnrealized toggle: when OFF, unrealized revenue is excluded
+// from every total (forwards AND backwards, since it's recomputed from the ledger).
 export async function pnl() {
-  const entries = await db.ledgerEntry.findMany();
+  const [entries, s] = await Promise.all([db.ledgerEntry.findMany(), getSettings()]);
   const byChannel: Record<string, { rev: number; spend: number }> = {};
-  let revenue = 0, spend = 0;
+  let revRealized = 0, revUnrealized = 0, spend = 0;
   for (const e of entries) {
     const k = e.channel || "other";
     byChannel[k] ??= { rev: 0, spend: 0 };
-    if (e.type === "revenue") { revenue += e.amountCents; byChannel[k].rev += e.amountCents; }
-    else { spend += e.amountCents; byChannel[k].spend += e.amountCents; }
+    if (e.type === "revenue") {
+      if (e.realized) revRealized += e.amountCents; else revUnrealized += e.amountCents;
+      if (e.realized || s.showUnrealized) byChannel[k].rev += e.amountCents;
+    } else { spend += e.amountCents; byChannel[k].spend += e.amountCents; }
   }
-  return { revenue, spend, profit: revenue - spend, roi: spend ? revenue / spend : 0, byChannel };
+  const revenue = revRealized + (s.showUnrealized ? revUnrealized : 0);
+  return { revenue, revRealized, revUnrealized, spend, profit: revenue - spend, roi: spend ? revenue / spend : 0, byChannel, showUnrealized: s.showUnrealized };
 }
 
 export async function getSettings() {
@@ -79,5 +112,9 @@ export async function getSettings() {
     investorPct: n("investorPct", 100),
     arbitrageTarget: n("arbitrageTarget", 3),
     autonomousMode: m["autonomousMode"] || "learning",
+    defaultCallPriceCents: n("defaultCallPriceCents", 7744), // house price for unsold/default calls ($77.44)
+    defaultForwardNumber: m["defaultForwardNumber"] || "9728006670",
+    showUnrealized: (m["showUnrealized"] ?? "true") === "true", // include unrealized revenue in totals
+    callWhisper: (m["callWhisper"] ?? "true") === "true",
   };
 }

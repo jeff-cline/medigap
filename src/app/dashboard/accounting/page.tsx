@@ -31,19 +31,22 @@ export default async function AccountingPage() {
     <>
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Accounting</h1>
-        <p className="text-sm text-[var(--muted)]">Every dollar in and out — a live P&amp;L to the cent.</p>
+        <p className="text-sm text-[var(--muted)]">Every dollar in and out — a live P&amp;L to the cent. Realized vs unrealized is tracked separately.</p>
+      </div>
+
+      <div className={`card mb-6 p-3 text-sm border-l-4 ${p.showUnrealized ? "border-l-[var(--gold)]" : "border-l-[var(--brand)]"}`}>
+        {p.showUnrealized ? (
+          <span><b className="text-[var(--gold)]">Unrealized ON:</b> house/default-call revenue ({usd(p.revUnrealized)}) is <b>included</b> in totals below. Toggle in <a href="/dashboard/settings" className="text-[var(--brand)]">Settings</a> to recompute realized-only.</span>
+        ) : (
+          <span><b className="text-[var(--brand)]">Realized-only:</b> {usd(p.revUnrealized)} of unrealized house revenue is <b>excluded</b> from totals (still shown below, flagged).</span>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-4 mb-6">
-        <Stat label="Revenue" value={usd(p.revenue)} sub="all categories" tone="up" />
+        <Stat label="Realized Revenue" value={usd(p.revRealized)} sub="collected / billable" tone="up" />
+        <Stat label="Unrealized (House)" value={usd(p.revUnrealized)} sub={p.showUnrealized ? "included in total" : "excluded"} tone="gold" />
         <Stat label="Spend" value={usd(p.spend)} sub="media + ops" tone="down" />
-        <Stat label="Net Profit" value={usd(p.profit)} sub="revenue − spend" tone={p.profit >= 0 ? "up" : "down"} />
-        <Stat
-          label="Arbitrage Ratio"
-          value={`${p.roi.toFixed(2)}x`}
-          sub={`target ${target.toFixed(1)}x · ${p.roi >= target ? "on track" : "below target"}`}
-          tone={p.roi >= target ? "gold" : "down"}
-        />
+        <Stat label={`Net Profit ${p.showUnrealized ? "(incl. unrealized)" : "(realized)"}`} value={usd(p.profit)} sub={`${p.roi.toFixed(2)}x vs ${target.toFixed(1)}x target`} tone={p.profit >= 0 ? "up" : "down"} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2 mb-8">
@@ -96,10 +99,10 @@ export default async function AccountingPage() {
                 <tr key={l.id}>
                   <td className="text-[var(--muted)]">{l.createdAt.toISOString().slice(0, 10)}</td>
                   <td>{l.type === "revenue" ? <Badge tone="up">revenue</Badge> : <Badge tone="down">spend</Badge>}</td>
-                  <td>{l.category}</td>
+                  <td>{l.category}{!l.realized && l.type === "revenue" && <span className="ml-1 text-[10px] font-bold text-[var(--gold)]">UNREALIZED</span>}</td>
                   <td className="text-[var(--muted)]">{l.channel || "—"}</td>
                   <td className="text-[var(--muted)] text-sm max-w-[260px] truncate">{l.note || "—"}</td>
-                  <td className={`text-right font-medium ${l.type === "revenue" ? "text-[var(--brand)]" : "text-[var(--danger)]"}`}>
+                  <td className={`text-right font-medium ${l.type !== "revenue" ? "text-[var(--danger)]" : l.realized ? "text-[var(--brand)]" : "text-[var(--gold)]"}`}>
                     {l.type === "revenue" ? "+" : "−"}{usd(l.amountCents)}
                   </td>
                 </tr>
