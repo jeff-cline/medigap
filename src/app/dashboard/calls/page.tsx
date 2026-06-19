@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Card, Stat, Badge, Section } from "@/components/ui";
 import Gauge from "@/components/Gauge";
 import CallSimulator from "@/components/CallSimulator";
+import TwilioPanel from "@/components/TwilioPanel";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/logic";
 import { usd, usd2, num, TOLLFREE } from "@/lib/format";
@@ -54,6 +55,10 @@ export default async function CallsPage() {
         <Stat label="Default (House) Calls" value={num(defaultCount)} sub={`→ ${fmtPhone(s.defaultForwardNumber)} @ ${usd2(s.defaultCallPriceCents)}`} tone="up" />
         <Stat label="Unrealized (House) $" value={usd(unrealized)} sub={s.showUnrealized ? "included in totals" : "EXCLUDED (toggle off)"} tone={s.showUnrealized ? "gold" : "down"} />
       </div>
+
+      <Section title="Phone System — Live from Twilio" desc="Balance, your numbers & their routing, and raw call logs — pulled live from your Twilio account.">
+        <TwilioPanel />
+      </Section>
 
       <Section title="Simulate Inbound Call" desc="Fire a call through the live auction to see routing & billing.">
         <Card glow>

@@ -287,6 +287,21 @@ model AffiliateOffer {
 }
 
 // ---------------------------------------------------------------------------
+// VOICE AGENT — the AI that answers 1-800-MEDIGAP (voice, script, knowledge)
+// ---------------------------------------------------------------------------
+model VoiceAgent {
+  id              String   @id @default("default")
+  active          Boolean  @default(true) // AI answers; off = straight forward
+  voice           String   @default("Polly.Joanna-Neural") // Twilio <Say> voice
+  greeting        String   @default("Thank you for calling Medigap dot plus. I can help you find the right Medicare coverage. To get started, may I have your first name?")
+  systemPrompt    String   @default("")
+  questions       String   @default("[]") // JSON: [{key, ask}]
+  forwardWhenDone Boolean  @default(true)
+  maxTurns        Int      @default(8)
+  updatedAt       DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
 // SMS — outbound blasts/reminders + inbound (STOP handling) via Twilio
 // ---------------------------------------------------------------------------
 model SmsMessage {
