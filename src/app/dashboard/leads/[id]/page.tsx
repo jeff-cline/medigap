@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Card, Badge, Section, Stat } from "@/components/ui";
 import LeadActions from "@/components/LeadActions";
 import AppendButton from "@/components/AppendButton";
+import CallTranscriptTagger from "@/components/CallTranscriptTagger";
 import { db } from "@/lib/db";
 import { getSession, isRealGod } from "@/lib/auth";
 import { usd, usd2, cst, cstFull, mmss, fmtPhone } from "@/lib/format";
@@ -29,10 +30,12 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
   if (!lead) notFound();
 
   const last10 = lead.phone.replace(/\D/g, "").slice(-10);
-  const [agents, texts] = await Promise.all([
+  const [agents, texts, moneyWords] = await Promise.all([
     db.user.findMany({ where: { role: "agent" }, orderBy: { name: "asc" }, select: { id: true, name: true } }),
     last10 ? db.smsMessage.findMany({ where: { to: { contains: last10 } }, orderBy: { createdAt: "asc" } }) : Promise.resolve([]),
+    db.moneyWord.findMany({ select: { word: true } }),
   ]);
+  const armedWords = moneyWords.map((m) => m.word);
 
   const appended = parseAppended(lead.appended);
   const age = ageFromSpeech(lead.dob || "");
@@ -79,7 +82,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
       </div>
 
       {god && lead.calls.some((c) => c.transcript) && (
-        <Section title="Call Conversations — God-only" desc="Exactly what the AI agent said and what the caller answered, both directions. Use this to train the agent.">
+        <Section title="Call Conversations — God-only" desc="Highlight buy signals (green) and likely money words (gold). Click any word to arm it as a money word.">
           <div className="space-y-4">
             {lead.calls.filter((c) => c.transcript).map((c) => {
               let dialogue: Turn[] = [];
@@ -90,16 +93,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                     <span className="font-medium">{cst(c.createdAt)} · {mmss(c.durationSec)} · <Badge tone={c.disposition === "default" ? "gold" : "up"}>{c.disposition}</Badge>{c.moneyWord && <span className="ml-2 text-[var(--gold)]">💬 {c.moneyWord}</span>}</span>
                     <Link href={`/dashboard/calls/${c.id}`} className="text-[var(--brand)] text-xs hover:underline">Call detail →</Link>
                   </div>
-                  <div className="space-y-1.5">
-                    {dialogue.map((d, i) => (
-                      <div key={i} className={`text-sm flex ${d.role === "assistant" ? "" : "justify-end"}`}>
-                        <span className={`inline-block rounded-2xl px-3 py-1.5 max-w-[80%] ${d.role === "assistant" ? "bg-[var(--panel2)]" : "bg-[var(--brand)]/15"}`}>
-                          <span className="text-[10px] uppercase tracking-wide text-[var(--muted)] block">{d.role === "assistant" ? "🤖 AI Agent" : "👤 Caller"}{d.at ? ` · ${cst(d.at)}` : ""}</span>
-                          {d.text}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                  <CallTranscriptTagger turns={dialogue} armed={armedWords} />
                 </Card>
               );
             })}

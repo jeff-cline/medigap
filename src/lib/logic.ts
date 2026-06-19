@@ -1,5 +1,6 @@
 // Core business logic — pure functions reused by pages & API routes.
 import { db } from "./db";
+import { notifyPartnerNewLead } from "./notify";
 
 // ---- Agent call auction: highest bid wins; ties broken by star rating ----
 export type BidLike = { agentId: string; amountCents: number; stars: number; active: boolean; dailyCap: number; scope: string; scopeValue: string };
@@ -89,6 +90,7 @@ export async function assignLead(leadId: string) {
   await db.user.update({ where: { id: winner.agentId }, data: { balanceCents: { decrement: price } } }).catch(() => {});
   await db.ledgerEntry.create({ data: { type: "revenue", category: "lead", channel: "webform", amountCents: price, realized: true, note: `Web lead ${leadId} → agent ${winner.agentId}` } }).catch(() => {});
   await db.transaction.create({ data: { kind: "charge", userId: winner.agentId, amountCents: price, status: "settled", note: `Lead charge — ${leadId}` } }).catch(() => {});
+  notifyPartnerNewLead(winner.agentId, lead.name || "a new lead").catch(() => {});
   return { assigned: true, agentId: winner.agentId };
 }
 export function assignLeadBackground(leadId: string) { assignLead(leadId).catch(() => {}); }
