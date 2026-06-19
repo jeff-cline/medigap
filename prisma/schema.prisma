@@ -276,3 +276,60 @@ model AffiliateOffer {
   clickValueCents Int   @default(0)
   active        Boolean @default(true)
 }
+
+// ---------------------------------------------------------------------------
+// MARKETING CAMPAIGNS — Google/Meta/TV, with A/B variants
+// ---------------------------------------------------------------------------
+model Campaign {
+  id        String   @id @default(cuid())
+  channel   String   @default("google") // google|facebook|tv|vibe|organic
+  name      String
+  vertical  String   @default("medicare")
+  variant   String   @default("A") // A/B test arm
+  headline  String   @default("")
+  description String @default("")
+  spendCents Int     @default(0)
+  clicks    Int      @default(0)
+  leads     Int      @default(0)
+  calls     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// TRANSACTIONS — every money movement (deposits, top-ups, charges, sweeps, payouts)
+// ---------------------------------------------------------------------------
+model Transaction {
+  id        String   @id @default(cuid())
+  kind      String   // deposit|topup|charge|sweep|payout|fee
+  userId    String?
+  amountCents Int
+  status    String   @default("settled") // pending|settled|failed
+  note      String   @default("")
+  createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// ASSETS — uploaded marketing creatives, banners, TV spots, images
+// ---------------------------------------------------------------------------
+model Asset {
+  id        String   @id @default(cuid())
+  kind      String   @default("image") // image|video|banner
+  url       String
+  label     String   @default("")
+  ownerId   String?
+  createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// OAUTH CONNECTIONS — tokens from real-time OAuth authorization per provider
+// ---------------------------------------------------------------------------
+model OAuthConnection {
+  provider     String   @id // google_ads|facebook|stripe|klaviyo
+  accessToken  String   @default("")
+  refreshToken String   @default("")
+  scope        String   @default("")
+  accountLabel String   @default("")
+  expiresAt    DateTime?
+  connectedAt  DateTime @default(now())
+}

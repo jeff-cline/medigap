@@ -13,6 +13,9 @@ export type Session = {
   email: string;
   role: string;
   mustChangePassword: boolean;
+  // Set when the God account is impersonating another user ("drill into any account").
+  impersonatorUid?: string;
+  impersonatorEmail?: string;
 };
 
 export async function hashPassword(pw: string) {
@@ -67,3 +70,26 @@ export async function login(email: string, password: string) {
 
 // God can impersonate anyone — "drill into any account"
 export const isGod = (s: Session | null) => s?.role === "god";
+// True god means actually god and not currently impersonating someone else.
+export const isRealGod = (s: Session | null) => s?.role === "god" || !!s?.impersonatorUid;
+
+export async function startImpersonation(targetUserId: string) {
+  const session = await getSession();
+  if (!session || session.role !== "god") return { error: "Only the God account can impersonate." };
+  const target = await db.user.findUnique({ where: { id: targetUserId } });
+  if (!target) return { error: "User not found." };
+  await createSession({
+    uid: target.id, email: target.email, role: target.role, mustChangePassword: false,
+    impersonatorUid: session.uid, impersonatorEmail: session.email,
+  });
+  return { ok: true, role: target.role };
+}
+
+export async function stopImpersonation() {
+  const session = await getSession();
+  if (!session?.impersonatorUid) return { error: "Not impersonating." };
+  const god = await db.user.findUnique({ where: { id: session.impersonatorUid } });
+  if (!god) return { error: "Original account missing." };
+  await createSession({ uid: god.id, email: god.email, role: god.role, mustChangePassword: false });
+  return { ok: true };
+}

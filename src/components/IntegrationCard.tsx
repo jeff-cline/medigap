@@ -8,6 +8,7 @@ export type IntegrationMeta = {
   blurb: string;
   steps: string[];
   fields: Field[];
+  oauth?: boolean; // supports real-time OAuth "Connect" button
 };
 
 export default function IntegrationCard({ meta, initial, initialConnected }: { meta: IntegrationMeta; initial: Record<string, string>; initialConnected: boolean }) {
@@ -44,6 +45,16 @@ export default function IntegrationCard({ meta, initial, initialConnected }: { m
 
       {open && (
         <div className="mt-4 border-t border-[var(--border)] pt-4">
+          {meta.oauth && (
+            <div className="mb-4 rounded-xl border border-[var(--brand)]/30 bg-[var(--brand)]/5 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-sm">
+                  <b>One-click connect.</b> Save your app&apos;s Client ID &amp; Secret below, then authorize with your own login — no token copying.
+                </div>
+                <a href={`/api/oauth/${meta.key}/start`} className="btn btn-brand text-sm !py-1.5 shrink-0">Connect →</a>
+              </div>
+            </div>
+          )}
           <ol className="mb-4 space-y-1.5 text-sm text-[var(--muted)] list-decimal list-inside">
             {meta.steps.map((s, i) => <li key={i}>{s}</li>)}
           </ol>

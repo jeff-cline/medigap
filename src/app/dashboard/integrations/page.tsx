@@ -32,8 +32,9 @@ const GROUPS: { title: string; desc: string; items: IntegrationMeta[] }[] = [
       },
       {
         key: "klaviyo", label: "Klaviyo — Opted-In Remarketing", blurb: "Once a lead opts in, hand off to Klaviyo flows for fine-tuned, data-driven remarketing.",
-        steps: ["Klaviyo → Settings → API Keys.", "Create a Private API Key (full access) and copy the Public (site) ID.", "Paste below — opted-in profiles sync automatically with funnel tags."],
-        fields: [{ name: "privateKey", label: "Private API Key", type: "password", placeholder: "pk_xxx" }, { name: "publicId", label: "Public / Site ID", placeholder: "ABC123" }],
+        oauth: true,
+        steps: ["Klaviyo → Settings → API Keys for a Private Key, OR register an OAuth app for Client ID/Secret.", "Save your keys below.", "Click Connect to authorize via Klaviyo OAuth (recommended), or just save the Private Key.", "Opted-in profiles sync automatically with funnel tags."],
+        fields: [{ name: "privateKey", label: "Private API Key", type: "password", placeholder: "pk_xxx" }, { name: "publicId", label: "Public / Site ID", placeholder: "ABC123" }, { name: "clientId", label: "OAuth Client ID (optional)" }, { name: "clientSecret", label: "OAuth Client Secret (optional)", type: "password" }],
       },
       {
         key: "datamoon", label: "Datamoon — Data Append", blurb: "Enrich leads (DOB, address, contact) so we can remarket and share with agents post-sale.",
@@ -48,7 +49,8 @@ const GROUPS: { title: string; desc: string; items: IntegrationMeta[] }[] = [
     items: [
       {
         key: "stripe", label: "Stripe — All Billing & ACH", blurb: "Charges, prepaid balances, $99/mo agent seats, investor deposits, Connect sweeps to carriers.",
-        steps: ["Stripe Dashboard → Developers → API keys.", "Copy the Secret key and Publishable key.", "For carrier sweeps, enable Stripe Connect and copy the Connect client ID.", "Add a webhook to /api/stripe/webhook and paste the signing secret."],
+        oauth: true,
+        steps: ["Stripe Dashboard → Developers → API keys.", "Copy the Secret key and Publishable key.", "For carrier sweeps, enable Stripe Connect and copy the Connect client ID (ca_...).", "Save, then click Connect to authorize via Stripe OAuth.", "Add a webhook to /api/stripe/webhook and paste the signing secret."],
         fields: [{ name: "secretKey", label: "Secret Key", type: "password", placeholder: "sk_live_xxx" }, { name: "publishableKey", label: "Publishable Key", placeholder: "pk_live_xxx" }, { name: "webhookSecret", label: "Webhook Signing Secret", type: "password", placeholder: "whsec_xxx" }, { name: "connectId", label: "Connect Client ID", placeholder: "ca_xxx" }],
       },
     ],
@@ -59,13 +61,15 @@ const GROUPS: { title: string; desc: string; items: IntegrationMeta[] }[] = [
     items: [
       {
         key: "google_ads", label: "Google Ads + Google TV/Video", blurb: "Paid search & video. Spend flows back into the arbitrage math automatically.",
-        steps: ["Google Ads → Tools → API Center; get a Developer Token.", "Create OAuth credentials (Client ID/Secret) in Google Cloud.", "Generate a refresh token for your manager account.", "Paste below — daily spend & conversions sync."],
-        fields: [{ name: "developerToken", label: "Developer Token", type: "password" }, { name: "clientId", label: "OAuth Client ID" }, { name: "clientSecret", label: "OAuth Client Secret", type: "password" }, { name: "refreshToken", label: "Refresh Token", type: "password" }, { name: "customerId", label: "Customer ID", placeholder: "123-456-7890" }],
+        oauth: true,
+        steps: ["Google Ads → Tools → API Center; get a Developer Token.", "Create OAuth credentials (Client ID/Secret) in Google Cloud; add this app's callback as a redirect URI.", "Save the Client ID/Secret below.", "Click Connect to authorize with your Google login — daily spend & conversions sync."],
+        fields: [{ name: "developerToken", label: "Developer Token", type: "password" }, { name: "clientId", label: "OAuth Client ID" }, { name: "clientSecret", label: "OAuth Client Secret", type: "password" }, { name: "customerId", label: "Customer ID", placeholder: "123-456-7890" }],
       },
       {
         key: "facebook", label: "Facebook / Meta + Video", blurb: "Paid social & video. Spend + results sync for blended CPL/ROAS.",
-        steps: ["Meta Business → Settings → System Users; create a system user.", "Generate a token with ads_read, ads_management.", "Copy your Ad Account ID (act_...).", "Paste below."],
-        fields: [{ name: "accessToken", label: "Access Token", type: "password" }, { name: "adAccountId", label: "Ad Account ID", placeholder: "act_xxx" }, { name: "pixelId", label: "Pixel ID" }],
+        oauth: true,
+        steps: ["Meta for Developers → create an app; add Marketing API.", "Copy the App ID and App Secret; add this app's callback as a valid OAuth redirect URI.", "Save the App ID/Secret + your Ad Account ID below.", "Click Connect to authorize with your Facebook login."],
+        fields: [{ name: "appId", label: "App ID" }, { name: "appSecret", label: "App Secret", type: "password" }, { name: "adAccountId", label: "Ad Account ID", placeholder: "act_xxx" }, { name: "pixelId", label: "Pixel ID" }],
       },
       {
         key: "vibe", label: "Vibe.co — Connected TV", blurb: "Streaming-TV ads. Upload spots; track calls/leads as house traffic.",
@@ -92,14 +96,26 @@ const GROUPS: { title: string; desc: string; items: IntegrationMeta[] }[] = [
   },
 ];
 
-export default async function IntegrationsPage() {
+export default async function IntegrationsPage({ searchParams }: { searchParams: Promise<{ oauth?: string; needs?: string }> }) {
+  const sp = await searchParams;
   const rows = await db.integration.findMany();
   const byKey = new Map(rows.map((r) => [r.key, r]));
   const all = GROUPS.flatMap((g) => g.items);
   const connectedCount = all.filter((i) => byKey.get(i.key)?.connected).length;
+  const oauthStatus = sp?.oauth?.split(":") ?? [];
+  const needs = sp?.needs;
 
   return (
     <>
+      {oauthStatus[1] === "connected" && (
+        <div className="card mb-4 p-3 border-l-4 border-l-[var(--brand)] text-sm">✓ Connected <b>{oauthStatus[0]}</b> via OAuth.</div>
+      )}
+      {oauthStatus[1] === "error" && (
+        <div className="card mb-4 p-3 border-l-4 border-l-[var(--danger)] text-sm">Couldn&apos;t finish the <b>{oauthStatus[0]}</b> OAuth — check the Client ID/Secret and redirect URI, then try Connect again.</div>
+      )}
+      {needs && (
+        <div className="card mb-4 p-3 border-l-4 border-l-[var(--gold)] text-sm">Save the Client ID &amp; Secret for <b>{needs}</b> first, then click Connect.</div>
+      )}
       <div className="mb-6 flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold">Integrations</h1>

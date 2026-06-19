@@ -1,38 +1,56 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-export default function ChallengeBox({ question }: { question: string }) {
+export default function ChallengeBox({ id, question }: { id: string; question: string }) {
+  const router = useRouter();
   const [text, setText] = useState("");
-  const [status, setStatus] = useState<"idle" | "approved" | "declined" | "challenged">("idle");
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const question = text.trim();
+    if (!question) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/autonomous", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, action: "challenge", question }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || "Could not send question.");
+        return;
+      }
+      setSent(true);
+      setText("");
+      router.refresh();
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
-    <div className="space-y-3">
+    <form onSubmit={submit} className="space-y-3">
       <p className="text-sm">{question}</p>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <button type="button" onClick={() => setStatus("approved")} className="btn btn-brand text-sm">Approve</button>
-        <button type="button" onClick={() => setStatus("declined")} className="btn btn-ghost text-sm">Decline</button>
-      </div>
-
       <div className="flex items-start gap-2">
-        <input
+        <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Challenge / ask why…"
-          className="flex-1 rounded-lg bg-[var(--panel2)] border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-[var(--gold)]"
+          rows={2}
+          className="flex-1 rounded-lg bg-[var(--panel2)] border border-[var(--border)] px-3 py-2 text-sm outline-none resize-none focus:border-[var(--gold)]"
         />
-        <button
-          type="button"
-          onClick={() => { if (text.trim()) setStatus("challenged"); }}
-          className="btn btn-ghost text-sm"
-        >
-          Ask AI
+        <button type="submit" disabled={busy || !text.trim()} className="btn btn-ghost text-sm disabled:opacity-60">
+          {busy ? "Sending…" : "Ask AI"}
         </button>
       </div>
-
-      {status === "approved" && <p className="text-sm text-[var(--brand)]">Approved — the AI will proceed and learn from your call.</p>}
-      {status === "declined" && <p className="text-sm text-[var(--danger)]">Declined — logged as a constraint for future decisions.</p>}
-      {status === "challenged" && <p className="text-sm text-[var(--gold)]">Question sent: &ldquo;{text}&rdquo; — the AI will explain its reasoning.</p>}
-    </div>
+      {error && <p className="text-xs text-[var(--danger)]">{error}</p>}
+      {sent && <p className="text-sm text-[var(--gold)]">Question logged — the AI will explain its reasoning.</p>}
+    </form>
   );
 }

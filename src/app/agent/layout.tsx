@@ -9,7 +9,7 @@ export default async function AgentLayout({ children }: { children: React.ReactN
   if (s.role !== "agent" && s.role !== "god") redirect("/login");
 
   return (
-    <PortalShell title="Agent Portal" email={s.email}>
+    <PortalShell title="Agent Portal" email={s.email} impersonator={s.impersonatorEmail}>
       {children}
     </PortalShell>
   );

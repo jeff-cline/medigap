@@ -1,15 +1,54 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { usd } from "@/lib/format";
 
-export default function DepositForm() {
-  const [amount, setAmount] = useState(50000);
+export default function DepositForm({ mgmtFeePct = 2 }: { mgmtFeePct?: number }) {
+  const router = useRouter();
+  const [amount, setAmount] = useState(50000); // dollars
+  const [accredited, setAccredited] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+
   const cents = Math.round(amount * 100);
-  const mgmt = Math.round(cents * 0.02);
+  const mgmt = Math.round(cents * (mgmtFeePct / 100));
   const deployed = cents - mgmt;
+  const deployedPct = (100 - mgmtFeePct).toFixed(mgmtFeePct % 1 === 0 ? 0 : 1);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setDone(false);
+    if (cents <= 0) {
+      setError("Enter an amount greater than $0.");
+      return;
+    }
+    if (!accredited) {
+      setError("You must acknowledge accredited-investor status to deposit.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await fetch("/api/investor/deposit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amountCents: cents }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || "Deposit failed.");
+        return;
+      }
+      setDone(true);
+      router.refresh();
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="card p-5 grid gap-4">
+    <form onSubmit={submit} className="card p-5 grid gap-4">
       <div>
         <label className="block text-xs uppercase tracking-wide text-[var(--muted)] mb-1">Deposit amount (USD)</label>
         <input
@@ -23,20 +62,32 @@ export default function DepositForm() {
       </div>
       <div className="grid grid-cols-2 gap-3 text-sm">
         <div className="rounded-lg bg-[var(--panel2)] border border-[var(--border)] p-3">
-          <div className="text-xs uppercase tracking-wide text-[var(--muted)]">98% Deployed</div>
+          <div className="text-xs uppercase tracking-wide text-[var(--muted)]">{deployedPct}% Deployed</div>
           <div className="mt-1 text-xl font-bold text-[var(--brand)]">{usd(deployed)}</div>
         </div>
         <div className="rounded-lg bg-[var(--panel2)] border border-[var(--border)] p-3">
-          <div className="text-xs uppercase tracking-wide text-[var(--muted)]">2% Mgmt fee</div>
+          <div className="text-xs uppercase tracking-wide text-[var(--muted)]">{mgmtFeePct}% Mgmt fee</div>
           <div className="mt-1 text-xl font-bold text-[var(--gold)]">{usd(mgmt)}</div>
         </div>
       </div>
-      <p className="text-xs text-[var(--muted)]">
-        Deposits require accredited-investor verification. Funds are deployed into the arbitrage pool; you
-        receive a 50% profit share. ACH via Stripe wired next.
-      </p>
+      <label className="flex items-start gap-2 text-xs text-[var(--muted)]">
+        <input
+          type="checkbox"
+          checked={accredited}
+          onChange={(e) => setAccredited(e.target.checked)}
+          className="mt-0.5 accent-[var(--brand)]"
+        />
+        <span>
+          I acknowledge I am an <span className="text-[var(--text)] font-medium">accredited investor</span>. Funds are
+          deployed into the arbitrage pool as next-money-in-line; I receive a 50% profit share. ACH via Stripe wired next.
+        </span>
+      </label>
+      {error && <p className="text-xs text-[var(--danger)]">{error}</p>}
+      {done && <p className="text-xs text-[var(--brand)]">Deposit recorded — {usd(deployed)} deployed.</p>}
       <div className="flex justify-end">
-        <button type="submit" className="btn btn-brand">Deposit funds</button>
+        <button type="submit" disabled={busy} className="btn btn-brand disabled:opacity-60">
+          {busy ? "Depositing…" : "Deposit funds"}
+        </button>
       </div>
     </form>
   );

@@ -1,130 +1,202 @@
-import { Card, Stat, Badge, Section, AIButton } from "@/components/ui";
+import { Card, Stat, Badge, Section } from "@/components/ui";
 import { usd, usd2, num, pct } from "@/lib/format";
+import { db } from "@/lib/db";
 
-type SampleAd = {
-  headline: string;
-  kind: "text" | "banner" | "display";
-  cpcCents: number;
-  placement: string;
-  balanceCents: number;
-  clicks: number;
-};
+export const dynamic = "force-dynamic";
 
-export default function AdvertisersPage() {
-  // Ad / AdEvent tables EMPTY — render realistic sample.
-  const ads: SampleAd[] = [
-    { headline: "Compare Plan G in 60 seconds", kind: "text", cpcCents: 320, placement: "results-top", balanceCents: 48000, clicks: 412 },
-    { headline: "Dental + Vision add-on", kind: "banner", cpcCents: 180, placement: "sidebar", balanceCents: 22500, clicks: 1290 },
-    { headline: "Switch carriers, keep your doctor", kind: "display", cpcCents: 410, placement: "article-inline", balanceCents: 73000, clicks: 233 },
-    { headline: "Free hearing aid benefit", kind: "text", cpcCents: 95, placement: "footer", balanceCents: 9800, clicks: 2040 },
-    { headline: "Medicare Advantage $0 premium", kind: "banner", cpcCents: 260, placement: "results-top", balanceCents: 56000, clicks: 705 },
-  ];
+export default async function AdvertisersPage() {
+  const [advertisers, ads] = await Promise.all([
+    db.user.findMany({ where: { role: "advertiser" } }),
+    db.ad.findMany({ include: { events: true }, orderBy: { createdAt: "desc" } }),
+  ]);
+  const advertiserById = new Map(advertisers.map((u) => [u.id, u]));
 
-  const activeAdvertisers = 9; // sample
-  const totalClicks = ads.reduce((s, a) => s + a.clicks, 0);
-  const totalSpendCents = ads.reduce((s, a) => s + a.cpcCents * a.clicks, 0);
-  const avgCpcCents = Math.round(totalSpendCents / totalClicks);
-  const prepaidCents = ads.reduce((s, a) => s + a.balanceCents, 0);
+  // Per-ad real event stats.
+  const adRows = ads.map((a) => {
+    const clicks = a.events.filter((e) => e.kind === "click").length;
+    const impressions = a.events.filter((e) => e.kind === "impression").length;
+    const spendCents = a.events
+      .filter((e) => e.kind === "click")
+      .reduce((s, e) => s + e.costCents, 0);
+    // RPM proxy: revenue earned per 1,000 views.
+    const rpmCents = impressions > 0 ? (clicks / impressions) * a.bidCents * 1000 : 0;
+    return { ad: a, clicks, impressions, spendCents, rpmCents };
+  });
 
-  // Auto-optimization comparison: revenue per 1000 views, not raw CPC.
-  const views = 1000;
-  const offerA = { name: "Offer A", ctr: 6.0, cpcCents: 150 }; // high CTR, low CPC
-  const offerB = { name: "Offer B", ctr: 1.2, cpcCents: 520 }; // low CTR, high CPC
-  const rpmA = (views * (offerA.ctr / 100)) * offerA.cpcCents; // cents per 1000 views
-  const rpmB = (views * (offerB.ctr / 100)) * offerB.cpcCents;
-  const winner = rpmA >= rpmB ? offerA.name : offerB.name;
+  // KPIs
+  const activeAdvertisers = advertisers.length;
+  const totalClicks = adRows.reduce((s, r) => s + r.clicks, 0);
+  const avgCpcCents = ads.length
+    ? Math.round(ads.reduce((s, a) => s + a.bidCents, 0) / ads.length)
+    : 0;
+  const revenueCents = adRows.reduce((s, r) => s + r.spendCents, 0);
+
+  // Group by advertiser.
+  const grouped = new Map<
+    string,
+    { name: string; ads: number; balanceCents: number; clicks: number; spendCents: number }
+  >();
+  for (const r of adRows) {
+    const u = advertiserById.get(r.ad.advertiserId);
+    const key = r.ad.advertiserId;
+    const cur =
+      grouped.get(key) ??
+      { name: u?.name || u?.email || "Unknown", ads: 0, balanceCents: 0, clicks: 0, spendCents: 0 };
+    cur.ads += 1;
+    cur.balanceCents += r.ad.balanceCents;
+    cur.clicks += r.clicks;
+    cur.spendCents += r.spendCents;
+    grouped.set(key, cur);
+  }
+  const advRows = [...grouped.values()].sort((a, b) => b.spendCents - a.spendCents);
+
+  // Auto-optimization: which ad earns most per 1,000 views (RPM), regardless of raw CPC.
+  const ranked = [...adRows].filter((r) => r.impressions > 0).sort((a, b) => b.rpmCents - a.rpmCents);
+  const best = ranked[0];
+  const worst = ranked.length > 1 ? ranked[ranked.length - 1] : undefined;
 
   return (
     <>
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Advertisers — CPC</h1>
         <p className="text-sm text-[var(--muted)]">
-          Prepaid cost-per-click ads across the network. The auctioneer auto-optimizes for revenue, not raw bid.
+          Prepaid cost-per-click ads across the network. The engine auto-optimizes for revenue-per-1,000-views, not raw bid.
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4 mb-8">
-        <Stat label="Active Advertisers" value={num(activeAdvertisers)} sub="with live ads" tone="up" />
-        <Stat label="Total Clicks" value={num(totalClicks)} sub="this month" />
-        <Stat label="Avg CPC" value={usd2(avgCpcCents)} sub="blended" tone="gold" />
-        <Stat label="Prepaid Balance" value={usd(prepaidCents)} sub="on file across accounts" />
+        <Stat label="Active Advertisers" value={num(activeAdvertisers)} sub="role = advertiser" tone="up" />
+        <Stat label="Total Clicks" value={num(totalClicks)} sub="all AdEvents" />
+        <Stat label="Avg CPC" value={usd2(avgCpcCents)} sub="mean bid" tone="gold" />
+        <Stat label="Revenue from Clicks" value={usd(revenueCents)} sub="billed click costs" />
       </div>
 
-      <Section
-        title="Live Ads"
-        desc="Each ad draws down a prepaid balance per click."
-        action={<AIButton label="Rebalance placements" />}
-      >
+      <Section title="By Advertiser" desc="Each advertiser's ads, prepaid balance, and click performance.">
+        <Card className="!p-0 overflow-hidden">
+          <table>
+            <thead>
+              <tr>
+                <th>Advertiser</th>
+                <th className="text-right"># Ads</th>
+                <th className="text-right">Balance</th>
+                <th className="text-right">Clicks</th>
+                <th className="text-right">Spend</th>
+              </tr>
+            </thead>
+            <tbody>
+              {advRows.map((r, i) => (
+                <tr key={i}>
+                  <td className="font-medium">{r.name}</td>
+                  <td className="text-right">{num(r.ads)}</td>
+                  <td className="text-right text-[var(--muted)]">{usd(r.balanceCents)}</td>
+                  <td className="text-right">{num(r.clicks)}</td>
+                  <td className="text-right text-[var(--brand)]">{usd(r.spendCents)}</td>
+                </tr>
+              ))}
+              {advRows.length === 0 && (
+                <tr><td colSpan={5} className="text-[var(--muted)]">No advertisers with ads yet.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </Card>
+      </Section>
+
+      <Section title="All Ads" desc="Every live ad with real click counts and spend drawn from AdEvent.">
         <Card className="!p-0 overflow-hidden">
           <table>
             <thead>
               <tr>
                 <th>Headline</th>
                 <th>Kind</th>
+                <th className="text-right">CPC</th>
                 <th>Placement</th>
-                <th className="text-right">CPC Bid</th>
+                <th className="text-right">Balance</th>
                 <th className="text-right">Clicks</th>
                 <th className="text-right">Spend</th>
-                <th className="text-right">Balance</th>
               </tr>
             </thead>
             <tbody>
-              {ads.map((a, i) => (
-                <tr key={i}>
-                  <td className="font-medium">{a.headline}</td>
-                  <td><Badge tone="default">{a.kind}</Badge></td>
-                  <td className="text-[var(--muted)]">{a.placement}</td>
-                  <td className="text-right">{usd2(a.cpcCents)}</td>
-                  <td className="text-right">{num(a.clicks)}</td>
-                  <td className="text-right text-[var(--brand)]">{usd(a.cpcCents * a.clicks)}</td>
-                  <td className="text-right text-[var(--muted)]">{usd(a.balanceCents)}</td>
+              {adRows.map((r) => (
+                <tr key={r.ad.id}>
+                  <td className="font-medium">{r.ad.headline}</td>
+                  <td><Badge tone="default">{r.ad.kind}</Badge></td>
+                  <td className="text-right">{usd2(r.ad.bidCents)}</td>
+                  <td className="text-[var(--muted)]">{r.ad.placement}</td>
+                  <td className="text-right text-[var(--muted)]">{usd(r.ad.balanceCents)}</td>
+                  <td className="text-right">{num(r.clicks)}</td>
+                  <td className="text-right text-[var(--brand)]">{usd(r.spendCents)}</td>
                 </tr>
               ))}
+              {adRows.length === 0 && (
+                <tr><td colSpan={7} className="text-[var(--muted)]">No ads yet.</td></tr>
+              )}
             </tbody>
           </table>
         </Card>
-        <p className="text-xs text-[var(--muted)] mt-2">Wired next: Ad + AdEvent tables → per-impression/click billing &amp; balance draw-down.</p>
       </Section>
 
-      <Section title="Auto-optimization" desc="The engine maximizes revenue-per-1,000-views (RPM), not just the highest CPC.">
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card glow>
-            <div className="flex items-center justify-between">
-              <span className="font-semibold">{offerA.name}</span>
-              <Badge tone={winner === offerA.name ? "gold" : "default"}>{winner === offerA.name ? "★ served" : "held"}</Badge>
-            </div>
-            <p className="text-sm text-[var(--muted)] mt-2">High CTR, low CPC</p>
-            <div className="mt-3 text-sm space-y-1">
-              <div className="flex justify-between"><span className="text-[var(--muted)]">CTR</span><span>{pct(offerA.ctr)}</span></div>
-              <div className="flex justify-between"><span className="text-[var(--muted)]">CPC</span><span>{usd2(offerA.cpcCents)}</span></div>
-              <div className="flex justify-between border-t border-[var(--border)] pt-1 mt-1"><span className="text-[var(--muted)]">RPM (per 1k views)</span><span className="font-bold text-[var(--brand)]">{usd2(rpmA)}</span></div>
-            </div>
-          </Card>
-          <Card glow>
-            <div className="flex items-center justify-between">
-              <span className="font-semibold">{offerB.name}</span>
-              <Badge tone={winner === offerB.name ? "gold" : "default"}>{winner === offerB.name ? "★ served" : "held"}</Badge>
-            </div>
-            <p className="text-sm text-[var(--muted)] mt-2">Low CTR, high CPC</p>
-            <div className="mt-3 text-sm space-y-1">
-              <div className="flex justify-between"><span className="text-[var(--muted)]">CTR</span><span>{pct(offerB.ctr)}</span></div>
-              <div className="flex justify-between"><span className="text-[var(--muted)]">CPC</span><span>{usd2(offerB.cpcCents)}</span></div>
-              <div className="flex justify-between border-t border-[var(--border)] pt-1 mt-1"><span className="text-[var(--muted)]">RPM (per 1k views)</span><span className="font-bold text-[var(--brand)]">{usd2(rpmB)}</span></div>
-            </div>
-          </Card>
+      <Section
+        title="Auto-optimization"
+        desc="The engine maximizes revenue-per-1,000-views (RPM = CTR × CPC × 1,000), not the highest CPC."
+      >
+        {best ? (
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card glow>
+              <div className="flex items-center justify-between">
+                <span className="font-semibold truncate">{best.ad.headline}</span>
+                <Badge tone="gold">★ served</Badge>
+              </div>
+              <p className="text-sm text-[var(--muted)] mt-2">Top earner per 1,000 views</p>
+              <div className="mt-3 text-sm space-y-1">
+                <div className="flex justify-between"><span className="text-[var(--muted)]">CTR</span><span>{pct(best.impressions ? (best.clicks / best.impressions) * 100 : 0)}</span></div>
+                <div className="flex justify-between"><span className="text-[var(--muted)]">CPC</span><span>{usd2(best.ad.bidCents)}</span></div>
+                <div className="flex justify-between border-t border-[var(--border)] pt-1 mt-1">
+                  <span className="text-[var(--muted)]">RPM (per 1k views)</span>
+                  <span className="font-bold text-[var(--brand)]">{usd2(Math.round(best.rpmCents))}</span>
+                </div>
+              </div>
+            </Card>
+
+            {worst && (
+              <Card glow>
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold truncate">{worst.ad.headline}</span>
+                  <Badge tone="default">held</Badge>
+                </div>
+                <p className="text-sm text-[var(--muted)] mt-2">Lowest RPM of the set</p>
+                <div className="mt-3 text-sm space-y-1">
+                  <div className="flex justify-between"><span className="text-[var(--muted)]">CTR</span><span>{pct(worst.impressions ? (worst.clicks / worst.impressions) * 100 : 0)}</span></div>
+                  <div className="flex justify-between"><span className="text-[var(--muted)]">CPC</span><span>{usd2(worst.ad.bidCents)}</span></div>
+                  <div className="flex justify-between border-t border-[var(--border)] pt-1 mt-1">
+                    <span className="text-[var(--muted)]">RPM (per 1k views)</span>
+                    <span className="font-bold text-[var(--brand)]">{usd2(Math.round(worst.rpmCents))}</span>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            <Card>
+              <span className="font-semibold">Why this wins</span>
+              <p className="text-sm text-[var(--muted)] mt-2">
+                The platform ranks ads by <span className="text-[var(--text)] font-medium">revenue per 1,000 views</span>,
+                so a modest CPC with a strong click-through rate beats a high CPC nobody clicks.
+                {worst && worst.rpmCents > 0 && (
+                  <> Serving <span className="text-[var(--gold)] font-medium">{best.ad.headline}</span> over{" "}
+                  {worst.ad.headline} lifts RPM by{" "}
+                  <span className="text-[var(--brand)] font-medium">
+                    {pct(((best.rpmCents - worst.rpmCents) / worst.rpmCents) * 100)}
+                  </span>.</>
+                )}
+              </p>
+            </Card>
+          </div>
+        ) : (
           <Card>
-            <span className="font-semibold">Verdict</span>
-            <p className="text-sm text-[var(--muted)] mt-2">
-              Despite a {usd2(offerB.cpcCents)} CPC, {offerB.name} earns less per 1,000 views.
-              The engine serves <span className="text-[var(--gold)] font-medium">{winner}</span> — it wins on RPM.
+            <p className="text-sm text-[var(--muted)]">
+              No ads with impressions yet — RPM ranking appears once ads start serving.
             </p>
-            <div className="mt-3 text-sm flex justify-between border-t border-[var(--border)] pt-2">
-              <span className="text-[var(--muted)]">RPM lift</span>
-              <span className="font-bold text-[var(--brand)]">+{pct(((Math.max(rpmA, rpmB) - Math.min(rpmA, rpmB)) / Math.min(rpmA, rpmB)) * 100)}</span>
-            </div>
           </Card>
-        </div>
-        <p className="text-xs text-[var(--muted)] mt-2">Wired next: AdEvent CTR feedback loop → real-time RPM ranking per slot.</p>
+        )}
       </Section>
     </>
   );

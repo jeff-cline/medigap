@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { Card, Stat, Badge, Section } from "@/components/ui";
 import Gauge from "@/components/Gauge";
+import CallSimulator from "@/components/CallSimulator";
 import { db } from "@/lib/db";
-import { usd, usd2, num, pct, TOLLFREE } from "@/lib/format";
+import { usd, usd2, num, TOLLFREE } from "@/lib/format";
 
 function mmss(sec: number) {
   const m = Math.floor(sec / 60);
@@ -10,18 +12,18 @@ function mmss(sec: number) {
 }
 
 export default async function CallsPage() {
-  const calls = await db.call.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 50,
-    include: { lead: true },
-  });
+  const [calls, agents] = await Promise.all([
+    db.call.findMany({ orderBy: { createdAt: "desc" }, take: 50, include: { lead: true } }),
+    db.user.findMany({ where: { role: "agent" }, select: { id: true, name: true } }),
+  ]);
+  const agentName = new Map(agents.map((a) => [a.id, a.name]));
 
   const total = calls.length;
   const priceSum = calls.reduce((s, c) => s + c.priceCents, 0);
   const avgValue = total > 0 ? Math.round(priceSum / total) : 0;
   const houseCalls = calls.filter((c) => c.source === "house").length;
-  const connected = calls.filter((c) => c.status === "connected" || c.status === "completed").length;
-  const connectedRate = total > 0 ? (connected / total) * 100 : 0;
+  const durSum = calls.reduce((s, c) => s + c.durationSec, 0);
+  const avgDuration = total > 0 ? Math.round(durSum / total) : 0;
 
   return (
     <>
@@ -35,10 +37,16 @@ export default async function CallsPage() {
 
       <div className="grid gap-4 md:grid-cols-4 mb-6">
         <Stat label="Total Calls" value={num(total)} sub="last 50 shown" tone="default" />
-        <Stat label="Avg Call Value" value={usd2(avgValue)} sub="paid per connected call" tone="gold" />
+        <Stat label="Avg Call Value" value={usd2(avgValue)} sub="paid per call" tone="gold" />
         <Stat label="House Calls" value={num(houseCalls)} sub="owned, un-auctioned" tone="up" />
-        <Stat label="Connected Rate" value={pct(connectedRate)} sub={`${num(connected)} of ${num(total)}`} tone="up" />
+        <Stat label="Avg Duration" value={mmss(avgDuration)} sub="mm:ss" tone="default" />
       </div>
+
+      <Section title="Simulate Inbound Call" desc="Fire a call through the live auction to see routing & billing.">
+        <Card glow>
+          <CallSimulator />
+        </Card>
+      </Section>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_2fr] mb-8 items-start">
         <Gauge value={Number((avgValue / 100).toFixed(2))} max={Math.max(50, (avgValue / 100) * 1.5)} label="Avg $/Call" unit="$" />
@@ -54,7 +62,10 @@ export default async function CallsPage() {
             <Badge tone="up">Auction fallthrough</Badge>
             <Badge tone="gold">House priority</Badge>
           </div>
-          <p className="text-xs text-[var(--muted)] mt-3">Wired next: Twilio programmable voice — number pool, whisper TwiML, recording &amp; transcription.</p>
+          <p className="text-xs text-[var(--muted)] mt-3">
+            Live audio via Twilio programmable voice — number pool, whisper TwiML, recording &amp; transcription. Whisper
+            toggle is on per agent seat.
+          </p>
         </Card>
       </div>
 
@@ -64,13 +75,14 @@ export default async function CallsPage() {
             <thead>
               <tr>
                 <th>Time</th>
-                <th>From</th>
+                <th>Lead</th>
                 <th>Zip / State</th>
                 <th className="text-right">Duration</th>
                 <th>Status</th>
                 <th>Source</th>
                 <th>Money Word</th>
                 <th className="text-right">Price</th>
+                <th>Agent</th>
               </tr>
             </thead>
             <tbody>
@@ -80,16 +92,28 @@ export default async function CallsPage() {
                 return (
                   <tr key={c.id}>
                     <td className="text-[var(--muted)] text-sm">{c.createdAt.toISOString().slice(5, 16).replace("T", " ")}</td>
-                    <td className="font-medium">{c.lead?.name || c.fromNumber || "Unknown"}</td>
+                    <td className="font-medium">
+                      <Link href={`/dashboard/calls/${c.id}`} className="text-[var(--brand)] hover:underline">
+                        {c.lead?.name || c.fromNumber || "Unknown"}
+                      </Link>
+                    </td>
                     <td className="text-[var(--muted)]">{[c.zip, c.state].filter(Boolean).join(" · ") || "—"}</td>
                     <td className="text-right">{mmss(c.durationSec)}</td>
                     <td><Badge tone={statusTone}>{c.status}</Badge></td>
                     <td><Badge tone={sourceTone}>{c.source}</Badge></td>
                     <td>{c.moneyWord ? <span className="text-[var(--gold)] text-sm font-medium">{c.moneyWord}</span> : <span className="text-[var(--muted)]">—</span>}</td>
                     <td className="text-right font-medium text-[var(--brand)]">{c.priceCents > 0 ? usd(c.priceCents) : "—"}</td>
+                    <td className="text-[var(--muted)] text-sm">{c.bidWinnerId ? agentName.get(c.bidWinnerId) || c.bidWinnerId : "—"}</td>
                   </tr>
                 );
               })}
+              {calls.length === 0 && (
+                <tr>
+                  <td colSpan={9} className="text-center text-[var(--muted)] py-8">
+                    No calls yet — fire a simulated inbound above.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </Card>

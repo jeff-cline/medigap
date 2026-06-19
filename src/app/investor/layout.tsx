@@ -9,7 +9,7 @@ export default async function InvestorLayout({ children }: { children: React.Rea
   if (s.role !== "investor" && s.role !== "god") redirect("/login");
 
   return (
-    <PortalShell title="Investor Portal" email={s.email}>
+    <PortalShell title="Investor Portal" email={s.email} impersonator={s.impersonatorEmail}>
       {children}
     </PortalShell>
   );

@@ -1,31 +1,15 @@
 import { Card, Stat, Badge, Section, AIButton } from "@/components/ui";
-import { usd, usd2, num, pct } from "@/lib/format";
+import CrudForm, { ToggleActive } from "@/components/CrudForm";
+import { db } from "@/lib/db";
+import { usd2, num } from "@/lib/format";
 
-type SampleOffer = {
-  name: string;
-  trigger: string;
-  vendor: string;
-  payoutCents: number;
-  conversions: number;
-  triggers: number;
-};
+export default async function UpsellsPage() {
+  const offers = await db.upsellOffer.findMany({ orderBy: { payoutCents: "desc" } });
 
-export default function UpsellsPage() {
-  // UpsellOffer table EMPTY — render realistic sample.
-  const offers: SampleOffer[] = [
-    { name: "Mortgage Protection $97/mo", trigger: "Homeowner, not converting on Medigap", vendor: "ShieldLife", payoutCents: 7500, conversions: 38, triggers: 220 },
-    { name: "Final Expense $40/mo", trigger: "Age 65+, no beneficiary plan", vendor: "Legacy Life", payoutCents: 6800, conversions: 51, triggers: 410 },
-    { name: "Dental + Vision Bundle", trigger: "Declined supplement on cost", vendor: "SmileWell", payoutCents: 3200, conversions: 96, triggers: 540 },
-    { name: "Auto Warranty Extension", trigger: "Mentions older vehicle", vendor: "DriveGuard", payoutCents: 5400, conversions: 22, triggers: 305 },
-    { name: "Identity Theft Protection", trigger: "Concerned about scams", vendor: "GuardID", payoutCents: 2900, conversions: 64, triggers: 388 },
-  ];
-
-  const activeOffers = offers.length;
-  const totalTriggers = offers.reduce((s, o) => s + o.triggers, 0);
-  const totalConversions = offers.reduce((s, o) => s + o.conversions, 0);
-  const triggerRate = (totalConversions / totalTriggers) * 100;
-  const avgPayoutCents = Math.round(offers.reduce((s, o) => s + o.payoutCents, 0) / offers.length);
-  const revenueCents = offers.reduce((s, o) => s + o.payoutCents * o.conversions, 0);
+  const active = offers.filter((o) => o.active);
+  const activeOffers = active.length;
+  const avgPayoutCents = offers.length ? Math.round(offers.reduce((s, o) => s + o.payoutCents, 0) / offers.length) : 0;
+  const vendors = new Set(offers.map((o) => o.vendor).filter(Boolean)).size;
 
   return (
     <>
@@ -33,15 +17,15 @@ export default function UpsellsPage() {
         <h1 className="text-2xl font-bold">Live Upsells</h1>
         <p className="text-sm text-[var(--muted)] max-w-3xl">
           Drop-in offers that re-monetize a call that won&apos;t convert on Medigap otherwise — e.g.
-          &ldquo;mortgage protection $97/mo.&rdquo; We charge a transfer fee to hand the qualified caller to the upsell vendor.
+          &ldquo;mortgage protection $97/mo.&rdquo; Each offer fires on a no-convert trigger; a successful transfer pays
+          a vendor fee. Add, pause, or retire offers live.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4 mb-8">
-        <Stat label="Active Offers" value={num(activeOffers)} sub="in rotation" tone="up" />
-        <Stat label="Trigger → Convert" value={pct(triggerRate)} sub={`${num(totalConversions)} / ${num(totalTriggers)}`} tone="gold" />
-        <Stat label="Avg Transfer Payout" value={usd2(avgPayoutCents)} sub="per converted upsell" />
-        <Stat label="Upsell Revenue" value={usd(revenueCents)} sub="this month" tone="up" />
+      <div className="grid gap-4 md:grid-cols-3 mb-8">
+        <Stat label="Active Offers" value={num(activeOffers)} sub={`${num(offers.length)} total`} tone="up" />
+        <Stat label="Avg Payout" value={usd2(avgPayoutCents)} sub="per converted upsell" tone="gold" />
+        <Stat label="Vendors" value={num(vendors)} sub="distinct partners" />
       </div>
 
       <Section
@@ -57,27 +41,50 @@ export default function UpsellsPage() {
                 <th>Trigger</th>
                 <th>Vendor</th>
                 <th className="text-right">Payout</th>
-                <th className="text-right">Triggers</th>
-                <th className="text-right">Conversions</th>
-                <th className="text-right">Rate</th>
+                <th>Status</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
-              {offers.map((o, i) => (
-                <tr key={i}>
+              {offers.map((o) => (
+                <tr key={o.id}>
                   <td className="font-medium">{o.name}</td>
-                  <td className="text-[var(--muted)] text-sm">{o.trigger}</td>
-                  <td>{o.vendor}</td>
+                  <td className="text-[var(--muted)] text-sm">{o.trigger || "—"}</td>
+                  <td>{o.vendor || "—"}</td>
                   <td className="text-right text-[var(--brand)]">{usd2(o.payoutCents)}</td>
-                  <td className="text-right text-[var(--muted)]">{num(o.triggers)}</td>
-                  <td className="text-right">{num(o.conversions)}</td>
-                  <td className="text-right"><Badge tone="up">{pct((o.conversions / o.triggers) * 100)}</Badge></td>
+                  <td>{o.active ? <Badge tone="up">active</Badge> : <Badge tone="down">paused</Badge>}</td>
+                  <td className="text-right">
+                    <ToggleActive endpoint="/api/upsells" id={o.id} active={o.active} />
+                  </td>
                 </tr>
               ))}
+              {offers.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="text-center text-[var(--muted)] py-8">
+                    No upsell offers yet — add one below.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </Card>
-        <p className="text-xs text-[var(--muted)] mt-2">Wired next: UpsellOffer table → no-convert detector &amp; vendor transfer billing.</p>
+      </Section>
+
+      <Section title="Add an upsell offer" desc="Define the trigger, vendor, and transfer payout.">
+        <Card glow>
+          <CrudForm
+            endpoint="/api/upsells"
+            submitLabel="Add offer"
+            successNote="Upsell offer added."
+            fields={[
+              { name: "name", label: "Offer name", placeholder: "Mortgage Protection $97/mo", required: true },
+              { name: "trigger", label: "Trigger", placeholder: "Homeowner, not converting on Medigap" },
+              { name: "vendor", label: "Vendor", placeholder: "ShieldLife" },
+              { name: "payoutCents", label: "Payout (USD)", type: "number", placeholder: "75" },
+            ]}
+          />
+          <p className="text-xs text-[var(--muted)] mt-3">Payout is entered in dollars and stored as cents.</p>
+        </Card>
       </Section>
     </>
   );

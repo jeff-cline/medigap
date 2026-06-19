@@ -1,13 +1,16 @@
 "use client";
 import Link from "next/link";
+import ImpersonationBar from "@/components/ImpersonationBar";
 
 export default function PortalShell({
   title,
   email,
+  impersonator,
   children,
 }: {
   title: string;
   email: string;
+  impersonator?: string;
   children: React.ReactNode;
 }) {
   async function signOut() {
@@ -20,6 +23,7 @@ export default function PortalShell({
 
   return (
     <div className="min-h-screen">
+      {impersonator && <ImpersonationBar email={email} impersonator={impersonator} />}
       <header className="border-b border-[var(--border)] bg-[var(--panel)]/60 backdrop-blur">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
           <div className="flex items-baseline gap-3 min-w-0">

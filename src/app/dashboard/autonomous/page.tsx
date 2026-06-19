@@ -1,8 +1,9 @@
 import { Card, Stat, Badge, Section } from "@/components/ui";
 import { db } from "@/lib/db";
-import { num, usd } from "@/lib/format";
-import { getSetting } from "@/lib/queries";
+import { num } from "@/lib/format";
+import { getSettings } from "@/lib/logic";
 import ChallengeBox from "@/components/ChallengeBox";
+import AutonomousActions from "@/components/AutonomousActions";
 
 const MODE_DESC: Record<string, string> = {
   off: "Autonomy disabled — every action requires a human.",
@@ -21,36 +22,37 @@ function parseData(raw: string): [string, string][] {
 }
 
 export default async function AutonomousPage() {
-  const [logs, mode] = await Promise.all([
+  const [logs, settings] = await Promise.all([
     db.autonomousLog.findMany({ orderBy: { createdAt: "desc" } }),
-    getSetting("autonomousMode", "learning"),
+    getSettings(),
   ]);
+  const mode = settings.autonomousMode;
 
   const pinned = logs.filter((l) => l.pinned);
   const past = logs.filter((l) => !l.pinned);
 
-  const now = Date.now();
-  const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
-  const last7d = logs.filter((l) => l.createdAt.getTime() >= weekAgo).length;
+  // Auto-approved heuristic: anything not pinned ran without escalation.
+  const awaiting = pinned.filter((l) => l.question).length;
   const autoApproved = past.length;
-  const awaiting = pinned.length;
-  const estProfitImpactCents = 1_284_00; // illustrative aggregate
 
   return (
     <>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Autonomous Logic</h1>
-        <p className="text-sm text-[var(--muted)] max-w-3xl">
-          The AI&apos;s decision log. Mode is set by the <code className="text-[var(--brand)]">autonomousMode</code> setting
-          (off / assist / learning / full). Currently <Badge tone="gold">{mode}</Badge> — {MODE_DESC[mode] ?? MODE_DESC.learning}
-        </p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Autonomous Logic</h1>
+          <p className="text-sm text-[var(--muted)] max-w-3xl">
+            The AI&apos;s decision log. Mode is set by the <code className="text-[var(--brand)]">autonomousMode</code> setting
+            (off / assist / learning / full). Currently <Badge tone="gold">{mode}</Badge> — {MODE_DESC[mode] ?? MODE_DESC.learning}
+          </p>
+        </div>
+        <AutonomousActions mode="generate" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-4 mb-8">
-        <Stat label="Decisions (7d)" value={num(last7d)} sub="logged actions" tone="up" />
+        <Stat label="Decisions" value={num(logs.length)} sub="logged actions" tone="up" />
         <Stat label="Auto-approved" value={num(autoApproved)} sub="ran without you" tone="gold" />
         <Stat label="Awaiting You" value={num(awaiting)} sub="needs decision" tone={awaiting > 0 ? "down" : "default"} />
-        <Stat label="Est. Profit Impact" value={usd(estProfitImpactCents)} sub="from AI decisions" tone="gold" />
+        <Stat label="Autonomous Mode" value={mode} sub="active policy" tone="gold" />
       </div>
 
       {pinned.length > 0 && (
@@ -62,13 +64,16 @@ export default async function AutonomousPage() {
                   <div className="text-sm font-semibold text-[var(--gold)]">{l.decision}</div>
                   <span className="text-xs text-[var(--muted)]">{l.createdAt.toISOString().slice(0, 16).replace("T", " ")}</span>
                 </div>
-                {l.rationale && <p className="text-sm text-[var(--muted)] mb-3">{l.rationale}</p>}
+                {l.rationale && <p className="text-sm text-[var(--muted)] mb-3 whitespace-pre-line">{l.rationale}</p>}
                 <div className="flex flex-wrap gap-2 mb-3">
                   {parseData(l.data).map(([k, v]) => (
                     <Badge key={k} tone="default">{k}: {v}</Badge>
                   ))}
                 </div>
-                <ChallengeBox question={l.question ?? "Approve this decision?"} />
+                <div className="space-y-3">
+                  <AutonomousActions id={l.id} />
+                  <ChallengeBox id={l.id} question={l.question ?? "Approve this decision?"} />
+                </div>
               </div>
             ))}
           </div>
@@ -85,7 +90,7 @@ export default async function AutonomousPage() {
                   <div className="text-sm font-medium">{l.decision}</div>
                   <span className="text-xs text-[var(--muted)] shrink-0">{l.createdAt.toISOString().slice(0, 16).replace("T", " ")}</span>
                 </div>
-                {l.rationale && <p className="text-sm text-[var(--muted)] mt-1">{l.rationale}</p>}
+                {l.rationale && <p className="text-sm text-[var(--muted)] mt-1 whitespace-pre-line">{l.rationale}</p>}
                 <div className="flex flex-wrap gap-2 mt-2">
                   {parseData(l.data).map(([k, v]) => (
                     <Badge key={k} tone="brand">{k}: {v}</Badge>
@@ -96,7 +101,10 @@ export default async function AutonomousPage() {
             {past.length === 0 && <li className="text-sm text-[var(--muted)]">No past decisions logged yet.</li>}
           </ol>
         </Card>
-        <p className="text-xs text-[var(--muted)] mt-2">Wired next: streaming decision feed + per-decision profit attribution.</p>
+        <p className="text-xs text-[var(--muted)] mt-2">
+          Use <span className="text-gradient font-semibold">✦ Generate recommendation</span> to have the AI analyze live
+          P&amp;L and propose a budget shift backed by real numbers.
+        </p>
       </Section>
     </>
   );

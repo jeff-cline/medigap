@@ -1,14 +1,17 @@
 "use client";
 import { useState } from "react";
 
-export default function CallToggle() {
-  const [on, setOn] = useState(true);
+export default function CallToggle({ initialOn = true }: { initialOn?: boolean }) {
+  const [on, setOn] = useState(initialOn);
   return (
     <div className="card p-5 flex items-center justify-between gap-4">
       <div>
         <div className="text-xs uppercase tracking-wide text-[var(--muted)]">Take Calls</div>
         <div className={`mt-1 text-2xl font-bold ${on ? "text-[var(--brand)]" : "text-[var(--danger)]"}`}>
           {on ? "ON — receiving" : "OFF — paused"}
+        </div>
+        <div className="mt-1 text-xs text-[var(--muted)]">
+          {on ? "Your active bids are in the live auction." : "Bids are held — you won't be routed calls."}
         </div>
       </div>
       <button

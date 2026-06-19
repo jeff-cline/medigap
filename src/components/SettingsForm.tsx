@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export type SettingsProps = {
   minCallBidCents: number;
@@ -44,6 +45,7 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
 }
 
 export default function SettingsForm(props: SettingsProps) {
+  const router = useRouter();
   const [minCallBid, setMinCallBid] = useState((props.minCallBidCents / 100).toString());
   const [mgmtFee, setMgmtFee] = useState(props.mgmtFeePct.toString());
   const [profitShare, setProfitShare] = useState(props.profitSharePct.toString());
@@ -56,16 +58,46 @@ export default function SettingsForm(props: SettingsProps) {
   const [autoAdvertiser, setAutoAdvertiser] = useState(props.autoApproveAdvertiser);
   const [autoInvestor, setAutoInvestor] = useState(props.autoApproveInvestor);
   const [saved, setSaved] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function onSave(e: React.FormEvent) {
+  async function onSave(e: React.FormEvent) {
     e.preventDefault();
-    // eslint-disable-next-line no-console
-    console.log("Save settings", {
-      minCallBid, mgmtFee, profitShare, aiFee, futureProofing, investorAlloc, arbitrage,
-      mode, autoAgent, autoAdvertiser, autoInvestor,
-    });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setError(null);
+    setSaved(false);
+    setBusy(true);
+    // Min Call Bid is entered in dollars → persist as cents.
+    const minCallBidCents = Math.round((parseFloat(minCallBid) || 0) * 100);
+    const payload: Record<string, string> = {
+      minCallBidCents: String(minCallBidCents),
+      mgmtFeePct: mgmtFee,
+      profitSharePct: profitShare,
+      aiFeePct: aiFee,
+      futureProofingPct: futureProofing,
+      investorPct: investorAlloc,
+      arbitrageTarget: arbitrage,
+      autonomousMode: mode,
+      autoApproveAgent: String(autoAgent),
+      autoApproveAdvertiser: String(autoAdvertiser),
+      autoApproveInvestor: String(autoInvestor),
+    };
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || "Could not save settings.");
+        return;
+      }
+      setSaved(true);
+      router.refresh();
+      setTimeout(() => setSaved(false), 3000);
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -131,10 +163,13 @@ export default function SettingsForm(props: SettingsProps) {
       </section>
 
       <div className="flex items-center gap-3">
-        <button type="submit" className="btn btn-brand text-sm">Save settings</button>
+        <button type="submit" disabled={busy} className="btn btn-brand text-sm disabled:opacity-60">
+          {busy ? "Saving…" : "Save settings"}
+        </button>
         {saved && <span className="text-sm text-[var(--brand)]">Settings saved.</span>}
+        {error && <span className="text-sm text-[var(--danger)]">{error}</span>}
       </div>
-      <p className="text-xs text-[var(--muted)]">Wired next: persist to Setting table + audit log on change.</p>
+      <p className="text-xs text-[var(--muted)]">Persisted to the Setting table. Wired next: audit log on change.</p>
     </form>
   );
 }

@@ -9,7 +9,7 @@ export default async function AdvertiserLayout({ children }: { children: React.R
   if (s.role !== "advertiser" && s.role !== "god") redirect("/login");
 
   return (
-    <PortalShell title="Advertiser Portal" email={s.email}>
+    <PortalShell title="Advertiser Portal" email={s.email} impersonator={s.impersonatorEmail}>
       {children}
     </PortalShell>
   );

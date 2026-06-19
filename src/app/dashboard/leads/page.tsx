@@ -1,6 +1,10 @@
+import Link from "next/link";
 import { Card, Stat, Badge, Section, AIButton } from "@/components/ui";
+import LeadFilters from "@/components/LeadFilters";
 import { db } from "@/lib/db";
+import { getSession, isRealGod } from "@/lib/auth";
 import { usd, num, pct } from "@/lib/format";
+import type { Prisma } from "@prisma/client";
 
 const sourceTone: Record<string, "default" | "up" | "down" | "gold" | "brand"> = {
   house: "gold",
@@ -18,89 +22,55 @@ const statusTone: Record<string, "default" | "up" | "down" | "gold" | "brand"> =
   dead: "down",
 };
 
-export default async function LeadsPage() {
-  const [leads, total, sold, valueAgg, firstLead] = await Promise.all([
-    db.lead.findMany({ orderBy: { createdAt: "desc" }, take: 50 }),
-    db.lead.count(),
-    db.lead.count({ where: { status: "sold" } }),
-    db.lead.aggregate({ _avg: { valueCents: true } }),
-    db.lead.findFirst({ orderBy: { createdAt: "asc" }, include: { answers: { orderBy: { askedAt: "asc" } }, calls: true } }),
+export default async function LeadsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ vertical?: string; source?: string; status?: string }>;
+}) {
+  const sp = await searchParams;
+  const session = await getSession();
+  const god = isRealGod(session) || session?.role === "god";
+
+  const where: Prisma.LeadWhereInput = {};
+  if (sp.vertical && sp.vertical !== "all") where.vertical = sp.vertical;
+  if (sp.source && sp.source !== "all") where.source = sp.source;
+  if (sp.status && sp.status !== "all") where.status = sp.status;
+
+  const [leads, total, sold, valueAgg] = await Promise.all([
+    db.lead.findMany({ where, orderBy: { createdAt: "desc" }, take: 50 }),
+    db.lead.count({ where }),
+    db.lead.count({ where: { ...where, status: "sold" } }),
+    db.lead.aggregate({ where, _avg: { valueCents: true } }),
   ]);
 
   const conversion = total > 0 ? (sold / total) * 100 : 0;
   const avgValue = Math.round(valueAgg._avg.valueCents ?? 0);
-
-  const verticals = ["all", "medicare", "housing", "care", "alzheimers"];
-  const sources = ["all", "house", "google", "facebook", "organic", "tv", "affiliate"];
 
   return (
     <>
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Leads CRM</h1>
         <p className="text-sm text-[var(--muted)] max-w-3xl">
-          God view — every lead across every site, source, and vertical, including the full AI voice-intake journey.
-          Agents only see contact basics (name, phone, email, DOB, zip); the Q&amp;A journey below is God-only.
+          {god
+            ? "God view — every lead across every site, source, and vertical, including the full AI voice-intake journey."
+            : "Your assigned leads — contact basics only. The God-only AI intake journey is hidden."}
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4 mb-8">
-        <Stat label="Total Leads" value={num(total)} sub="all sources" tone="up" />
+        <Stat label="Total Leads" value={num(total)} sub="matching filters" tone="up" />
         <Stat label="Sold" value={num(sold)} sub="status = sold" tone="gold" />
         <Stat label="Conversion" value={pct(conversion)} sub={`${num(sold)} of ${num(total)}`} tone="up" />
-        <Stat label="Avg Lead Value" value={usd(avgValue)} sub="across all leads" tone="gold" />
+        <Stat label="Avg Lead Value" value={usd(avgValue)} sub="across matching leads" tone="gold" />
       </div>
 
-      <Section title="Filters" desc="Slice the pipeline by vertical and source.">
+      <Section title="Filters" desc="Slice the pipeline by vertical, source, and status." action={<AIButton label="Suggest segment" />}>
         <Card>
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs uppercase tracking-wide text-[var(--muted)] w-16">Vertical</span>
-              {verticals.map((v) => (
-                <button key={v} type="button" className="btn btn-ghost text-xs !py-1 !px-3 capitalize">{v}</button>
-              ))}
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs uppercase tracking-wide text-[var(--muted)] w-16">Source</span>
-              {sources.map((s) => (
-                <button key={s} type="button" className="btn btn-ghost text-xs !py-1 !px-3 capitalize">{s}</button>
-              ))}
-            </div>
-          </div>
+          <LeadFilters />
         </Card>
-        <p className="text-xs text-[var(--muted)] mt-2">Wired next: server-side filtering + saved segments.</p>
       </Section>
 
-      {firstLead && (
-        <Section
-          title="Customer Journey — God-only"
-          desc={`Voice-AI intake transcript for ${firstLead.name || "lead"}. Non-God agents never see this Q&A trail.`}
-          action={<AIButton label="Summarize journey" />}
-        >
-          <Card glow>
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              <Badge tone="brand">{firstLead.vertical}</Badge>
-              <Badge tone={sourceTone[firstLead.source] ?? "default"}>{firstLead.source}</Badge>
-              <Badge tone={statusTone[firstLead.status] ?? "default"}>{firstLead.status}</Badge>
-              <span className="text-xs text-[var(--muted)]">{firstLead.calls.length} call(s) recorded</span>
-            </div>
-            {firstLead.answers.length > 0 ? (
-              <div className="space-y-3">
-                {firstLead.answers.map((a) => (
-                  <div key={a.id} className="border-l-2 border-[var(--brand)]/40 pl-3">
-                    <div className="text-xs uppercase tracking-wide text-[var(--muted)]">{a.question}</div>
-                    <div className="text-sm font-medium mt-0.5">{a.answer}</div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-[var(--muted)]">No intake answers captured for this lead yet.</p>
-            )}
-            <p className="text-xs text-[var(--muted)] mt-4">Wired next: live transcription stream + sentiment + money-word tagging.</p>
-          </Card>
-        </Section>
-      )}
-
-      <Section title="All Leads" desc="Newest first — last 50 shown.">
+      <Section title="All Leads" desc="Newest first — last 50 matching shown.">
         <Card className="!p-0 overflow-hidden">
           <table>
             <thead>
@@ -114,6 +84,7 @@ export default async function LeadsPage() {
                 <th>Source</th>
                 <th>Status</th>
                 <th className="text-right">Value</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -128,8 +99,20 @@ export default async function LeadsPage() {
                   <td><Badge tone={sourceTone[l.source] ?? "default"}>{l.source}</Badge></td>
                   <td><Badge tone={statusTone[l.status] ?? "default"}>{l.status}</Badge></td>
                   <td className="text-right font-medium text-[var(--brand)]">{l.valueCents > 0 ? usd(l.valueCents) : "—"}</td>
+                  <td className="text-right">
+                    <Link href={`/dashboard/leads/${l.id}`} className="text-[var(--brand)] text-sm font-medium hover:underline">
+                      View
+                    </Link>
+                  </td>
                 </tr>
               ))}
+              {leads.length === 0 && (
+                <tr>
+                  <td colSpan={10} className="text-center text-[var(--muted)] py-8">
+                    No leads match these filters.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </Card>

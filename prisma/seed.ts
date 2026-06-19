@@ -134,6 +134,104 @@ async function main() {
     await db.ledgerEntry.create({ data: { type: "spend", category: "adspend", channel: i % 2 ? "google" : "facebook", amountCents: 800 + (i % 4) * 200, note: `Ad spend ${i}` } });
   }
 
+  // --- Multiple agents with bids & seats (the auction) ---
+  const agentDefs: [string, string, number][] = [
+    ["sarah.agent@demo.com", "Sarah Mitchell", 4.9],
+    ["mike.agent@demo.com", "Mike Cohen", 4.5],
+    ["lisa.agent@demo.com", "Lisa Tran", 4.2],
+    ["carlos.agent@demo.com", "Carlos Reyes", 3.8],
+  ];
+  const agentIds: string[] = [];
+  for (let a = 0; a < agentDefs.length; a++) {
+    const [email, name, stars] = agentDefs[a];
+    const h = await bcrypt.hash("TEMP!234", 10);
+    const u = await db.user.upsert({ where: { email }, update: {}, create: { email, passwordHash: h, name, role: "agent", stars, mustChangePassword: true } });
+    agentIds.push(u.id);
+    const zips = ["33101", "85001", "30301", "10001"];
+    await db.agentBid.create({ data: { agentId: u.id, scope: "zip", scopeValue: zips[a % zips.length], amountCents: 2800 + a * 700, active: a !== 3, dailyCap: 20 + a * 5, budgetCents: 500000 } });
+    if (a % 2 === 0) await db.agentBid.create({ data: { agentId: u.id, scope: "state", scopeValue: ["FL", "AZ", "GA", "NY"][a], amountCents: 2600 + a * 300, active: true, dailyCap: 40 } });
+    await db.agentBid.create({ data: { agentId: u.id, scope: "national", scopeValue: "", amountCents: 2500 + a * 150, active: a < 2, dailyCap: 0 } });
+    for (const z of zips.slice(0, 2 + (a % 3))) {
+      await db.agentSeat.create({ data: { agentId: u.id, zip: z, monthlyFeeCents: 9900, active: true, paidThrough: new Date(2026, 6, 1) } });
+      await db.transaction.create({ data: { kind: "charge", userId: u.id, amountCents: 9900, status: "settled", note: `Seat ${z} (monthly)` } });
+    }
+  }
+
+  // --- Advertisers with ads, balances & click events ---
+  const advDefs: [string, string][] = [
+    ["dental.adv@demo.com", "BrightSmile Dental"],
+    ["hearing.adv@demo.com", "ClearTone Hearing"],
+    ["solar.adv@demo.com", "SunSaver Solar"],
+  ];
+  const adDefs = [
+    { kind: "text", headline: "Free Senior Dental — $0 Copay Plans", body: "Dental, vision & hearing in one plan. See if you qualify.", placement: "inline", bid: 120, target: "https://example.com/dental" },
+    { kind: "banner", headline: "Hear Every Word Again", body: "Rechargeable hearing aids from $0 with Medicare.", placement: "sidebar", bid: 180, target: "https://example.com/hearing" },
+    { kind: "text", headline: "Cut Your Power Bill 70%", body: "Seniors in your ZIP may qualify for $0-down solar.", placement: "footer", bid: 95, target: "https://example.com/solar" },
+    { kind: "banner", headline: "Final Expense — Lock $9,500 Coverage", body: "No medical exam. Rates from $20/mo.", placement: "exit", bid: 210, target: "https://example.com/fe" },
+  ];
+  for (let a = 0; a < advDefs.length; a++) {
+    const [email, name] = advDefs[a];
+    const h = await bcrypt.hash("TEMP!234", 10);
+    const u = await db.user.upsert({ where: { email }, update: {}, create: { email, passwordHash: h, name, role: "advertiser", mustChangePassword: true } });
+    await db.transaction.create({ data: { kind: "topup", userId: u.id, amountCents: 50000 + a * 25000, status: "settled", note: "Balance top-up (Stripe)" } });
+    for (let k = 0; k < adDefs.length; k++) {
+      if ((k + a) % 2 === 0) continue;
+      const d = adDefs[k];
+      const ad = await db.ad.create({ data: { advertiserId: u.id, kind: d.kind, headline: d.headline, body: d.body, targetUrl: d.target, bidCents: d.bid, balanceCents: 40000 + k * 10000, placement: d.placement, active: true } });
+      for (let e = 0; e < 30 + k * 10; e++) await db.adEvent.create({ data: { adId: ad.id, kind: "impression", costCents: 0 } });
+      for (let c = 0; c < 5 + k * 2; c++) {
+        await db.adEvent.create({ data: { adId: ad.id, kind: "click", costCents: d.bid } });
+        await db.ledgerEntry.create({ data: { type: "revenue", category: "click", channel: "advertiser", amountCents: d.bid, note: `Click ${d.headline}` } });
+      }
+    }
+  }
+
+  // --- Money words (keyword-triggered alternate flows) ---
+  await db.moneyWord.createMany({ data: [
+    { word: "peptides", partner: "VitalPeptide Rx", action: "qualify", payoutCents: 4500, logic: JSON.stringify(["Have you used peptides before?", "Are you working with a doctor?", "Best email for your consult?"]), active: true },
+    { word: "diabetic", partner: "GlucoCare Supply", action: "transfer", payoutCents: 3800, active: true },
+    { word: "back brace", partner: "OrthoRelief DME", action: "transfer", payoutCents: 5200, active: true },
+    { word: "solar", partner: "SunSaver Solar", action: "qualify", payoutCents: 6000, logic: JSON.stringify(["Do you own your home?", "Average monthly power bill?"]), active: true },
+    { word: "reverse mortgage", partner: "Heritage HECM", action: "transfer", payoutCents: 9000, active: false },
+  ] });
+
+  // --- Live upsell offers ---
+  await db.upsellOffer.createMany({ data: [
+    { name: "Mortgage Protection — $97/mo", trigger: "Homeowner, age 60-75, not buying Medigap", payoutCents: 6500, vendor: "Guardian MPI", active: true },
+    { name: "Final Expense Whole Life", trigger: "No supplement interest; age 65+", payoutCents: 4800, vendor: "Legacy Final Expense", active: true },
+    { name: "Dental/Vision/Hearing Add-on", trigger: "On MA plan without DVH", payoutCents: 2200, vendor: "BrightSmile Dental", active: true },
+    { name: "Hospital Indemnity", trigger: "MA enrollee worried about copays", payoutCents: 3100, vendor: "ShieldGap", active: true },
+  ] });
+
+  // --- Autonomous risk products (carrier mode) ---
+  await db.riskProduct.createMany({ data: [
+    { name: "Mortgage Life Protection", premiumCents: 9700, sweepDays: 3, active: true, apiConfig: JSON.stringify({ carrier: "Reins Re A", sweep: "stripe_connect" }) },
+    { name: "Accidental Death Benefit", premiumCents: 4900, sweepDays: 5, active: true, apiConfig: "{}" },
+    { name: "Final Expense Whole Life", premiumCents: 5900, sweepDays: 3, active: true, apiConfig: "{}" },
+  ] });
+
+  // --- Marketing campaigns with A/B variants ---
+  await db.campaign.createMany({ data: [
+    { channel: "google", name: "Medigap Search — Brand", vertical: "supplement", variant: "A", headline: "Compare Medigap Plans in 60 Seconds", description: "Licensed help. No obligation.", spendCents: 320000, clicks: 4100, leads: 540, calls: 210, active: true },
+    { channel: "google", name: "Medigap Search — Brand", vertical: "supplement", variant: "B", headline: "Medicare Supplement Quotes — Free", description: "Talk to a real specialist.", spendCents: 300000, clicks: 3800, leads: 610, calls: 250, active: true },
+    { channel: "facebook", name: "MA $0 Premium — FL", vertical: "medicare_advantage", variant: "A", headline: "$0 Plans With Extra Benefits", description: "Dental, vision, OTC included.", spendCents: 180000, clicks: 5200, leads: 430, calls: 120, active: true },
+    { channel: "tv", name: "1-800-MEDIGAP National Spot", vertical: "medicare", variant: "A", headline: "Call 1-800-MEDIGAP", description: "Connected TV / linear", spendCents: 750000, clicks: 0, leads: 1200, calls: 3400, active: true },
+  ] });
+
+  // --- Affiliate / exit-traffic offers ---
+  await db.affiliateOffer.createMany({ data: [
+    { name: "MediaAlpha — Auto Insurance Exit", code: "MA-AUTO-7781", apiUrl: "https://api.mediaalpha.com/v1", kind: "exit", clickValueCents: 140, active: true },
+    { name: "Final Expense ClickWall", code: "FE-9920", apiUrl: "https://api.example-affil.com", kind: "text", clickValueCents: 95, active: true },
+    { name: "Senior Discounts Banner Net", code: "SD-3310", apiUrl: "https://api.seniordiscounts.io", kind: "banner", clickValueCents: 60, active: true },
+  ] });
+
+  // --- Investor capital movements ---
+  await db.transaction.createMany({ data: [
+    { kind: "deposit", amountCents: 1000000, status: "settled", note: "Investor deposit — Demo Investor" },
+    { kind: "fee", amountCents: 20000, status: "settled", note: "2% management fee" },
+    { kind: "payout", amountCents: 60000, status: "settled", note: "Investor profit share (50%)" },
+  ] });
+
   // --- Autonomous logic samples (with one pinned question) ---
   await db.autonomousLog.createMany({
     data: [

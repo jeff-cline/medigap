@@ -1,6 +1,7 @@
 import Link from "next/link";
 import LeadForm from "@/components/LeadForm";
 import SiteFooter from "@/components/SiteFooter";
+import AdSlot from "@/components/AdSlot";
 import { TOLLFREE, TOLLFREE_TEL, usd, num } from "@/lib/format";
 import { getMoneySnapshot } from "@/lib/queries";
 
@@ -57,7 +58,11 @@ export default async function Home() {
               <div><span className="text-[var(--text)] font-bold text-xl">★ 4.8</span><br />avg agent rating</div>
             </div>
           </div>
-          <div id="quote"><LeadForm /></div>
+          <div id="quote" className="space-y-4">
+            <LeadForm />
+            {/* Live advertiser inventory — billed per click via /go/[adId] */}
+            <AdSlot placement="inline" />
+          </div>
         </div>
       </section>
 
