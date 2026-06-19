@@ -3,7 +3,7 @@ import { Card, Stat, Badge, Section, AIButton } from "@/components/ui";
 import LeadFilters from "@/components/LeadFilters";
 import { db } from "@/lib/db";
 import { getSession, isRealGod } from "@/lib/auth";
-import { usd, num, pct, cst, mmss, fmtPhone } from "@/lib/format";
+import { usd, num, pct, cst, mmss, fmtPhone, leadRef } from "@/lib/format";
 import { ageFromSpeech } from "@/lib/voice";
 import type { Prisma } from "@prisma/client";
 
@@ -76,6 +76,7 @@ export default async function LeadsPage({
           <table>
             <thead>
               <tr>
+                <th>Ref #</th>
                 <th>Name</th>
                 <th>Phone</th>
                 <th>DOB / Age</th>
@@ -92,6 +93,7 @@ export default async function LeadsPage({
                 const age = ageFromSpeech(l.dob || "");
                 return (
                   <tr key={l.id}>
+                    <td className="font-mono text-xs text-[var(--muted)]">{leadRef(l.refNum)}</td>
                     <td className="font-medium"><Link href={`/dashboard/leads/${l.id}`} className="text-[var(--brand)] hover:underline">{l.name || "Unnamed"}</Link></td>
                     <td><Link href={`/dashboard/leads/${l.id}`} className="text-[var(--brand)] hover:underline">{fmtPhone(l.phone)}</Link></td>
                     <td className="text-[var(--muted)] text-sm">{l.dob || "—"}{age ? ` · ${age}` : ""}</td>
@@ -105,7 +107,7 @@ export default async function LeadsPage({
               })}
               {leads.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="text-center text-[var(--muted)] py-8">
+                  <td colSpan={9} className="text-center text-[var(--muted)] py-8">
                     No leads match these filters. Live calls to 1-800-MEDIGAP create leads here automatically.
                   </td>
                 </tr>

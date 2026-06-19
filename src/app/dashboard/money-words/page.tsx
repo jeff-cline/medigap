@@ -1,5 +1,6 @@
 import { Card, Stat, Badge, Section, AIButton } from "@/components/ui";
 import CrudForm, { ToggleActive } from "@/components/CrudForm";
+import MoneyWordCloud from "@/components/MoneyWordCloud";
 import { db } from "@/lib/db";
 import { usd2, num } from "@/lib/format";
 
@@ -53,6 +54,10 @@ export default async function MoneyWordsPage() {
         <Stat label="Transfer / Qualify" value={`${num(transferCount)} / ${num(qualifyCount)}`} sub="by action" />
       </div>
 
+      <Section title="Money Word Cloud" desc="Bigger = triggered more. This is also live to partners at /money-word-cloud." action={<a href="/money-word-cloud" target="_blank" className="text-sm text-[var(--brand)]">View public page ↗</a>}>
+        <Card glow><MoneyWordCloud words={words.map((w) => ({ word: w.word, triggers: w.triggers }))} /></Card>
+      </Section>
+
       <Section
         title="Armed Money Words"
         desc="Each word maps to a partner and an action: hot transfer, or AI-qualify with partner logic."
@@ -63,6 +68,7 @@ export default async function MoneyWordsPage() {
             <thead>
               <tr>
                 <th>Word</th>
+                <th className="text-right">Triggered</th>
                 <th>Partner</th>
                 <th>Action</th>
                 <th>Routes To</th>
@@ -75,6 +81,7 @@ export default async function MoneyWordsPage() {
               {words.map((w) => (
                 <tr key={w.id}>
                   <td className="font-medium">&ldquo;{w.word}&rdquo;</td>
+                  <td className="text-right font-medium text-[var(--gold)]">{w.triggers}×</td>
                   <td>{w.partner || "—"}</td>
                   <td>
                     {w.action === "transfer" ? <Badge tone="brand">hot transfer</Badge> : <Badge tone="up">AI qualify</Badge>}
@@ -89,7 +96,7 @@ export default async function MoneyWordsPage() {
               ))}
               {words.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="text-center text-[var(--muted)] py-8">
+                  <td colSpan={8} className="text-center text-[var(--muted)] py-8">
                     No money words yet — add one below.
                   </td>
                 </tr>

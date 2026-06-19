@@ -33,3 +33,5 @@ table { width:100%; border-collapse: collapse; }
 th { text-align:left; color:var(--muted); font-weight:600; font-size:.78rem; text-transform:uppercase; letter-spacing:.04em; }
 td, th { padding:.6rem .75rem; border-bottom:1px solid var(--border); font-size:.9rem; }
 ::-webkit-scrollbar{height:8px;width:8px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px}
+@keyframes floaty { 0%,100%{transform:translateY(0) rotate(var(--rot,0deg))} 50%{transform:translateY(-8px) rotate(var(--rot,0deg))} }
+.mw-float { animation: floaty 6s ease-in-out infinite; }

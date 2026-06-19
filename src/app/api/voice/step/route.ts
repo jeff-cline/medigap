@@ -105,6 +105,7 @@ export async function POST(req: NextRequest) {
   // 1) Deterministic money-word detection → route to highest bidder for that word.
   const mw = await detectMoneyWord(speech);
   if (mw) {
+    await db.moneyWord.update({ where: { id: mw.id }, data: { triggers: { increment: 1 } } }).catch(() => {});
     if (call.leadId) await db.lead.update({ where: { id: call.leadId }, data: { appended: JSON.stringify({ intent: speech, moneyWord: mw.word }) } }).catch(() => {});
     const line = `I can absolutely help with that. Let me connect you with the right specialist now. One moment.`;
     dialogue.push({ role: "assistant", text: line, at: nowISO() });

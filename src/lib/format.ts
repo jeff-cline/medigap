@@ -7,6 +7,9 @@ export const pct = (n: number) => `${n.toFixed(1)}%`;
 export const TOLLFREE = "1-800-MEDIGAP";
 export const TOLLFREE_TEL = "18006334427";
 
+// Human-friendly lead reference: 444 + 10-digit zero-padded sequence (e.g. 444-0000000001).
+export const leadRef = (n?: number | null) => (n == null ? "—" : `444-${String(n).padStart(10, "0")}`);
+
 // All displayed times are Central (America/Chicago) per ops requirement.
 export const cst = (d: Date | string) =>
   new Date(d).toLocaleString("en-US", { timeZone: "America/Chicago", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", hour12: true }) + " CT";

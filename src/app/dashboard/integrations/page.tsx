@@ -85,6 +85,13 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
     fields: [{ name: "network", label: "Network Name", placeholder: "MediaAlpha" }, { name: "affiliateCode", label: "Affiliate Code" }, { name: "apiKey", label: "API Key", type: "password" }, { name: "postbackUrl", label: "Postback / Click-Value URL", placeholder: "https://…" }],
   },
   {
+    phase: "Scale & arbitrage", key: "dataforseo", label: "DataForSEO — Keyword CPC & Search Volume",
+    blurb: "Live cost-per-click & search volume per keyword — powers Money Word Cloud pricing (CPC × 5 call value).",
+    dataFlow: "keyword CPC → money-word call values on /money-word-cloud",
+    steps: ["Create an account at dataforseo.com.", "Find your API Login (email) and API Password in the dashboard.", "Paste both below and Test connection.", "Money-word call values switch from modeled to live CPC."],
+    fields: [{ name: "login", label: "API Login", placeholder: "you@email.com" }, { name: "password", label: "API Password", type: "password" }],
+  },
+  {
     phase: "Scale & arbitrage", key: "vibe", label: "Vibe.co — Connected TV",
     blurb: "Streaming-TV ads. Upload spots; track calls/leads as house traffic.",
     dataFlow: "CTV spend → ledger 'spend' (tv)",

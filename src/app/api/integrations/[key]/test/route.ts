@@ -93,6 +93,13 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ key: strin
       break;
     }
     // Providers without a universal verification endpoint: confirm required fields are present.
+    case "dataforseo": {
+      const miss = need("login", "password");
+      if (miss.length) { message = `Missing: ${miss.join(", ")}`; break; }
+      const r = await ping("https://api.dataforseo.com/v3/appendix/user_data", { headers: { Authorization: "Basic " + b64(`${cfg.login}:${cfg.password}`) } });
+      ok = r.ok; message = ok ? "DataForSEO connected. Live keyword CPC enabled." : `DataForSEO rejected the credentials (HTTP ${r.code}).`;
+      break;
+    }
     case "zapmail": { ok = !need("apiKey").length; message = ok ? "Keys saved. Cold-email sequencing armed." : "Missing: apiKey"; break; }
     case "predictivedata": {
       const miss = need("apiKey", "website");
@@ -113,7 +120,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ key: strin
   }
 
   // For providers we can only field-check, treat success as "saved" (amber→ok); live-pinged ones are "verified".
-  const liveTested = ["twilio", "groq", "xai", "claude", "stripe", "klaviyo", "facebook", "predictivedata"].includes(key);
+  const liveTested = ["twilio", "groq", "xai", "claude", "stripe", "klaviyo", "facebook", "predictivedata", "dataforseo"].includes(key);
   const status = ok ? (liveTested ? "verified" : "saved") : (Object.keys(cfg).length ? "failed" : "unconfigured");
   await db.integration.upsert({
     where: { key },

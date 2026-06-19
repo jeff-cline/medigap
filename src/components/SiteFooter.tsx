@@ -15,6 +15,7 @@ const business = [
   ["Advertise With Us", "/advertise"],
   ["Agents — Work With Us", "/agents"],
   ["Investor Relations", "/investors"],
+  ["Money Word Cloud", "/money-word-cloud"],
   ["Money Words Partners", "/money-words"],
   ["Upsell Vendors", "/upsell-vendors"],
   ["Carrier / Risk Partners", "/risk-partners"],

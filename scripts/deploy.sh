@@ -19,7 +19,7 @@ ssh -i "$SSH_KEY" "$SERVER" "set -e; cd $APP; \
   sed -i 's/provider = \"sqlite\"/provider = \"postgresql\"/' prisma/schema.prisma; \
   npm ci --no-audit --no-fund; \
   npx prisma generate; \
-  npx prisma db push --skip-generate; \
+  npx prisma db push --skip-generate --accept-data-loss; \
   npm run build; \
   pm2 reload medigap"
 

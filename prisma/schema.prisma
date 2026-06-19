@@ -63,8 +63,14 @@ model Setting {
 // ---------------------------------------------------------------------------
 // LEADS & THE CUSTOMER JOURNEY (CRM)
 // ---------------------------------------------------------------------------
+model Counter {
+  name  String @id
+  value Int    @default(0)
+}
+
 model Lead {
   id        String   @id @default(cuid())
+  refNum    Int?     @unique // human reference: 444-<10 digit sequence>
   name      String   @default("")
   phone     String   @default("")
   email     String   @default("")
@@ -242,6 +248,7 @@ model MoneyWord {
   routeUserId String?  // user (e.g. a partner rep) the hot transfer goes to
   routeNumber String  @default("") // OR a direct phone number to bridge to
   aliases   String  @default("[]") // JSON variant cloud, e.g. ["incontinent","incontinence supplies"]
+  triggers  Int     @default(0) // how many times heard on a call (sizes the cloud)
   active    Boolean @default(true)
 }
 

@@ -6,7 +6,7 @@ import AppendButton from "@/components/AppendButton";
 import CallTranscriptTagger from "@/components/CallTranscriptTagger";
 import { db } from "@/lib/db";
 import { getSession, isRealGod } from "@/lib/auth";
-import { usd, usd2, cst, cstFull, mmss, fmtPhone } from "@/lib/format";
+import { usd, usd2, cst, cstFull, mmss, fmtPhone, leadRef } from "@/lib/format";
 import { ageFromSpeech } from "@/lib/voice";
 
 const sourceTone: Record<string, "default" | "up" | "down" | "gold" | "brand"> = { house: "gold", google: "brand", facebook: "brand", organic: "up", tv: "default", affiliate: "default" };
@@ -48,6 +48,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         <Link href="/dashboard/leads" className="text-sm text-[var(--muted)] hover:text-[var(--brand)]">← Back to Leads</Link>
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-bold">{lead.name || "Unnamed lead"}</h1>
+          <span className="text-xs font-mono text-[var(--muted)]">Ref {leadRef(lead.refNum)}</span>
           <Badge tone="brand">{lead.vertical}</Badge>
           <Badge tone={sourceTone[lead.source] ?? "default"}>{lead.source}</Badge>
           <Badge tone={statusTone[lead.status] ?? "default"}>{lead.status}</Badge>
