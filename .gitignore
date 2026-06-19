@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local SQLite dev database (recreate with: npm run setup)
+/prisma/*.db
+/prisma/*.db-journal
+*.local

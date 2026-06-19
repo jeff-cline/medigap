@@ -1,0 +1,278 @@
+// Medigap.plus — God-account marketing platform
+// DEV: sqlite (instant, no install). PROD: switch provider to "postgresql" + set DATABASE_URL.
+// Fields use String for enum-like values to keep sqlite<->postgres parity trivial.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// MULTI-TENANCY — one backend, many marketing sites, routed by hostname
+// ---------------------------------------------------------------------------
+model Site {
+  id        String   @id @default(cuid())
+  hostname  String   @unique // e.g. medigap.plus, 1-800-medigap.com
+  name      String
+  kind      String   @default("marketing") // management | marketing
+  goal      String   @default("") // the prompt that defines what this site does
+  vertical  String   @default("medicare") // medicare | housing | care | alzheimers | ...
+  theme     String   @default("{}") // JSON: colors, layout variant for A/B testing
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  leads     Lead[]
+  calls     Call[]
+}
+
+// ---------------------------------------------------------------------------
+// USERS & ROLES — God sees all; everyone else scoped
+// ---------------------------------------------------------------------------
+model User {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  passwordHash      String
+  name              String   @default("")
+  phone             String   @default("")
+  role              String   @default("agent") // god|agent|advertiser|investor|marketing|accounting|moneywords|risk|consumer
+  status            String   @default("active") // active|paused|pending
+  mustChangePassword Boolean @default(true)
+  stars             Float    @default(0) // agent rating 0-5
+  createdAt         DateTime @default(now())
+
+  agentBids   AgentBid[]
+  agentSeats  AgentSeat[]
+  ads         Ad[]
+  investor    Investor?
+  assignedLeads Lead[]
+}
+
+// ---------------------------------------------------------------------------
+// GLOBAL SETTINGS — knobs the God account controls
+// ---------------------------------------------------------------------------
+model Setting {
+  key   String @id // minCallBidCents, mgmtFeePct, profitSharePct, aiFeePct, futureProofingPct, investorPct, autoApprove.agent ...
+  value String
+}
+
+// ---------------------------------------------------------------------------
+// LEADS & THE CUSTOMER JOURNEY (CRM)
+// ---------------------------------------------------------------------------
+model Lead {
+  id        String   @id @default(cuid())
+  name      String   @default("")
+  phone     String   @default("")
+  email     String   @default("")
+  dob       String   @default("")
+  zip       String   @default("")
+  city      String   @default("")
+  state     String   @default("")
+  vertical  String   @default("medicare")
+  source    String   @default("organic") // house|google|facebook|organic|tv|affiliate
+  status    String   @default("new") // new|contacted|sold|dead
+  valueCents Int     @default(0)
+  appended  String   @default("{}") // Datamoon-appended data (JSON)
+  siteId    String?
+  site      Site?    @relation(fields: [siteId], references: [id])
+  agentId   String?
+  agent     User?    @relation(fields: [agentId], references: [id])
+  answers   LeadAnswer[]
+  calls     Call[]
+  createdAt DateTime @default(now())
+}
+
+// AI voice intake Q&A — God-level visibility only
+model LeadAnswer {
+  id       String   @id @default(cuid())
+  leadId   String
+  lead     Lead     @relation(fields: [leadId], references: [id])
+  question String
+  answer   String
+  askedAt  DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// CALLS — the highest-value asset; everything pushes calls to 1-800-MEDIGAP
+// ---------------------------------------------------------------------------
+model Call {
+  id          String   @id @default(cuid())
+  leadId      String?
+  lead        Lead?    @relation(fields: [leadId], references: [id])
+  fromNumber  String   @default("")
+  toNumber    String   @default("18006334427")
+  zip         String   @default("")
+  state       String   @default("")
+  durationSec Int      @default(0)
+  status      String   @default("ringing") // ringing|connected|completed|missed
+  source      String   @default("organic") // house|paid|organic
+  moneyWord   String?  // detected money word that re-routed the flow
+  bidWinnerId String?  // agent that won the call auction
+  priceCents  Int      @default(0) // what the winning agent paid
+  recordingUrl String?
+  transcript  String?
+  siteId      String?
+  site        Site?    @relation(fields: [siteId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// AGENT BIDDING — pay-per-call auction, $99/mo seat per zip
+// ---------------------------------------------------------------------------
+model AgentBid {
+  id         String  @id @default(cuid())
+  agentId    String
+  agent      User    @relation(fields: [agentId], references: [id])
+  scope      String  @default("zip") // zip|city|state|national
+  scopeValue String  @default("")
+  amountCents Int    @default(2500) // bid per call (min controlled by Setting.minCallBidCents)
+  active     Boolean @default(true)
+  dailyCap   Int     @default(0) // 0 = unlimited
+  budgetCents Int    @default(0)
+  createdAt  DateTime @default(now())
+}
+
+model AgentSeat {
+  id          String   @id @default(cuid())
+  agentId     String
+  agent       User     @relation(fields: [agentId], references: [id])
+  zip         String
+  monthlyFeeCents Int  @default(9900)
+  active      Boolean  @default(true)
+  paidThrough DateTime?
+  createdAt   DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// ADVERTISERS — CPC banner/text/display ads, prepaid balance
+// ---------------------------------------------------------------------------
+model Ad {
+  id           String   @id @default(cuid())
+  advertiserId String
+  advertiser   User     @relation(fields: [advertiserId], references: [id])
+  kind         String   @default("text") // text|banner|display
+  headline     String   @default("")
+  body         String   @default("")
+  assetUrl     String   @default("")
+  targetUrl    String   @default("")
+  bidCents     Int      @default(50) // cost per click
+  balanceCents Int      @default(0)
+  placement    String   @default("inline") // inline|footer|exit|sidebar
+  active       Boolean  @default(true)
+  events       AdEvent[]
+  createdAt    DateTime @default(now())
+}
+
+model AdEvent {
+  id        String   @id @default(cuid())
+  adId      String
+  ad        Ad       @relation(fields: [adId], references: [id])
+  kind      String   @default("impression") // impression|click
+  costCents Int      @default(0)
+  siteId    String?
+  createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// INTEGRATIONS — one checklist page; keys live here (encrypt in prod)
+// ---------------------------------------------------------------------------
+model Integration {
+  key       String   @id // twilio|klaviyo|zapmail|groq|stripe|datamoon|google_ads|facebook|claude|affiliate|vibe|google_tv
+  label     String   @default("")
+  config    String   @default("{}") // JSON of keys/fields
+  connected Boolean  @default(false)
+  updatedAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// INVESTORS — deposit, profit waterfall, accredited-only
+// ---------------------------------------------------------------------------
+model Investor {
+  id            String  @id @default(cuid())
+  userId        String  @unique
+  user          User    @relation(fields: [userId], references: [id])
+  accredited    Boolean @default(false)
+  depositedCents Int    @default(0)
+  deployedCents Int     @default(0)
+  profitCents   Int     @default(0)
+  createdAt     DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// ACCOUNTING LEDGER — every dollar in & out, to the cent
+// ---------------------------------------------------------------------------
+model LedgerEntry {
+  id        String   @id @default(cuid())
+  type      String   // revenue|spend
+  category  String   // call|click|lead|adspend|seat|upsell|risk|fee
+  channel   String   @default("") // google|facebook|tv|organic|stripe
+  amountCents Int
+  note      String   @default("")
+  siteId    String?
+  createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// MONEY WORDS — keyword-triggered alternate monetization flows
+// ---------------------------------------------------------------------------
+model MoneyWord {
+  id        String  @id @default(cuid())
+  word      String  @unique
+  partner   String  @default("")
+  action    String  @default("transfer") // transfer|qualify
+  logic     String  @default("[]") // JSON qualification questions
+  payoutCents Int   @default(0)
+  active    Boolean @default(true)
+}
+
+// ---------------------------------------------------------------------------
+// LIVE UPSELLS — drop-in offers to re-monetize a call
+// ---------------------------------------------------------------------------
+model UpsellOffer {
+  id        String  @id @default(cuid())
+  name      String
+  trigger   String  @default("") // when to drop it
+  payoutCents Int   @default(0)
+  vendor    String  @default("")
+  active    Boolean @default(true)
+}
+
+// ---------------------------------------------------------------------------
+// AUTONOMOUS RISK — become the carrier; enroll, collect, sweep via Stripe
+// ---------------------------------------------------------------------------
+model RiskProduct {
+  id          String  @id @default(cuid())
+  name        String
+  premiumCents Int    @default(9700)
+  sweepDays   Int     @default(3)
+  apiConfig   String  @default("{}")
+  active      Boolean @default(true)
+}
+
+// ---------------------------------------------------------------------------
+// AUTONOMOUS LOGIC — decisions the AI made + open questions pinned for God
+// ---------------------------------------------------------------------------
+model AutonomousLog {
+  id        String   @id @default(cuid())
+  decision  String
+  rationale String   @default("")
+  data      String   @default("{}")
+  question  String?  // open question for the operator
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// AFFILIATE / EXIT TRAFFIC — pop & arbitrage offers
+// ---------------------------------------------------------------------------
+model AffiliateOffer {
+  id            String  @id @default(cuid())
+  name          String
+  code          String  @default("")
+  apiUrl        String  @default("")
+  kind          String  @default("text") // text|banner|exit
+  clickValueCents Int   @default(0)
+  active        Boolean @default(true)
+}
