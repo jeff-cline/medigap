@@ -3,6 +3,7 @@ import { getTwilioCfg } from "@/lib/sms";
 import { Stat, Badge, Section } from "@/components/ui";
 import { num } from "@/lib/format";
 import SmsComposer from "@/components/SmsComposer";
+import PhoneLink from "@/components/PhoneLink";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +55,7 @@ export default async function SmsPage() {
                 <tr key={m.id}>
                   <td className="text-[var(--muted)] whitespace-nowrap">{m.createdAt.toISOString().slice(5, 16).replace("T", " ")}</td>
                   <td>{m.direction === "inbound" ? "↓ in" : "↑ out"}</td>
-                  <td className="whitespace-nowrap">{m.to}</td>
+                  <td className="whitespace-nowrap"><PhoneLink phone={m.to} /></td>
                   <td className="max-w-[320px] truncate text-[var(--muted)]">{m.body}</td>
                   <td><Badge tone={tone[m.status] || "default"}>{m.status}</Badge>{m.error && <span className="block text-[10px] text-[var(--danger)]">{m.error}</span>}</td>
                   <td className="text-[var(--muted)] text-xs">{m.batch}</td>

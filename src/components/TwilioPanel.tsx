@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { db } from "@/lib/db";
 import { Card, Badge } from "@/components/ui";
+import PhoneLink from "@/components/PhoneLink";
 
 // Live Twilio account view — pulls balance, numbers + their webhooks, and recent call logs
 // straight from Twilio using the saved credentials ("logs in" each render).
@@ -60,7 +62,7 @@ export default async function TwilioPanel() {
       </Card>
 
       <Card className="lg:col-span-3 !p-0 overflow-hidden">
-        <div className="px-4 pt-3 text-xs uppercase tracking-wide text-[var(--muted)]">Recent Twilio Calls (raw, all numbers)</div>
+        <div className="px-4 pt-3 text-xs uppercase tracking-wide text-[var(--muted)]">Recent Twilio Calls (raw, all numbers) — click a number or the seconds to drill in</div>
         <table className="mt-2">
           <thead><tr><th>Started</th><th>From</th><th>To</th><th>Status</th><th className="text-right">Sec</th><th className="text-right">Price</th></tr></thead>
           <tbody>
@@ -68,10 +70,10 @@ export default async function TwilioPanel() {
             {recentCalls.map((c: { sid: string; start_time: string; from: string; to: string; status: string; duration: string; price: string | null }) => (
               <tr key={c.sid}>
                 <td className="text-[var(--muted)] text-xs">{c.start_time?.slice(5, 22)}</td>
-                <td>{c.from}</td>
-                <td>{c.to}</td>
+                <td><PhoneLink phone={c.from} raw /></td>
+                <td><PhoneLink phone={c.to} raw /></td>
                 <td><Badge tone={c.status === "completed" ? "up" : c.status === "no-answer" || c.status === "failed" ? "down" : "default"}>{c.status}</Badge></td>
-                <td className="text-right">{c.duration}</td>
+                <td className="text-right"><Link href={`/dashboard/lookup?sid=${c.sid}&phone=${encodeURIComponent(c.from)}`} className="text-[var(--brand)] hover:underline font-medium">{c.duration}</Link></td>
                 <td className="text-right text-[var(--muted)]">{c.price ? `$${Math.abs(parseFloat(c.price)).toFixed(3)}` : "—"}</td>
               </tr>
             ))}
