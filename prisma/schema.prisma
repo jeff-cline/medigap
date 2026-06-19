@@ -116,6 +116,7 @@ model Call {
   forwardedTo String   @default("") // number the call was bridged to
   providerSid String   @default("") // Twilio CallSid
   moneyWord   String?  // detected money word that re-routed the flow
+  detectedWords String @default("[]") // AI-extracted money words from the transcript
   bidWinnerId String?  // agent that won the call auction
   priceCents  Int      @default(0) // what the winning agent paid (or house default price)
   recordingUrl String?
@@ -240,6 +241,7 @@ model MoneyWord {
   payoutCents Int   @default(0)
   routeUserId String?  // user (e.g. a partner rep) the hot transfer goes to
   routeNumber String  @default("") // OR a direct phone number to bridge to
+  aliases   String  @default("[]") // JSON variant cloud, e.g. ["incontinent","incontinence supplies"]
   active    Boolean @default(true)
 }
 

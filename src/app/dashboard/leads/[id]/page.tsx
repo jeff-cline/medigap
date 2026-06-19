@@ -33,9 +33,9 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
   const [agents, texts, moneyWords] = await Promise.all([
     db.user.findMany({ where: { role: "agent" }, orderBy: { name: "asc" }, select: { id: true, name: true } }),
     last10 ? db.smsMessage.findMany({ where: { to: { contains: last10 } }, orderBy: { createdAt: "asc" } }) : Promise.resolve([]),
-    db.moneyWord.findMany({ select: { word: true } }),
+    db.moneyWord.findMany({ select: { id: true, word: true, aliases: true } }),
   ]);
-  const armedWords = moneyWords.map((m) => m.word);
+  const mwParsed = moneyWords.map((m) => { let aliases: string[] = []; try { aliases = JSON.parse(m.aliases); } catch {} return { id: m.id, word: m.word, aliases: Array.isArray(aliases) ? aliases : [] }; });
 
   const appended = parseAppended(lead.appended);
   const age = ageFromSpeech(lead.dob || "");
@@ -93,7 +93,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                     <span className="font-medium">{cst(c.createdAt)} · {mmss(c.durationSec)} · <Badge tone={c.disposition === "default" ? "gold" : "up"}>{c.disposition}</Badge>{c.moneyWord && <span className="ml-2 text-[var(--gold)]">💬 {c.moneyWord}</span>}</span>
                     <Link href={`/dashboard/calls/${c.id}`} className="text-[var(--brand)] text-xs hover:underline">Call detail →</Link>
                   </div>
-                  <CallTranscriptTagger turns={dialogue} armed={armedWords} />
+                  <CallTranscriptTagger turns={dialogue} callId={c.id} moneyWords={mwParsed} detected={(() => { try { return JSON.parse(c.detectedWords || "[]"); } catch { return []; } })()} />
                 </Card>
               );
             })}

@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
           payoutCents,
           routeUserId: body.routeUserId ? String(body.routeUserId) : null,
           routeNumber: String(body.routeNumber || "").trim(),
+          aliases: JSON.stringify(Array.isArray(body.aliases) ? body.aliases.map((a: string) => String(a).toLowerCase().trim()).filter(Boolean) : []),
           active: true,
         },
       });
@@ -36,6 +37,22 @@ export async function POST(req: NextRequest) {
     } catch {
       return NextResponse.json({ error: `"${word}" is already a money word.` }, { status: 409 });
     }
+  }
+
+  // Add/remove a variant from a money word's cloud (by id, or auto-create the primary word).
+  if (action === "addAlias" || action === "removeAlias") {
+    const alias = String(body.alias || "").toLowerCase().trim();
+    let row = body.id ? await db.moneyWord.findUnique({ where: { id: String(body.id) } }) : null;
+    if (!row && body.primary) {
+      const primary = String(body.primary).toLowerCase().trim();
+      row = await db.moneyWord.findFirst({ where: { word: primary } }) || await db.moneyWord.create({ data: { word: primary } });
+    }
+    if (!row || !alias) return NextResponse.json({ error: "Missing word or alias." }, { status: 400 });
+    let aliases: string[] = [];
+    try { aliases = JSON.parse(row.aliases); } catch {}
+    aliases = action === "addAlias" ? Array.from(new Set([...aliases, alias])) : aliases.filter((a) => a !== alias);
+    await db.moneyWord.update({ where: { id: row.id }, data: { aliases: JSON.stringify(aliases) } });
+    return NextResponse.json({ ok: true, id: row.id });
   }
 
   const id = String(body.id || "");

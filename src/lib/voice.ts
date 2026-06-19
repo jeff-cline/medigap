@@ -55,11 +55,31 @@ export function ageFromSpeech(text: string): number | null {
   return null;
 }
 
-// Scan an utterance for an active money word; returns the matched MoneyWord or null.
+// Scan an utterance for an active money word (or any of its variant aliases).
 export async function detectMoneyWord(text: string) {
   const t = (text || "").toLowerCase();
   const words = await db.moneyWord.findMany({ where: { active: true } });
-  return words.find((w) => w.word && t.includes(w.word.toLowerCase())) || null;
+  return words.find((w) => {
+    if (w.word && t.includes(w.word.toLowerCase())) return true;
+    try { const al = JSON.parse(w.aliases); if (Array.isArray(al)) return al.some((a: string) => a && t.includes(String(a).toLowerCase())); } catch {}
+    return false;
+  }) || null;
+}
+
+// AI-extract the real money words (topics/products) from a transcript, ignoring intent words.
+export async function extractMoneyWords(transcript: { role: string; text: string }[]): Promise<string[]> {
+  const callerText = transcript.filter((t) => t.role === "user").map((t) => t.text).join(" ");
+  if (!callerText.trim()) return [];
+  const reply = await aiReply([
+    { role: "system", content: `You extract "money words" from a phone transcript — the specific products, services, conditions, devices, or supplies the caller wants help with that we could monetize (e.g. "incontinence", "incontinence supplies", "peptides", "hearing aids", "diabetic supplies", "back brace"). IGNORE generic intent/connector words like speak, talk, agent, someone, somebody, help, find, provider, supplier, specialist, Medicare, insurance, plan, coverage. Return ONLY a compact JSON array of 1-5 short lowercase phrases, most specific/valuable first. If none, return [].` },
+    { role: "user", content: callerText.slice(0, 2000) },
+  ]);
+  if (!reply) return [];
+  try {
+    const m = reply.match(/\[[\s\S]*\]/);
+    const arr = JSON.parse(m ? m[0] : reply);
+    return Array.isArray(arr) ? arr.map((x) => String(x).toLowerCase().trim()).filter(Boolean).slice(0, 6) : [];
+  } catch { return []; }
 }
 
 export async function getAIProvider(): Promise<{ provider: string; apiKey: string; model: string; url: string } | null> {

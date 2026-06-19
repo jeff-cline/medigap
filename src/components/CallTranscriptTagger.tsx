@@ -1,8 +1,7 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-// Buy-signal phrases — the word(s) right after these are very likely a money word.
 const BUY_PHRASES = [
   "how much does it cost", "how much does it", "what does it cost", "how much", "how do i get",
   "i would like", "i'd like", "i'm looking for", "looking for", "i need", "i want", "i buy",
@@ -10,99 +9,126 @@ const BUY_PHRASES = [
   "interested in", "sign me up", "i'll take", "where can i get", "where do i get",
 ].map((p) => p.split(" "));
 
-const STOP = new Set(
-  "the a an and or but it its is are am was were be been being to of for in on at by with from as i you he she we they me my mine your yours our ours this that these those do does did doing have has had can could would should will shall just about really kind sort like so very then than there here now ok okay yeah yes no not get got one some any".split(" ")
-);
+// Intent / connector words — never money words.
+const INTENT = new Set("speak talk talking agent agents someone somebody anybody anyone person people help find finding get getting call calling connect connected provider providers supplier suppliers specialist specialists rep reps representative medicare medicaid insurance plan plans coverage option options about some service services free".split(" "));
+const STOP = new Set("the a an and or but it its is are am was were be been being to of for in on at by with from as i you he she we they me my mine your yours our ours this that these those do does did doing have has had can could would should will shall just really kind sort like so very then than there here now ok okay yeah yes no not one need want".split(" "));
+const PREP = new Set("for about with of regarding on around to".split(" "));
 
 type Turn = { role: "assistant" | "user"; text: string; at?: string };
-type Mark = "buy" | "cand" | undefined;
+type MoneyWord = { id: string; word: string; aliases: string[] };
 const clean = (w: string) => w.toLowerCase().replace(/[^a-z']/g, "");
 
-// Build per-token marks for one caller utterance.
-function markTokens(text: string): { tokens: string[]; marks: Mark[]; words: { i: number; c: string }[] } {
-  const tokens = text.split(/(\s+)/);
-  const words: { i: number; c: string }[] = [];
-  tokens.forEach((t, i) => { const c = clean(t); if (c) words.push({ i, c }); });
-  const marks: Mark[] = new Array(tokens.length).fill(undefined);
-  for (let s = 0; s < words.length; s++) {
-    for (const phrase of BUY_PHRASES) {
-      if (s + phrase.length > words.length) continue;
-      let hit = true;
-      for (let k = 0; k < phrase.length; k++) if (words[s + k].c !== phrase[k]) { hit = false; break; }
-      if (!hit) continue;
-      for (let k = 0; k < phrase.length; k++) marks[words[s + k].i] = "buy";
-      // mark up to 2 following non-stop words as candidate money words
-      let taken = 0;
-      for (let j = s + phrase.length; j < words.length && taken < 2; j++) {
-        if (STOP.has(words[j].c)) continue;
-        marks[words[j].i] = "cand"; taken++;
-      }
-    }
+// Topic-noun candidates: content words after a preposition OR the trailing content word(s) — NOT intent words.
+function candidatesFor(text: string): Set<string> {
+  const words = (text.split(/\s+/).map(clean).filter(Boolean));
+  const out = new Set<string>();
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    if (STOP.has(w) || INTENT.has(w) || w.length < 4) continue;
+    const afterPrep = i > 0 && PREP.has(words[i - 1]);
+    const isLastContent = !words.slice(i + 1).some((x) => !STOP.has(x) && !INTENT.has(x) && x.length >= 4);
+    if (afterPrep || isLastContent) out.add(w);
   }
-  return { tokens, marks, words };
+  return out;
 }
 
-export default function CallTranscriptTagger({ turns, armed }: { turns: Turn[]; armed: string[] }) {
+export default function CallTranscriptTagger({ turns, callId, moneyWords, detected }: { turns: Turn[]; callId: string; moneyWords: MoneyWord[]; detected: string[] }) {
   const router = useRouter();
-  const [tagged, setTagged] = useState<Set<string>>(new Set(armed.map((w) => w.toLowerCase())));
-  const [busy, setBusy] = useState("");
+  const boxRef = useRef<HTMLDivElement>(null);
+  const [ai, setAi] = useState<string[]>(detected);
+  const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState("");
+  const [activeCloud, setActiveCloud] = useState<string | null>(null); // money word id receiving variants
+  const [sel, setSel] = useState("");
 
-  async function tag(word: string) {
-    const w = clean(word);
-    if (!w || tagged.has(w)) return;
-    setBusy(w);
-    const r = await fetch("/api/money-words", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "create", word: w }) });
-    setBusy("");
-    if (r.ok || r.status === 409) {
-      setTagged((prev) => new Set(prev).add(w));
-      setToast(`"${w}" armed as a money word`);
-      setTimeout(() => setToast(""), 2500);
-      router.refresh();
+  // token sets for highlighting (split multi-word money words/aliases into tokens)
+  const armedTokens = useMemo(() => {
+    const s = new Set<string>();
+    moneyWords.forEach((m) => { [m.word, ...m.aliases].forEach((w) => String(w).split(/\s+/).map(clean).forEach((t) => t && s.add(t))); });
+    return s;
+  }, [moneyWords]);
+  const aiTokens = useMemo(() => { const s = new Set<string>(); ai.forEach((w) => w.split(/\s+/).map(clean).forEach((t) => t && s.add(t))); return s; }, [ai]);
+  const callerCands = useMemo(() => { const s = new Set<string>(); turns.forEach((t) => { if (t.role === "user") candidatesFor(t.text).forEach((c) => s.add(c)); }); return s; }, [turns]);
+
+  function buyMarks(text: string): boolean[] {
+    const tokens = text.split(/(\s+)/);
+    const words: { i: number; c: string }[] = [];
+    tokens.forEach((t, i) => { const c = clean(t); if (c) words.push({ i, c }); });
+    const mark = new Array(tokens.length).fill(false);
+    for (let s = 0; s < words.length; s++) for (const ph of BUY_PHRASES) {
+      if (s + ph.length > words.length) continue;
+      let hit = true; for (let k = 0; k < ph.length; k++) if (words[s + k].c !== ph[k]) { hit = false; break; }
+      if (hit) for (let k = 0; k < ph.length; k++) mark[words[s + k].i] = true;
     }
+    return mark;
   }
 
-  // Candidate analysis across the whole call: buy-adjacent words + repeated meaningful words.
-  const candidates = useMemo(() => {
-    const freq = new Map<string, number>();
-    const buyAdj = new Set<string>();
-    for (const t of turns) {
-      if (t.role !== "user") continue;
-      const { marks, words, tokens } = markTokens(t.text);
-      for (const w of words) if (!STOP.has(w.c) && w.c.length >= 4) freq.set(w.c, (freq.get(w.c) || 0) + 1);
-      tokens.forEach((_, i) => { if (marks[i] === "cand") buyAdj.add(clean(tokens[i])); });
-    }
-    const repeated = [...freq.entries()].filter(([w, n]) => n >= 2 && !tagged.has(w)).sort((a, b) => b[1] - a[1]).map(([w, n]) => ({ w, n, buy: buyAdj.has(w) }));
-    const buyOnly = [...buyAdj].filter((w) => w && !tagged.has(w) && !freq.has(w)).map((w) => ({ w, n: 1, buy: true }));
-    return [...[...buyAdj].filter((w) => w && !tagged.has(w)).map((w) => ({ w, n: freq.get(w) || 1, buy: true })), ...repeated.filter((r) => !buyAdj.has(r.w)), ...buyOnly]
-      .filter((v, idx, arr) => arr.findIndex((x) => x.w === v.w) === idx);
-  }, [turns, tagged]);
+  async function api(body: object) {
+    setBusy(true);
+    const r = await fetch("/api/money-words", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    setBusy(false);
+    if (r.ok || r.status === 409) router.refresh();
+    return r.ok || r.status === 409;
+  }
+  async function armWord(word: string) {
+    const w = clean(word) || word.toLowerCase().trim();
+    if (!w) return;
+    if (activeCloud) { if (await api({ action: "addAlias", id: activeCloud, alias: w })) flash(`added "${w}" to cloud`); }
+    else if (await api({ action: "create", word: w })) flash(`"${w}" armed as a money word`);
+  }
+  async function armSelection() {
+    const text = sel.trim();
+    if (!text) return;
+    if (activeCloud) { if (await api({ action: "addAlias", id: activeCloud, alias: text })) flash(`added "${text}" to cloud`); }
+    else if (await api({ action: "create", word: text })) flash(`"${text}" armed`);
+    setSel(""); window.getSelection()?.removeAllRanges();
+  }
+  async function removeAlias(id: string, alias: string) { if (await api({ action: "removeAlias", id, alias })) flash(`removed "${alias}"`); }
+  async function detectAI() {
+    setBusy(true); setToast("Analyzing with AI…");
+    const r = await fetch(`/api/calls/${callId}/analyze`, { method: "POST" });
+    const d = await r.json().catch(() => ({})); setBusy(false);
+    if (d.ok) { setAi(d.words || []); flash(d.words?.length ? `AI found: ${d.words.join(", ")}` : "AI found no money words"); }
+    else flash(d.error || "AI detection failed");
+  }
+  function flash(m: string) { setToast(m); setTimeout(() => setToast(""), 3000); }
+  function onMouseUp() { const t = window.getSelection()?.toString() || ""; setSel(t.trim().length > 1 ? t.trim() : ""); }
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-3 mb-3 text-xs text-[var(--muted)]">
-        <span><span className="px-1.5 py-0.5 rounded bg-[var(--brand)]/20 text-[var(--brand)]">buy signal</span> — phrase that precedes intent</span>
-        <span><span className="px-1.5 py-0.5 rounded bg-[var(--gold)]/25 text-[var(--gold)] underline decoration-dotted">likely money word</span> — the word right after</span>
-        <span>· click any word to arm it</span>
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        <button onClick={detectAI} disabled={busy} className="btn btn-brand text-xs !py-1.5">✦ Detect money words (AI)</button>
+        {sel && <button onClick={armSelection} disabled={busy} className="btn btn-ghost text-xs !py-1.5 text-[var(--gold)]">⚡ Arm “{sel.length > 24 ? sel.slice(0, 24) + "…" : sel}”{activeCloud ? " → cloud" : ""}</button>}
+        {activeCloud && <span className="text-xs text-[var(--gold)]">Adding to cloud — clicks &amp; highlights become variants. <button onClick={() => setActiveCloud(null)} className="underline">done</button></span>}
+        <span className="ml-auto flex items-center gap-3 text-[11px] text-[var(--muted)]">
+          <span><span className="px-1 rounded bg-[var(--brand)]/20 text-[var(--brand)]">buy</span></span>
+          <span><span className="px-1 rounded bg-[var(--gold)]/25 text-[var(--gold)]">money word</span></span>
+          <span>· select text to highlight your own</span>
+        </span>
       </div>
 
-      <div className="space-y-1.5">
+      <div ref={boxRef} onMouseUp={onMouseUp} className="space-y-1.5 select-text">
         {turns.map((t, ti) => {
           const isUser = t.role === "user";
-          const { tokens, marks } = isUser ? markTokens(t.text) : { tokens: [t.text], marks: [undefined as Mark] };
+          const tokens = t.text.split(/(\s+)/);
+          const bmark = isUser ? buyMarks(t.text) : [];
           return (
             <div key={ti} className={`text-sm flex ${isUser ? "justify-end" : ""}`}>
               <span className={`inline-block rounded-2xl px-3 py-1.5 max-w-[85%] ${isUser ? "bg-[var(--brand)]/10" : "bg-[var(--panel2)]"}`}>
                 <span className="text-[10px] uppercase tracking-wide text-[var(--muted)] block">{isUser ? "👤 Caller" : "🤖 AI Agent"}{t.at ? ` · ${new Date(t.at).toLocaleString("en-US", { timeZone: "America/Chicago", hour: "numeric", minute: "2-digit" })} CT` : ""}</span>
                 {isUser ? tokens.map((tok, i) => {
-                  if (!clean(tok)) return <span key={i}>{tok}</span>;
-                  const m = marks[i];
-                  const isTagged = tagged.has(clean(tok));
-                  const cls = isTagged ? "bg-[var(--brand)]/30 text-[var(--brand)] rounded px-0.5"
-                    : m === "buy" ? "bg-[var(--brand)]/20 text-[var(--brand)] rounded px-0.5 cursor-pointer"
-                    : m === "cand" ? "bg-[var(--gold)]/25 text-[var(--gold)] underline decoration-dotted rounded px-0.5 cursor-pointer font-medium"
+                  const c = clean(tok);
+                  if (!c) return <span key={i}>{tok}</span>;
+                  const armed = armedTokens.has(c);
+                  const isAi = aiTokens.has(c);
+                  const isCand = callerCands.has(c);
+                  const isBuy = bmark[i];
+                  const cls = armed ? "bg-[var(--brand)]/30 text-[var(--brand)] rounded px-0.5 cursor-pointer"
+                    : isAi ? "bg-[var(--gold)]/35 text-[var(--gold)] rounded px-0.5 cursor-pointer font-semibold"
+                    : isCand ? "bg-[var(--gold)]/20 text-[var(--gold)] underline decoration-dotted rounded px-0.5 cursor-pointer"
+                    : isBuy ? "bg-[var(--brand)]/20 text-[var(--brand)] rounded px-0.5"
                     : "cursor-pointer hover:bg-[var(--panel2)] rounded px-0.5";
-                  return <span key={i} className={cls} title={isTagged ? "already a money word" : "click to arm as money word"} onClick={() => tag(tok)}>{tok}</span>;
+                  return <span key={i} className={cls} title={armed ? "already a money word — click to add to active cloud" : "click to arm as money word"} onClick={() => armWord(tok)}>{tok}</span>;
                 }) : t.text}
               </span>
             </div>
@@ -110,18 +136,25 @@ export default function CallTranscriptTagger({ turns, armed }: { turns: Turn[]; 
         })}
       </div>
 
-      {candidates.length > 0 && (
-        <div className="mt-4 card !p-4">
-          <div className="text-xs uppercase tracking-wide text-[var(--muted)] mb-2">Suggested money words from this call</div>
-          <div className="flex flex-wrap gap-2">
-            {candidates.slice(0, 18).map((c) => (
-              <button key={c.w} disabled={busy === c.w} onClick={() => tag(c.w)}
-                className={`text-xs rounded-full border px-2.5 py-1 ${c.buy ? "border-[var(--gold)]/40 text-[var(--gold)]" : "border-[var(--border)] text-[var(--text)]"} hover:bg-[var(--panel2)]`}>
-                + {c.w}{c.n > 1 ? <span className="text-[var(--muted)]"> ×{c.n}</span> : ""}{c.buy ? " ⚡" : ""}
-              </button>
-            ))}
-          </div>
-          <p className="text-[11px] text-[var(--muted)] mt-2">⚡ = followed a buy signal (high intent). ×N = repeated in the call. Click to arm; set the partner &amp; payout in Money Words.</p>
+      {/* Money-word clouds */}
+      {moneyWords.length > 0 && (
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          {moneyWords.map((m) => (
+            <div key={m.id} className={`card !p-3 ${activeCloud === m.id ? "ring-1 ring-[var(--gold)]" : ""}`}>
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-[var(--gold)]">☁ {m.word}</span>
+                <button onClick={() => setActiveCloud(activeCloud === m.id ? null : m.id)} className="btn btn-ghost text-[11px] !py-0.5 !px-2">{activeCloud === m.id ? "stop adding" : "+ add variants"}</button>
+              </div>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {m.aliases.length === 0 && <span className="text-[11px] text-[var(--muted)]">No variants yet — click words above to add.</span>}
+                {m.aliases.map((a) => (
+                  <span key={a} className="inline-flex items-center gap-1 text-[11px] rounded-full border border-[var(--gold)]/40 text-[var(--gold)] px-2 py-0.5">
+                    {a}<button onClick={() => removeAlias(m.id, a)} className="text-[var(--danger)] hover:opacity-70">×</button>
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       )}
       {toast && <div className="mt-2 text-sm text-[var(--brand)]">✓ {toast}</div>}
