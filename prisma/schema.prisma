@@ -146,7 +146,9 @@ model AgentSeat {
   id          String   @id @default(cuid())
   agentId     String
   agent       User     @relation(fields: [agentId], references: [id])
-  zip         String
+  zip         String   @default("") // legacy; mirrors scopeValue for zip seats
+  scope       String   @default("zip") // zip|state|national
+  scopeValue  String   @default("") // the zip or state (empty for national)
   monthlyFeeCents Int  @default(9900)
   active      Boolean  @default(true)
   paidThrough DateTime?

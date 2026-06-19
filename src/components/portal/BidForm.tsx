@@ -2,13 +2,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-// Small companion form for buying a $99/mo ZIP seat — lives here to stay within
-// the owned component set. Imported by the agent portal page.
-export function SeatForm() {
+// Buy a coverage seat — ZIP, whole State, or Nationwide — with tiered monthly pricing.
+export function SeatForm({ zipCents = 9900, stateCents = 49900, nationalCents = 199900 }: { zipCents?: number; stateCents?: number; nationalCents?: number }) {
   const router = useRouter();
-  const [zip, setZip] = useState("");
+  const [scope, setScope] = useState("zip");
+  const [value, setValue] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const fee = scope === "national" ? nationalCents : scope === "state" ? stateCents : zipCents;
+  const valid = scope === "national" || (scope === "zip" ? value.length === 5 : value.length === 2);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -18,35 +21,34 @@ export function SeatForm() {
       const res = await fetch("/api/agent/seat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ zip }),
+        body: JSON.stringify({ scope, scopeValue: value }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setError(data.error || "Could not buy seat.");
-        return;
-      }
-      setZip("");
+      if (!res.ok) { setError(data.error || "Could not buy seat."); return; }
+      setValue("");
       router.refresh();
-    } finally {
-      setBusy(false);
-    }
+    } finally { setBusy(false); }
   }
 
+  const inputCls = "w-full rounded-lg bg-[var(--panel2)] border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-[var(--brand)] disabled:opacity-40";
   return (
-    <form onSubmit={submit} className="card p-5 flex flex-wrap items-end gap-3">
-      <div className="flex-1 min-w-[160px]">
-        <label className="block text-xs uppercase tracking-wide text-[var(--muted)] mb-1">Add a ZIP seat ($99/mo)</label>
-        <input
-          value={zip}
-          onChange={(e) => setZip(e.target.value.replace(/\D/g, "").slice(0, 5))}
-          placeholder="78701"
-          className="w-full rounded-lg bg-[var(--panel2)] border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-[var(--brand)]"
-        />
+    <form onSubmit={submit} className="card p-5 grid gap-3 sm:grid-cols-[1fr_1fr_auto] items-end">
+      <div>
+        <label className="block text-xs uppercase tracking-wide text-[var(--muted)] mb-1">Coverage</label>
+        <select value={scope} onChange={(e) => { setScope(e.target.value); setValue(""); }} className={inputCls}>
+          <option value="zip">ZIP — ${(zipCents / 100).toFixed(0)}/mo</option>
+          <option value="state">Whole State — ${(stateCents / 100).toFixed(0)}/mo</option>
+          <option value="national">Nationwide — ${(nationalCents / 100).toFixed(0)}/mo</option>
+        </select>
       </div>
-      <button type="submit" disabled={busy || zip.length !== 5} className="btn btn-brand disabled:opacity-60">
-        {busy ? "Buying…" : "Buy seat"}
+      <div>
+        <label className="block text-xs uppercase tracking-wide text-[var(--muted)] mb-1">{scope === "state" ? "State (e.g. TX)" : scope === "national" ? "All 50 states" : "ZIP"}</label>
+        <input value={value} disabled={scope === "national"} onChange={(e) => setValue(scope === "zip" ? e.target.value.replace(/\D/g, "").slice(0, 5) : e.target.value.toUpperCase().slice(0, 2))} placeholder={scope === "state" ? "TX" : scope === "national" ? "—" : "78701"} className={inputCls} />
+      </div>
+      <button type="submit" disabled={busy || !valid} className="btn btn-brand disabled:opacity-60">
+        {busy ? "Buying…" : `Buy — $${(fee / 100).toFixed(0)}/mo`}
       </button>
-      {error && <p className="w-full text-xs text-[var(--danger)]">{error}</p>}
+      {error && <p className="sm:col-span-3 text-xs text-[var(--danger)]">{error}</p>}
     </form>
   );
 }

@@ -72,6 +72,27 @@ export async function routeCall(input: { zip: string; state: string; leadId?: st
   return { call, winner, priceCents, disposition, realized, forwardedTo };
 }
 
+// Assign a (web-form or imported) lead to the best agent by ZIP/state and charge the lead price.
+// Same auction rules as calls: available + funded agents only, highest bid wins, ties by stars.
+export async function assignLead(leadId: string) {
+  const lead = await db.lead.findUnique({ where: { id: leadId } });
+  if (!lead || lead.agentId) return { assigned: false };
+  const s = await getSettings();
+  const price = s.leadPriceCents;
+  const bidRows = await db.agentBid.findMany({ where: { active: true }, include: { agent: true } });
+  const pool: BidLike[] = bidRows
+    .filter((b) => b.agent.available && b.agent.balanceCents >= price && (!b.keyword || b.keyword === lead.vertical.toLowerCase()))
+    .map((b) => ({ agentId: b.agentId, amountCents: b.amountCents, stars: b.agent.stars, active: b.active, dailyCap: b.dailyCap, scope: b.scope, scopeValue: b.scopeValue }));
+  const winner = pickWinner(pool, { zip: lead.zip, state: lead.state });
+  if (!winner) return { assigned: false };
+  await db.lead.update({ where: { id: leadId }, data: { agentId: winner.agentId, status: "contacted", valueCents: price } });
+  await db.user.update({ where: { id: winner.agentId }, data: { balanceCents: { decrement: price } } }).catch(() => {});
+  await db.ledgerEntry.create({ data: { type: "revenue", category: "lead", channel: "webform", amountCents: price, realized: true, note: `Web lead ${leadId} → agent ${winner.agentId}` } }).catch(() => {});
+  await db.transaction.create({ data: { kind: "charge", userId: winner.agentId, amountCents: price, status: "settled", note: `Lead charge — ${leadId}` } }).catch(() => {});
+  return { assigned: true, agentId: winner.agentId };
+}
+export function assignLeadBackground(leadId: string) { assignLead(leadId).catch(() => {}); }
+
 // ---- Investor profit waterfall ----
 export type WaterfallInput = { depositCents: number; grossProfitCents: number; mgmtFeePct: number; profitSharePct: number; futureProofingPct: number; aiFeePct: number; expenseCents?: number };
 export function waterfall(i: WaterfallInput) {
@@ -122,6 +143,11 @@ export async function getSettings() {
     autonomousMode: m["autonomousMode"] || "learning",
     defaultCallPriceCents: n("defaultCallPriceCents", 7744), // house price for unsold/default calls ($77.44)
     defaultForwardNumber: m["defaultForwardNumber"] || "9728006670",
+    seatZipCents: n("seatZipCents", 9900), // $99/mo per ZIP
+    seatStateCents: n("seatStateCents", 49900), // $499/mo per state
+    seatNationalCents: n("seatNationalCents", 199900), // $1,999/mo nationwide
+    leadPriceCents: n("leadPriceCents", 1500), // price charged to an agent for a routed web lead ($15)
+    webLeadFallbackNumber: m["webLeadFallbackNumber"] || m["defaultForwardNumber"] || "9728006670",
     showUnrealized: (m["showUnrealized"] ?? "true") === "true", // include unrealized revenue in totals
     callWhisper: (m["callWhisper"] ?? "true") === "true",
   };

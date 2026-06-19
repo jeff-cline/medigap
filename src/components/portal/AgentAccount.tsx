@@ -2,10 +2,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function AgentAccount({ balanceCents, available }: { balanceCents: number; available: boolean }) {
+export default function AgentAccount({ balanceCents, available, phone }: { balanceCents: number; available: boolean; phone: string }) {
   const router = useRouter();
   const [amt, setAmt] = useState("100");
   const [on, setOn] = useState(available);
+  const [tel, setTel] = useState(phone || "");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
 
@@ -18,10 +19,19 @@ export default function AgentAccount({ balanceCents, available }: { balanceCents
   }
   async function deposit() { const d = await post({ action: "deposit", amount: Number(amt) }); if (d.ok) setMsg(`Added $${amt} to your balance.`); }
   async function toggle() { const next = !on; setOn(next); await post({ action: "availability", available: next }); }
+  async function savePhone() { const d = await post({ action: "phone", phone: tel }); if (d.ok) setMsg("Transfer number saved."); }
 
   const low = balanceCents < 2500;
   return (
     <div className="grid gap-4 md:grid-cols-2 items-stretch">
+      <div className="card p-5 md:col-span-2">
+        <div className="text-xs uppercase tracking-wide text-[var(--muted)]">📞 Transfer my calls to this number</div>
+        <div className="flex gap-2 mt-2">
+          <input className="flex-1" value={tel} onChange={(e) => setTel(e.target.value)} placeholder="+1 972 555 0123" />
+          <button onClick={savePhone} disabled={busy} className="btn btn-brand text-sm !py-1.5 shrink-0">Save number</button>
+        </div>
+        {!phone && <p className="text-xs text-[var(--danger)] mt-2">⚠ No number set — won calls have nowhere to ring. Add it to start receiving calls.</p>}
+      </div>
       <div className="card p-5">
         <div className="text-xs uppercase tracking-wide text-[var(--muted)]">Pay-Per-Call Balance</div>
         <div className={`mt-1 text-3xl font-bold ${low ? "text-[var(--danger)]" : "text-[var(--brand)]"}`}>${(balanceCents / 100).toFixed(2)}</div>

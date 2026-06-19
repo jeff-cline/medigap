@@ -20,5 +20,9 @@ export async function POST(req: NextRequest) {
     await db.user.update({ where: { id: s.uid }, data: { available: !!b.available } });
     return NextResponse.json({ ok: true });
   }
+  if (action === "phone") {
+    await db.user.update({ where: { id: s.uid }, data: { phone: String(b.phone || "").trim() } });
+    return NextResponse.json({ ok: true });
+  }
   return NextResponse.json({ error: "Unknown action." }, { status: 400 });
 }

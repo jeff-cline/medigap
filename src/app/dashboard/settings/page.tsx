@@ -43,6 +43,10 @@ export default async function SettingsPage() {
         defaultForwardNumber={s.defaultForwardNumber ?? "9728006670"}
         showUnrealized={bool(s.showUnrealized, true)}
         callWhisper={bool(s.callWhisper, true)}
+        leadPriceCents={numv(s.leadPriceCents, 1500)}
+        seatZipCents={numv(s.seatZipCents, 9900)}
+        seatStateCents={numv(s.seatStateCents, 49900)}
+        seatNationalCents={numv(s.seatNationalCents, 199900)}
       />
     </>
   );

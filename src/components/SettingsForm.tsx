@@ -18,6 +18,10 @@ export type SettingsProps = {
   defaultForwardNumber: string;
   showUnrealized: boolean;
   callWhisper: boolean;
+  leadPriceCents: number;
+  seatZipCents: number;
+  seatStateCents: number;
+  seatNationalCents: number;
 };
 
 function Field({ label, sub, children }: { label: string; sub?: string; children: React.ReactNode }) {
@@ -65,6 +69,10 @@ export default function SettingsForm(props: SettingsProps) {
   const [forwardNumber, setForwardNumber] = useState(props.defaultForwardNumber);
   const [showUnrealized, setShowUnrealized] = useState(props.showUnrealized);
   const [whisper, setWhisper] = useState(props.callWhisper);
+  const [leadPrice, setLeadPrice] = useState((props.leadPriceCents / 100).toString());
+  const [seatZip, setSeatZip] = useState((props.seatZipCents / 100).toString());
+  const [seatState, setSeatState] = useState((props.seatStateCents / 100).toString());
+  const [seatNational, setSeatNational] = useState((props.seatNationalCents / 100).toString());
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,6 +100,10 @@ export default function SettingsForm(props: SettingsProps) {
       defaultForwardNumber: forwardNumber.replace(/[^\d+]/g, ""),
       showUnrealized: String(showUnrealized),
       callWhisper: String(whisper),
+      leadPriceCents: String(Math.round((parseFloat(leadPrice) || 0) * 100)),
+      seatZipCents: String(Math.round((parseFloat(seatZip) || 0) * 100)),
+      seatStateCents: String(Math.round((parseFloat(seatState) || 0) * 100)),
+      seatNationalCents: String(Math.round((parseFloat(seatNational) || 0) * 100)),
     };
     try {
       const res = await fetch("/api/settings", {
@@ -141,6 +153,25 @@ export default function SettingsForm(props: SettingsProps) {
           <Toggle label="Whisper to agent on connect" checked={whisper} onChange={setWhisper} />
         </div>
         <p className="mt-2 text-xs text-[var(--muted)]">Turning Show Unrealized off recomputes every dashboard total to realized-only — accounting always sees it flagged UNREALIZED regardless.</p>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-semibold mb-1">Lead &amp; Seat Pricing</h2>
+        <p className="text-sm text-[var(--muted)] mb-4">What agents pay for a routed web lead, and the monthly seat fees by coverage area.</p>
+        <div className="card p-5 grid gap-4 md:grid-cols-2">
+          <Field label="Web Lead Price ($)" sub="Charged to the agent a web lead routes to.">
+            <input type="number" step="0.01" value={leadPrice} onChange={(e) => setLeadPrice(e.target.value)} className={inputCls} />
+          </Field>
+          <Field label="ZIP Seat ($/mo)" sub="Coverage for one ZIP.">
+            <input type="number" step="1" value={seatZip} onChange={(e) => setSeatZip(e.target.value)} className={inputCls} />
+          </Field>
+          <Field label="State Seat ($/mo)" sub="Coverage for a whole state.">
+            <input type="number" step="1" value={seatState} onChange={(e) => setSeatState(e.target.value)} className={inputCls} />
+          </Field>
+          <Field label="Nationwide Seat ($/mo)" sub="Coverage for all 50 states.">
+            <input type="number" step="1" value={seatNational} onChange={(e) => setSeatNational(e.target.value)} className={inputCls} />
+          </Field>
+        </div>
       </section>
 
       <section>

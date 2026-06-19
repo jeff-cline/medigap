@@ -18,7 +18,8 @@ export default async function AgentPortal() {
     );
   }
 
-  const { minCallBidCents } = await getSettings();
+  const settings = await getSettings();
+  const minCallBidCents = settings.minCallBidCents;
   const minDollars = Math.round(minCallBidCents / 100);
 
   const [agent, myBids, mySeats, myLeads, callsToday] = await Promise.all([
@@ -78,8 +79,8 @@ export default async function AgentPortal() {
         <Stat label="Active Seats" value={num(activeSeats)} sub={`${usd(9900)}/mo per ZIP`} tone={activeSeats ? "up" : "default"} />
       </div>
 
-      <Section title="Account & Availability" desc="Add funds, then switch on to enter the live-call auction.">
-        <AgentAccount balanceCents={agent?.balanceCents ?? 0} available={agent?.available ?? false} />
+      <Section title="Account & Availability" desc="Set your transfer number, add funds, then switch on to enter the live-call auction.">
+        <AgentAccount balanceCents={agent?.balanceCents ?? 0} available={agent?.available ?? false} phone={agent?.phone ?? ""} />
       </Section>
 
       {hasNothing && (
@@ -141,13 +142,14 @@ export default async function AgentPortal() {
         <BidForm minBidCents={minCallBidCents} />
       </Section>
 
-      <Section title="My Seats" desc={`${usd(9900)}/mo per ZIP grants the right to bid on that territory.`}>
+      <Section title="My Seats" desc="A seat grants the right to bid on that territory — by ZIP, whole State, or Nationwide.">
         {mySeats.length ? (
           <Card className="!p-0 overflow-hidden mb-4">
             <table>
               <thead>
                 <tr>
-                  <th>ZIP</th>
+                  <th>Coverage</th>
+                  <th>Territory</th>
                   <th className="text-right">Seat Fee</th>
                   <th>Paid Through</th>
                   <th>Status</th>
@@ -156,11 +158,10 @@ export default async function AgentPortal() {
               <tbody>
                 {mySeats.map((s) => (
                   <tr key={s.id}>
-                    <td className="font-medium">{s.zip}</td>
-                    <td className="text-right">{usd(s.monthlyFeeCents)}</td>
-                    <td className="text-[var(--muted)]">
-                      {s.paidThrough ? s.paidThrough.toISOString().slice(0, 10) : "—"}
-                    </td>
+                    <td><Badge tone={s.scope === "national" ? "gold" : s.scope === "state" ? "brand" : "default"}>{s.scope === "national" ? "Nationwide" : s.scope === "state" ? "State" : "ZIP"}</Badge></td>
+                    <td className="font-medium">{s.scope === "national" ? "All 50 states" : (s.scopeValue || s.zip || "—")}</td>
+                    <td className="text-right">{usd(s.monthlyFeeCents)}/mo</td>
+                    <td className="text-[var(--muted)]">{s.paidThrough ? s.paidThrough.toISOString().slice(0, 10) : "—"}</td>
                     <td>{s.active ? <Badge tone="up">active</Badge> : <Badge tone="down">lapsed</Badge>}</td>
                   </tr>
                 ))}
@@ -168,9 +169,9 @@ export default async function AgentPortal() {
             </table>
           </Card>
         ) : (
-          <Card className="mb-4"><p className="text-sm text-[var(--muted)]">No seats yet — buy your first ZIP below.</p></Card>
+          <Card className="mb-4"><p className="text-sm text-[var(--muted)]">No seats yet — buy ZIP, State, or Nationwide coverage below.</p></Card>
         )}
-        <SeatForm />
+        <SeatForm zipCents={settings.seatZipCents} stateCents={settings.seatStateCents} nationalCents={settings.seatNationalCents} />
       </Section>
 
       <Section title="My Leads CRM" desc="Your assigned contacts. The AI qualification journey stays internal.">
