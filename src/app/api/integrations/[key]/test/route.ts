@@ -45,7 +45,15 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ key: strin
       const miss = need("apiKey");
       if (miss.length) { message = "Missing: apiKey"; break; }
       const r = await ping("https://api.groq.com/openai/v1/models", { headers: { Authorization: `Bearer ${cfg.apiKey}` } });
-      ok = r.ok; message = ok ? "Groq key valid. Voice AI ready." : `Groq rejected the key (HTTP ${r.code}).`;
+      ok = r.ok; message = ok ? "Groq key valid. Voice AI ready." : `Groq rejected the key (HTTP ${r.code}). (Groq keys start with gsk_ — an xAI key starts with xai-, use the xAI card.)`;
+      break;
+    }
+    case "xai": {
+      const miss = need("apiKey");
+      if (miss.length) { message = "Missing: apiKey"; break; }
+      // xAI is OpenAI-compatible; /v1/models returns 200 for any valid key.
+      const r = await ping("https://api.x.ai/v1/models", { headers: { Authorization: `Bearer ${cfg.apiKey}` } });
+      ok = r.ok; message = ok ? "xAI (Grok) key valid. Voice AI ready." : `xAI rejected the key (HTTP ${r.code}). xAI keys start with xai-.`;
       break;
     }
     case "claude": {
@@ -93,7 +101,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ key: strin
   }
 
   // For providers we can only field-check, treat success as "saved" (amber→ok); live-pinged ones are "verified".
-  const liveTested = ["twilio", "groq", "claude", "stripe", "klaviyo", "facebook"].includes(key);
+  const liveTested = ["twilio", "groq", "xai", "claude", "stripe", "klaviyo", "facebook"].includes(key);
   const status = ok ? (liveTested ? "verified" : "saved") : (Object.keys(cfg).length ? "failed" : "unconfigured");
   await db.integration.upsert({
     where: { key },

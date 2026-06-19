@@ -15,10 +15,17 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
     fields: [{ name: "accountSid", label: "Account SID", placeholder: "ACxxxx" }, { name: "authToken", label: "Auth Token", type: "password" }, { name: "tollFree", label: "Toll-Free Number", placeholder: "+18006334427" }, { name: "messagingSid", label: "Messaging Service SID — optional (SMS only)", placeholder: "MGxxxx — leave blank for now" }],
   },
   {
-    phase: "Start earning", key: "groq", label: "Groq — Voice AI Intake & Routing",
-    blurb: "Answers calls, collects name/number/email/DOB/zip, detects money words, routes the lead.",
+    phase: "Start earning", key: "xai", label: "xAI (Grok) — Voice AI Intake & Routing ★",
+    blurb: "Grok answers calls, collects name/number/email/DOB/zip, detects money words, routes the lead. Recommended voice brain.",
     dataFlow: "AI intake answers → the God-only customer journey on each lead",
-    steps: ["Create an account at console.groq.com.", "API Keys → Create API Key.", "Copy the key (shown once).", "Save, then Test connection."],
+    steps: ["Sign in at console.x.ai.", "API Keys → Create API Key (the key starts with xai-).", "Copy the key.", "Paste below and hit Test connection."],
+    fields: [{ name: "apiKey", label: "xAI API Key", type: "password", placeholder: "xai-..." }, { name: "model", label: "Model", placeholder: "grok-2-latest" }],
+  },
+  {
+    phase: "Start earning", key: "groq", label: "Groq — Voice AI (alternative)",
+    blurb: "Fast open-model inference (Llama). Alternative voice brain to xAI Grok. NOTE: Groq keys start with gsk_ (different company from xAI/Grok).",
+    dataFlow: "AI intake answers → the God-only customer journey on each lead",
+    steps: ["Create an account at console.groq.com (NOT x.ai).", "API Keys → Create API Key (starts with gsk_).", "Copy the key (shown once).", "Save, then Test connection."],
     fields: [{ name: "apiKey", label: "Groq API Key", type: "password", placeholder: "gsk_xxx" }, { name: "model", label: "Model", placeholder: "llama-3.3-70b-versatile" }],
   },
   {
