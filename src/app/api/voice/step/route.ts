@@ -14,8 +14,11 @@ const nowISO = () => new Date().toISOString();
 async function loadDialogue(transcript: string | null): Promise<Turn[]> {
   try { const d = JSON.parse(transcript || "[]"); return Array.isArray(d) ? d : []; } catch { return []; }
 }
-const sayGather = (action: string, voice: string, line: string) =>
-  `<Gather input="speech" speechTimeout="auto" action="${action}" method="POST"><Say voice="${voice}">${esc(line)}</Say></Gather><Redirect method="POST">${action}</Redirect>`;
+// esc() escapes & → &amp; so the action URL's query string is valid XML (Twilio error 12100 otherwise).
+const sayGather = (action: string, voice: string, line: string) => {
+  const a = esc(action);
+  return `<Gather input="speech" speechTimeout="auto" action="${a}" method="POST"><Say voice="${voice}">${esc(line)}</Say></Gather><Redirect method="POST">${a}</Redirect>`;
+};
 
 // Build the <Dial> that bridges the caller to the winning agent or the house number.
 async function transfer(callId: string, voice: string, moneyWordId?: string) {

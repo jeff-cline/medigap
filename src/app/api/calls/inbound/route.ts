@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   const agent = await getVoiceAgent();
   const ai = await getAIProvider();
   if (agent.active && ai) {
-    const action = `${BASE}/api/voice/step?callId=${call.id}&phase=intake&idx=0`;
+    const action = esc(`${BASE}/api/voice/step?callId=${call.id}&phase=intake&idx=0`); // esc() turns & into &amp; for valid TwiML
     return xml(`<Gather input="speech" speechTimeout="auto" action="${action}" method="POST"><Say voice="${agent.voice}">${esc(agent.greeting)}</Say></Gather><Redirect method="POST">${action}</Redirect>`);
   }
 
