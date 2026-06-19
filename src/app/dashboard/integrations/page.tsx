@@ -11,8 +11,8 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
     blurb: `Routes & tracks 1-800-MEDIGAP (${TOLLFREE} / 1-800-633-4427). You already have the account.`,
     dataFlow: "every inbound call → Calls + the auction + call revenue in the ledger",
     oauth: false,
-    steps: ["Twilio Console → Account → API keys & tokens.", "Copy your Account SID and Auth Token.", "Confirm 1-800-633-4427 is on the account.", "Save, then Test connection — calls start tracking."],
-    fields: [{ name: "accountSid", label: "Account SID", placeholder: "ACxxxx" }, { name: "authToken", label: "Auth Token", type: "password" }, { name: "tollFree", label: "Toll-Free Number", placeholder: "+18006334427" }, { name: "messagingSid", label: "Messaging Service SID (SMS)", placeholder: "MGxxxx" }],
+    steps: ["Twilio Console → Account → API keys & tokens. Copy your Account SID and Auth Token.", "Confirm 1-800-633-4427 is on the account.", "Just hit Test connection — Account SID + Auth Token are all you need to go green.", "Messaging Service SID is OPTIONAL (outbound SMS only). Get it later at Twilio Console → Messaging → Services → your service (starts with MG)."],
+    fields: [{ name: "accountSid", label: "Account SID", placeholder: "ACxxxx" }, { name: "authToken", label: "Auth Token", type: "password" }, { name: "tollFree", label: "Toll-Free Number", placeholder: "+18006334427" }, { name: "messagingSid", label: "Messaging Service SID — optional (SMS only)", placeholder: "MGxxxx — leave blank for now" }],
   },
   {
     phase: "Start earning", key: "groq", label: "Groq — Voice AI Intake & Routing",

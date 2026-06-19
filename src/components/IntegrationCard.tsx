@@ -50,6 +50,9 @@ export default function IntegrationCard({
 
   async function test() {
     setTesting(true); setMessage("");
+    // Persist whatever is currently typed FIRST, so Test always reflects the form.
+    const filled = Object.values(values).some((v) => v && v.trim());
+    await fetch("/api/integrations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: meta.key, config: values, connected: filled }) });
     const r = await fetch(`/api/integrations/${meta.key}/test`, { method: "POST" });
     const data = await r.json().catch(() => ({}));
     setStatus(data.status || (data.ok ? "verified" : "failed"));
@@ -106,6 +109,7 @@ export default function IntegrationCard({
             <button onClick={test} disabled={testing} className="btn btn-brand text-sm !py-1.5">{testing ? "Testing…" : "Test connection"}</button>
             {message && <span className="text-sm" style={{ color: status === "failed" ? "var(--danger)" : "var(--brand)" }}>{message}</span>}
           </div>
+          <p className="mt-2 text-xs text-[var(--muted)]">Tip: <b>Test connection</b> saves your keys automatically — you don&apos;t have to click Save first. Fields marked optional can be left blank.</p>
         </div>
       )}
     </div>
