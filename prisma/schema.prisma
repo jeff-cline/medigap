@@ -41,6 +41,8 @@ model User {
   status            String   @default("active") // active|paused|pending
   mustChangePassword Boolean @default(true)
   stars             Float    @default(0) // agent rating 0-5
+  balanceCents      Int      @default(0) // prepaid bucket for pay-per-call bidding
+  available         Boolean  @default(false) // taking calls right now (on/off)
   createdAt         DateTime @default(now())
 
   agentBids   AgentBid[]
@@ -132,6 +134,7 @@ model AgentBid {
   agent      User    @relation(fields: [agentId], references: [id])
   scope      String  @default("zip") // zip|city|state|national
   scopeValue String  @default("")
+  keyword    String  @default("") // optional keyword/money-word this bid targets
   amountCents Int    @default(2500) // bid per call (min controlled by Setting.minCallBidCents)
   active     Boolean @default(true)
   dailyCap   Int     @default(0) // 0 = unlimited
@@ -233,6 +236,8 @@ model MoneyWord {
   action    String  @default("transfer") // transfer|qualify
   logic     String  @default("[]") // JSON qualification questions
   payoutCents Int   @default(0)
+  routeUserId String?  // user (e.g. a partner rep) the hot transfer goes to
+  routeNumber String  @default("") // OR a direct phone number to bridge to
   active    Boolean @default(true)
 }
 

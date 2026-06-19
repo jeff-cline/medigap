@@ -6,10 +6,11 @@ export default async function AgentLayout({ children }: { children: React.ReactN
   const s = await getSession();
   if (!s) redirect("/login");
   if (s.mustChangePassword) redirect("/change-password");
-  if (s.role !== "agent" && s.role !== "god") redirect("/login");
+  // Partner portal: agents + money-word/risk partners + god (impersonating). Advertisers/investors have their own.
+  if (["advertiser", "investor"].includes(s.role)) redirect("/login");
 
   return (
-    <PortalShell title="Agent Portal" email={s.email} impersonator={s.impersonatorEmail}>
+    <PortalShell title="Partner Portal" email={s.email} impersonator={s.impersonatorEmail}>
       {children}
     </PortalShell>
   );

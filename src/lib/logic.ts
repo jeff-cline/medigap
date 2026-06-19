@@ -23,7 +23,10 @@ export function pickWinner(bids: BidLike[], ctx: { zip?: string; state?: string 
 export async function routeCall(input: { zip: string; state: string; leadId?: string; source?: string; moneyWord?: string; providerSid?: string; fromNumber?: string }) {
   const s = await getSettings();
   const bidRows = await db.agentBid.findMany({ where: { active: true }, include: { agent: true } });
-  const bids: (BidLike & { id: string; phone: string })[] = bidRows.map((b) => ({ id: b.id, agentId: b.agentId, amountCents: b.amountCents, stars: b.agent.stars, active: b.active, dailyCap: b.dailyCap, scope: b.scope, scopeValue: b.scopeValue, phone: b.agent.phone }));
+  // Only agents who are AVAILABLE and have enough prepaid balance compete; optional keyword filter.
+  const bids: (BidLike & { id: string; phone: string })[] = bidRows
+    .filter((b) => b.agent.available && b.agent.balanceCents >= b.amountCents && (!b.keyword || (input.moneyWord ? b.keyword === input.moneyWord.toLowerCase() : true)))
+    .map((b) => ({ id: b.id, agentId: b.agentId, amountCents: b.amountCents, stars: b.agent.stars, active: b.active, dailyCap: b.dailyCap, scope: b.scope, scopeValue: b.scopeValue, phone: b.agent.phone }));
   const winner = pickWinner(bids, { zip: input.zip, state: input.state }) as (BidLike & { phone: string }) | null;
 
   let disposition: "sold" | "default";
@@ -60,6 +63,11 @@ export async function routeCall(input: { zip: string; state: string; leadId?: st
       amountCents: priceCents, realized,
       note: winner ? `Call ${call.id} → agent ${winner.agentId}` : `Default/house call ${call.id} → ${forwardedTo} (unrealized)`,
     } });
+  }
+  // Deduct the call price from the winning agent's prepaid balance.
+  if (winner) {
+    await db.user.update({ where: { id: winner.agentId }, data: { balanceCents: { decrement: priceCents } } }).catch(() => {});
+    await db.transaction.create({ data: { kind: "charge", userId: winner.agentId, amountCents: priceCents, status: "settled", note: `Call charge — ${call.id}` } }).catch(() => {});
   }
   return { call, winner, priceCents, disposition, realized, forwardedTo };
 }

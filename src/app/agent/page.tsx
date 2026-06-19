@@ -1,5 +1,5 @@
 import { Card, Stat, Section, Badge, Stars } from "@/components/ui";
-import CallToggle from "@/components/portal/CallToggle";
+import AgentAccount from "@/components/portal/AgentAccount";
 import BidForm, { SeatForm } from "@/components/portal/BidForm";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
@@ -35,9 +35,6 @@ export default async function AgentPortal() {
 
   const stars = agent?.stars ?? 0;
   const activeBids = myBids.filter((b) => b.active);
-  const avgBidCents = activeBids.length
-    ? Math.round(activeBids.reduce((s, b) => s + b.amountCents, 0) / activeBids.length)
-    : 0;
   const activeSeats = mySeats.filter((s) => s.active).length;
 
   // "Am I winning?" — for each of my active bids, load all competing active bids in scope and resolve.
@@ -68,35 +65,21 @@ export default async function AgentPortal() {
   return (
     <>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Agent Portal</h1>
+        <h1 className="text-2xl font-bold">Partner Portal</h1>
         <p className="text-sm text-[var(--muted)]">
-          {agent?.name || agent?.email} · bid for live calls, manage your seats, and work your CRM.
+          {agent?.name || agent?.email} · add funds, turn on, bid by ZIP / state / national or keyword, and work your CRM.
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4 mb-6">
+        <Stat label="Balance" value={usd2(agent?.balanceCents ?? 0)} sub="prepaid for calls" tone={(agent?.balanceCents ?? 0) >= 2500 ? "up" : "down"} />
         <Stat label="My Calls Today" value={num(callsToday)} sub="won via auction" tone="up" />
-        <Stat label="Avg $/Call" value={avgBidCents ? usd2(avgBidCents) : "—"} sub="across active bids" tone="gold" />
-        <Stat label="Star Rating" value={stars.toFixed(1)} sub="routing priority" />
+        <Stat label="Star Rating" value={stars.toFixed(1)} sub="routing priority" tone="gold" />
         <Stat label="Active Seats" value={num(activeSeats)} sub={`${usd(9900)}/mo per ZIP`} tone={activeSeats ? "up" : "default"} />
       </div>
 
-      <Section title="Availability" desc="Flip on to enter the live-call auction.">
-        <div className="grid gap-4 md:grid-cols-2 items-stretch">
-          <CallToggle initialOn={activeBids.length > 0} />
-          <Card>
-            <div className="flex items-center justify-between">
-              <span className="font-semibold">Reputation</span>
-              <span className="flex items-center gap-2">
-                <Stars n={stars} />
-                <span className="text-xs text-[var(--muted)]">{stars.toFixed(1)}</span>
-              </span>
-            </div>
-            <p className="text-sm text-[var(--muted)] mt-2">
-              Higher stars win call ties at equal bids and unlock premium ZIP scopes.
-            </p>
-          </Card>
-        </div>
+      <Section title="Account & Availability" desc="Add funds, then switch on to enter the live-call auction.">
+        <AgentAccount balanceCents={agent?.balanceCents ?? 0} available={agent?.available ?? false} />
       </Section>
 
       {hasNothing && (
@@ -119,6 +102,7 @@ export default async function AgentPortal() {
                 <tr>
                   <th>Scope</th>
                   <th>Target</th>
+                  <th>Keyword</th>
                   <th className="text-right">My bid</th>
                   <th className="text-right">Daily cap</th>
                   <th>Status</th>
@@ -129,6 +113,7 @@ export default async function AgentPortal() {
                   <tr key={b.id}>
                     <td><Badge tone="default">{SCOPE_LABEL[b.scope] || b.scope}</Badge></td>
                     <td className="font-medium">{b.scope === "national" ? "United States" : b.scopeValue || "—"}</td>
+                    <td>{b.keyword ? <span className="text-[var(--gold)] text-sm">{b.keyword}</span> : <span className="text-[var(--muted)]">any</span>}</td>
                     <td className="text-right font-medium text-[var(--brand)]">{usd2(b.amountCents)}</td>
                     <td className="text-right text-[var(--muted)]">{b.dailyCap > 0 ? `${b.dailyCap}/day` : "unlimited"}</td>
                     <td>

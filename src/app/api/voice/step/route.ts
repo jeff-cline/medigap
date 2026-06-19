@@ -33,6 +33,21 @@ async function transfer(callId: string, voice: string, moneyWordId?: string) {
   return `<Dial timeout="25" callerId="${s.raw["tollFreeCallerId"] || "+18006334427"}" record="record-from-answer-dual" action="${BASE}/api/calls/status">${numberEl}</Dial>`;
 }
 
+// Money-word hot transfer: ring the word's chosen rep/number and book the partner payout.
+// Falls back to the normal auction/house route if no destination is set.
+async function transferMoneyWord(callId: string, voice: string, mw: { id: string; word: string; partner: string; payoutCents: number; routeUserId: string | null; routeNumber: string }) {
+  let dest = mw.routeNumber;
+  if (!dest && mw.routeUserId) { const u = await db.user.findUnique({ where: { id: mw.routeUserId } }); dest = u?.phone || ""; }
+  dest = normalizePhone(dest) || dest;
+  if (!dest) return transfer(callId, voice, mw.id); // no destination → auction/house
+
+  await db.call.update({ where: { id: callId }, data: { disposition: "moneyword", realized: true, forwardedTo: dest, priceCents: mw.payoutCents, moneyWord: mw.word, status: "transferring" } }).catch(() => {});
+  await db.ledgerEntry.create({ data: { type: "revenue", category: "moneyword", channel: mw.partner || "partner", amountCents: mw.payoutCents, realized: true, note: `Money word "${mw.word}" → ${dest}` } }).catch(() => {});
+  const s = await getSettings();
+  const numberEl = s.callWhisper ? `<Number url="${BASE}/api/calls/whisper">${dest}</Number>` : `<Number>${dest}</Number>`;
+  return `<Dial timeout="25" callerId="${s.raw["tollFreeCallerId"] || "+18006334427"}" record="record-from-answer-dual" action="${BASE}/api/calls/status">${numberEl}</Dial>`;
+}
+
 export async function POST(req: NextRequest) {
   const url = new URL(req.url);
   const callId = url.searchParams.get("callId") || "";
@@ -94,7 +109,7 @@ export async function POST(req: NextRequest) {
     const line = `I can absolutely help with that. Let me connect you with the right specialist now. One moment.`;
     dialogue.push({ role: "assistant", text: line, at: nowISO() });
     await db.call.update({ where: { id: call.id }, data: { transcript: JSON.stringify(dialogue), moneyWord: mw.word } }).catch(() => {});
-    return xml(`<Say voice="${agent.voice}">${esc(line)}</Say>${await transfer(call.id, agent.voice, mw.id)}`);
+    return xml(`<Say voice="${agent.voice}">${esc(line)}</Say>${await transferMoneyWord(call.id, agent.voice, mw)}`);
   }
 
   // 2) AI converses; it emits [TRANSFER:...] when it decides to route.

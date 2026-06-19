@@ -9,10 +9,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const session = await getSession();
   if (!session) redirect("/login");
   if (session.mustChangePassword) redirect("/change-password");
-  // Agents/advertisers/investors have their own portals; staff + god use the management dash.
+  // Agents/advertisers/investors/partners have their own portals; staff + god use the management dash.
   if (!STAFF.includes(session.role)) {
-    const portal: Record<string, string> = { agent: "/agent", advertiser: "/advertiser", investor: "/investor" };
-    redirect(portal[session.role] || "/login");
+    const portal: Record<string, string> = { agent: "/agent", moneywords: "/agent", risk: "/agent", advertiser: "/advertiser", investor: "/investor" };
+    redirect(portal[session.role] || "/agent"); // default any other role into the partner portal, never /login
   }
 
   return (

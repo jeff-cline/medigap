@@ -27,6 +27,8 @@ export async function POST(req: NextRequest) {
           action: body.flowAction === "qualify" ? "qualify" : "transfer",
           logic: String(body.logic || "[]"),
           payoutCents,
+          routeUserId: body.routeUserId ? String(body.routeUserId) : null,
+          routeNumber: String(body.routeNumber || "").trim(),
           active: true,
         },
       });

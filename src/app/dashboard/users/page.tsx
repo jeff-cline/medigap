@@ -1,8 +1,8 @@
-import { Card, Stat, Badge, Section, Stars } from "@/components/ui";
-import UserActions from "@/components/UserActions";
+import { Card, Stat, Badge, Section } from "@/components/ui";
+import UserManage from "@/components/UserManage";
 import CrudForm from "@/components/CrudForm";
 import { db } from "@/lib/db";
-import { num } from "@/lib/format";
+import { num, usd2, fmtPhone } from "@/lib/format";
 
 const roleTone: Record<string, "default" | "up" | "down" | "gold" | "brand"> = {
   god: "gold",
@@ -63,37 +63,23 @@ export default async function UsersPage() {
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Email</th>
+                <th>Phone</th>
                 <th>Role</th>
                 <th>Status</th>
-                <th>Rating</th>
-                <th>Created</th>
+                <th className="text-right">Balance</th>
                 <th className="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {users.map((u) => (
                 <tr key={u.id}>
-                  <td className="font-medium">{u.name || "—"}</td>
-                  <td className="text-[var(--muted)] text-sm">{u.email}</td>
-                  <td>
-                    <Badge tone={roleTone[u.role] ?? "default"}>{u.role}</Badge>
-                  </td>
-                  <td>
-                    <Badge tone={statusTone[u.status] ?? "default"}>{u.status}</Badge>
-                  </td>
-                  <td>
-                    {u.role === "agent" ? (
-                      <span>
-                        <Stars n={u.stars} /> <span className="text-xs text-[var(--muted)]">{u.stars.toFixed(1)}</span>
-                      </span>
-                    ) : (
-                      <span className="text-[var(--muted)]">—</span>
-                    )}
-                  </td>
-                  <td className="text-[var(--muted)] text-sm">{u.createdAt.toISOString().slice(0, 10)}</td>
+                  <td className="font-medium">{u.name || "—"}<div className="text-[var(--muted)] text-xs font-normal">{u.email}</div></td>
+                  <td className="text-sm">{u.phone ? fmtPhone(u.phone) : <span className="text-[var(--danger)] text-xs">no phone</span>}</td>
+                  <td><Badge tone={roleTone[u.role] ?? "default"}>{u.role}</Badge></td>
+                  <td><Badge tone={statusTone[u.status] ?? "default"}>{u.status}</Badge></td>
+                  <td className="text-right">{u.role === "god" ? "—" : usd2(u.balanceCents)}</td>
                   <td className="text-right">
-                    <UserActions userId={u.id} status={u.status} />
+                    <UserManage user={{ id: u.id, name: u.name, phone: u.phone, role: u.role, status: u.status }} />
                   </td>
                 </tr>
               ))}

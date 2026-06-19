@@ -71,6 +71,7 @@ export default function BidForm({
 
   const [scope, setScope] = useState(existing?.scope ?? "zip");
   const [scopeValue, setScopeValue] = useState(existing?.scopeValue ?? "");
+  const [keyword, setKeyword] = useState((existing as ExistingBid & { keyword?: string })?.keyword ?? "");
   const [bidDollars, setBidDollars] = useState(
     Math.max(minDollars, Math.round((existing?.amountCents ?? minBidCents) / 100))
   );
@@ -92,6 +93,7 @@ export default function BidForm({
           id: existing?.id,
           scope,
           scopeValue: scope === "national" ? "" : scopeValue,
+          keyword,
           amountCents: bidDollars * 100,
           dailyCap: cap,
           active: true,
@@ -165,6 +167,16 @@ export default function BidForm({
           onChange={(e) => setCap(Math.max(0, Number(e.target.value) || 0))}
           className="w-full rounded-lg bg-[var(--panel2)] border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-[var(--brand)]"
         />
+      </div>
+      <div className="sm:col-span-2">
+        <label className="block text-xs uppercase tracking-wide text-[var(--muted)] mb-1">Keyword / money word (optional)</label>
+        <input
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+          placeholder="e.g. peptide — leave blank for all calls in your geo"
+          className="w-full rounded-lg bg-[var(--panel2)] border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-[var(--brand)]"
+        />
+        <p className="text-xs text-[var(--muted)] mt-1">Set a keyword to only receive calls where the AI hears that word; leave blank to take all calls in your geo.</p>
       </div>
       {error && <p className="sm:col-span-2 text-xs text-[var(--danger)]">{error}</p>}
       <div className="sm:col-span-2 flex items-center justify-between gap-4">

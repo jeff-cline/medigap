@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
   const scopeRaw = String(b.scope || "zip");
   const scope = ["zip", "city", "state", "national"].includes(scopeRaw) ? scopeRaw : "zip";
   const scopeValue = scope === "national" ? "" : String(b.scopeValue || "").trim();
+  const keyword = String(b.keyword || "").trim().toLowerCase();
   const amountCents = Math.round(Number(b.amountCents) || 0);
   const dailyCap = Math.max(0, Math.round(Number(b.dailyCap) || 0));
   const active = b.active === undefined ? true : Boolean(b.active);
@@ -34,11 +35,11 @@ export async function POST(req: NextRequest) {
     }
     await db.agentBid.update({
       where: { id: existing.id },
-      data: { scope, scopeValue, amountCents, dailyCap, active },
+      data: { scope, scopeValue, keyword, amountCents, dailyCap, active },
     });
   } else {
     await db.agentBid.create({
-      data: { agentId: session.uid, scope, scopeValue, amountCents, dailyCap, active },
+      data: { agentId: session.uid, scope, scopeValue, keyword, amountCents, dailyCap, active },
     });
   }
 

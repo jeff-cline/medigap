@@ -14,7 +14,15 @@ function parseLogic(raw: string): string[] {
 }
 
 export default async function MoneyWordsPage() {
-  const words = await db.moneyWord.findMany({ orderBy: { payoutCents: "desc" } });
+  const [words, users] = await Promise.all([
+    db.moneyWord.findMany({ orderBy: { payoutCents: "desc" } }),
+    db.user.findMany({ where: { role: { not: "consumer" } }, orderBy: { name: "asc" }, select: { id: true, name: true, email: true, role: true, phone: true } }),
+  ]);
+  const userName = new Map(users.map((u) => [u.id, u.name || u.email]));
+  const routeOptions = [
+    { value: "", label: "— Auction / house default —" },
+    ...users.map((u) => ({ value: u.id, label: `${u.name || u.email} (${u.role}${u.phone ? "" : " · no phone!"})` })),
+  ];
 
   const active = words.filter((w) => w.active);
   const activeWords = active.length;
@@ -57,6 +65,7 @@ export default async function MoneyWordsPage() {
                 <th>Word</th>
                 <th>Partner</th>
                 <th>Action</th>
+                <th>Routes To</th>
                 <th className="text-right">Payout</th>
                 <th>Status</th>
                 <th></th>
@@ -70,6 +79,7 @@ export default async function MoneyWordsPage() {
                   <td>
                     {w.action === "transfer" ? <Badge tone="brand">hot transfer</Badge> : <Badge tone="up">AI qualify</Badge>}
                   </td>
+                  <td className="text-sm">{w.routeUserId ? <span className="text-[var(--brand)]">{userName.get(w.routeUserId) || "user"}</span> : w.routeNumber ? w.routeNumber : <span className="text-[var(--muted)]">auction/house</span>}</td>
                   <td className="text-right text-[var(--brand)]">{usd2(w.payoutCents)}</td>
                   <td>{w.active ? <Badge tone="up">active</Badge> : <Badge tone="down">paused</Badge>}</td>
                   <td className="text-right">
@@ -79,7 +89,7 @@ export default async function MoneyWordsPage() {
               ))}
               {words.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="text-center text-[var(--muted)] py-8">
+                  <td colSpan={7} className="text-center text-[var(--muted)] py-8">
                     No money words yet — add one below.
                   </td>
                 </tr>
@@ -135,9 +145,11 @@ export default async function MoneyWordsPage() {
                 ],
               },
               { name: "payoutCents", label: "Payout (USD)", type: "number", placeholder: "85" },
+              { name: "routeUserId", label: "Route to (user)", type: "select", options: routeOptions },
+              { name: "routeNumber", label: "…or route to a number", placeholder: "+1 972 555 0123" },
             ]}
           />
-          <p className="text-xs text-[var(--muted)] mt-3">Payout is entered in dollars and stored as cents.</p>
+          <p className="text-xs text-[var(--muted)] mt-3">Payout is in dollars (stored as cents). Pick the partner rep this hot transfer should ring (their user needs a phone), or type a direct number. Leave both blank to use the auction / house default.</p>
         </Card>
       </Section>
     </>
