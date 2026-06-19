@@ -3,7 +3,8 @@ import { Card, Stat, Badge, Section, AIButton } from "@/components/ui";
 import LeadFilters from "@/components/LeadFilters";
 import { db } from "@/lib/db";
 import { getSession, isRealGod } from "@/lib/auth";
-import { usd, num, pct } from "@/lib/format";
+import { usd, num, pct, cst, mmss, fmtPhone } from "@/lib/format";
+import { ageFromSpeech } from "@/lib/voice";
 import type { Prisma } from "@prisma/client";
 
 const sourceTone: Record<string, "default" | "up" | "down" | "gold" | "brand"> = {
@@ -37,7 +38,7 @@ export default async function LeadsPage({
   if (sp.status && sp.status !== "all") where.status = sp.status;
 
   const [leads, total, sold, valueAgg] = await Promise.all([
-    db.lead.findMany({ where, orderBy: { createdAt: "desc" }, take: 50 }),
+    db.lead.findMany({ where, orderBy: { createdAt: "desc" }, take: 50, include: { calls: { select: { durationSec: true } } } }),
     db.lead.count({ where }),
     db.lead.count({ where: { ...where, status: "sold" } }),
     db.lead.aggregate({ where, _avg: { valueCents: true } }),
@@ -77,39 +78,35 @@ export default async function LeadsPage({
               <tr>
                 <th>Name</th>
                 <th>Phone</th>
-                <th>Email</th>
-                <th>DOB</th>
+                <th>DOB / Age</th>
                 <th>Zip / State</th>
-                <th>Vertical</th>
+                <th className="text-right">Talk Time</th>
                 <th>Source</th>
                 <th>Status</th>
-                <th className="text-right">Value</th>
-                <th></th>
+                <th>Created (CT)</th>
               </tr>
             </thead>
             <tbody>
-              {leads.map((l) => (
-                <tr key={l.id}>
-                  <td className="font-medium">{l.name || "—"}</td>
-                  <td className="text-[var(--muted)]">{l.phone || "—"}</td>
-                  <td className="text-[var(--muted)] text-sm">{l.email || "—"}</td>
-                  <td className="text-[var(--muted)] text-sm">{l.dob || "—"}</td>
-                  <td className="text-[var(--muted)]">{[l.zip, l.state].filter(Boolean).join(" · ") || "—"}</td>
-                  <td><Badge tone="brand">{l.vertical}</Badge></td>
-                  <td><Badge tone={sourceTone[l.source] ?? "default"}>{l.source}</Badge></td>
-                  <td><Badge tone={statusTone[l.status] ?? "default"}>{l.status}</Badge></td>
-                  <td className="text-right font-medium text-[var(--brand)]">{l.valueCents > 0 ? usd(l.valueCents) : "—"}</td>
-                  <td className="text-right">
-                    <Link href={`/dashboard/leads/${l.id}`} className="text-[var(--brand)] text-sm font-medium hover:underline">
-                      View
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+              {leads.map((l) => {
+                const talk = l.calls.reduce((s, c) => s + c.durationSec, 0);
+                const age = ageFromSpeech(l.dob || "");
+                return (
+                  <tr key={l.id}>
+                    <td className="font-medium"><Link href={`/dashboard/leads/${l.id}`} className="text-[var(--brand)] hover:underline">{l.name || "Unnamed"}</Link></td>
+                    <td><Link href={`/dashboard/leads/${l.id}`} className="text-[var(--brand)] hover:underline">{fmtPhone(l.phone)}</Link></td>
+                    <td className="text-[var(--muted)] text-sm">{l.dob || "—"}{age ? ` · ${age}` : ""}</td>
+                    <td className="text-[var(--muted)]">{[l.zip, l.state].filter(Boolean).join(" · ") || "—"}</td>
+                    <td className="text-right font-medium">{talk > 0 ? mmss(talk) : "—"}</td>
+                    <td><Badge tone={sourceTone[l.source] ?? "default"}>{l.source}</Badge></td>
+                    <td><Badge tone={statusTone[l.status] ?? "default"}>{l.status}</Badge></td>
+                    <td className="text-[var(--muted)] text-sm">{cst(l.createdAt)}</td>
+                  </tr>
+                );
+              })}
               {leads.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="text-center text-[var(--muted)] py-8">
-                    No leads match these filters.
+                  <td colSpan={8} className="text-center text-[var(--muted)] py-8">
+                    No leads match these filters. Live calls to 1-800-MEDIGAP create leads here automatically.
                   </td>
                 </tr>
               )}

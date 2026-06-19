@@ -292,12 +292,13 @@ model AffiliateOffer {
 model VoiceAgent {
   id              String   @id @default("default")
   active          Boolean  @default(true) // AI answers; off = straight forward
-  voice           String   @default("Polly.Joanna-Neural") // Twilio <Say> voice
-  greeting        String   @default("Thank you for calling Medigap dot plus. I can help you find the right Medicare coverage. To get started, may I have your first name?")
+  voice           String   @default("Polly.Joanna-Neural") // Twilio <Say> voice (female default)
+  tone            String   @default("Warm, calm, reassuring and human. Speak clearly and a little slowly for seniors. Never robotic, never pushy.")
+  greeting        String   @default("Hello, and thank you for calling 1-800-MEDIGAP. Due to new federal regulations, we need to confirm and authenticate your identity before helping you with our free service. Please share your first and last name after the tone.")
   systemPrompt    String   @default("")
-  questions       String   @default("[]") // JSON: [{key, ask}]
+  questions       String   @default("[]") // JSON intake steps: [{field, ask}]  field in name|zip|dob
   forwardWhenDone Boolean  @default(true)
-  maxTurns        Int      @default(8)
+  maxTurns        Int      @default(10)
   updatedAt       DateTime @default(now())
 }
 

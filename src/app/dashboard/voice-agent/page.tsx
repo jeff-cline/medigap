@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
-import { getVoiceAgent, getAIProvider, VOICES, DEFAULT_QUESTIONS } from "@/lib/voice";
-import { Badge, Section, Stat } from "@/components/ui";
-import { num } from "@/lib/format";
+import { getVoiceAgent, getAIProvider, VOICES, getIntake } from "@/lib/voice";
+import { Badge, Section, Stat, Card } from "@/components/ui";
+import { num, cst } from "@/lib/format";
 import VoiceAgentForm from "@/components/VoiceAgentForm";
 
 export const dynamic = "force-dynamic";
@@ -14,18 +14,27 @@ export default async function VoiceAgentPage() {
     db.call.findMany({ where: { transcript: { not: null } }, orderBy: { createdAt: "desc" }, take: 15, include: { lead: true } }),
     db.call.count({ where: { transcript: { not: null } } }),
   ]);
-  let questions = DEFAULT_QUESTIONS;
-  try { const q = JSON.parse(agent.questions); if (Array.isArray(q) && q.length) questions = q; } catch {}
+  const questions = getIntake(agent);
 
   return (
     <>
       <div className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Voice Agent</h1>
-          <p className="text-sm text-[var(--muted)]">The AI that answers 1-800-MEDIGAP — pick its voice, write its script, refine its answers, and review every call.</p>
+          <h1 className="text-2xl font-bold">Train Agent</h1>
+          <p className="text-sm text-[var(--muted)]">The AI that answers 1-800-MEDIGAP — set its voice, tone, authentication script, intake, knowledge, and routing. Changes go live on the next call.</p>
         </div>
-        <Badge tone={ai ? "up" : "down"}>{ai ? `Brain: ${ai.provider === "xai" ? "xAI Grok" : "Groq"}` : "No AI connected"}</Badge>
+        <Badge tone={ai ? "up" : "down"}>{ai ? `Brain: ${ai.provider === "xai" ? "xAI Grok" : "Groq"} · ${ai.model}` : "No AI connected"}</Badge>
       </div>
+
+      <Card className="mb-6 !p-4 text-sm">
+        <div className="font-semibold mb-1">How a call flows</div>
+        <ol className="text-[var(--muted)] space-y-0.5 list-decimal list-inside">
+          <li>Auth greeting → captures <b>first &amp; last name</b></li>
+          <li>Asks <b>ZIP</b> → <b>date of birth</b> (reads back the age)</li>
+          <li>&ldquo;Okay [name], how can I help?&rdquo; → open AI Q&amp;A in your tone &amp; voice</li>
+          <li>Hears a <b>money word</b> → routes to the highest bidder for that keyword by ZIP/age. Sounds like an <b>insurance</b> buyer → &ldquo;we&apos;re a free service&rdquo; → highest-bidding agent, or the default house number.</li>
+        </ol>
+      </Card>
 
       <div className="grid gap-4 md:grid-cols-3 mb-6">
         <Stat label="AI Mode" value={agent.active && ai ? "Answering" : "Forwarding"} sub={agent.active && ai ? "AI qualifies, then transfers" : "straight to agent/house"} tone={agent.active && ai ? "up" : "default"} />
@@ -35,7 +44,7 @@ export default async function VoiceAgentPage() {
 
       <Section title="Configure the agent" desc="Changes are live on the very next call.">
         <VoiceAgentForm
-          initial={{ active: agent.active, voice: agent.voice, greeting: agent.greeting, systemPrompt: agent.systemPrompt, questions, forwardWhenDone: agent.forwardWhenDone, maxTurns: agent.maxTurns }}
+          initial={{ active: agent.active, voice: agent.voice, tone: agent.tone, greeting: agent.greeting, systemPrompt: agent.systemPrompt, questions, forwardWhenDone: agent.forwardWhenDone, maxTurns: agent.maxTurns }}
           voices={VOICES}
           aiConnected={!!ai}
         />
@@ -53,7 +62,7 @@ export default async function VoiceAgentPage() {
                 <div key={c.id} className="card p-4">
                   <div className="flex items-center justify-between mb-3 text-sm">
                     <span className="font-medium">{c.lead?.name || c.fromNumber || "Caller"} · <span className="text-[var(--muted)]">{[c.zip, c.state].filter(Boolean).join(" ")}</span></span>
-                    <span className="text-[var(--muted)] text-xs">{c.createdAt.toISOString().slice(0, 16).replace("T", " ")} · {c.disposition}</span>
+                    <span className="text-[var(--muted)] text-xs">{cst(c.createdAt)} · {c.disposition}</span>
                   </div>
                   <div className="space-y-1.5">
                     {dialogue.map((d, i) => (

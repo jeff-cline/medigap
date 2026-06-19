@@ -2,15 +2,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-type Q = { key: string; ask: string };
+type Q = { field: string; ask: string };
 export default function VoiceAgentForm({ initial, voices, aiConnected }: {
-  initial: { active: boolean; voice: string; greeting: string; systemPrompt: string; questions: Q[]; forwardWhenDone: boolean; maxTurns: number };
+  initial: { active: boolean; voice: string; tone: string; greeting: string; systemPrompt: string; questions: Q[]; forwardWhenDone: boolean; maxTurns: number };
   voices: { id: string; label: string }[];
   aiConnected: boolean;
 }) {
   const router = useRouter();
   const [active, setActive] = useState(initial.active);
   const [voice, setVoice] = useState(initial.voice);
+  const [tone, setTone] = useState(initial.tone);
   const [greeting, setGreeting] = useState(initial.greeting);
   const [systemPrompt, setSystemPrompt] = useState(initial.systemPrompt);
   const [questions, setQuestions] = useState<Q[]>(initial.questions);
@@ -22,12 +23,12 @@ export default function VoiceAgentForm({ initial, voices, aiConnected }: {
   function setQ(i: number, field: keyof Q, v: string) {
     setQuestions((qs) => qs.map((q, idx) => (idx === i ? { ...q, [field]: v } : q)));
   }
-  const addQ = () => setQuestions((qs) => [...qs, { key: `field${qs.length + 1}`, ask: "" }]);
+  const addQ = () => setQuestions((qs) => [...qs, { field: `field${qs.length + 1}`, ask: "" }]);
   const delQ = (i: number) => setQuestions((qs) => qs.filter((_, idx) => idx !== i));
 
   async function save() {
     setBusy(true); setSaved(false);
-    await fetch("/api/voice-agent", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ active, voice, greeting, systemPrompt, questions: questions.filter((q) => q.ask.trim()), forwardWhenDone, maxTurns }) });
+    await fetch("/api/voice-agent", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ active, voice, tone, greeting, systemPrompt, questions: questions.filter((q) => q.ask.trim()), forwardWhenDone, maxTurns }) });
     setBusy(false); setSaved(true); router.refresh();
     setTimeout(() => setSaved(false), 2500);
   }
@@ -56,8 +57,15 @@ export default function VoiceAgentForm({ initial, voices, aiConnected }: {
       </div>
 
       <div className="card p-5">
-        <label className="text-xs uppercase tracking-wide text-[var(--muted)]">Greeting (first thing the caller hears)</label>
-        <textarea className="mt-1" rows={2} value={greeting} onChange={(e) => setGreeting(e.target.value)} />
+        <label className="text-xs uppercase tracking-wide text-[var(--muted)]">Tone &amp; sentiment</label>
+        <textarea className="mt-1" rows={2} value={tone} onChange={(e) => setTone(e.target.value)} placeholder="e.g. Warm, calm, reassuring, human. Speak slowly for seniors." />
+        <p className="mt-1 text-xs text-[var(--muted)]">How the AI should sound and feel on every call.</p>
+      </div>
+
+      <div className="card p-5">
+        <label className="text-xs uppercase tracking-wide text-[var(--muted)]">Authentication greeting (first thing the caller hears)</label>
+        <textarea className="mt-1" rows={3} value={greeting} onChange={(e) => setGreeting(e.target.value)} />
+        <p className="mt-1 text-xs text-[var(--muted)]">This should ask for the caller&apos;s first &amp; last name. The agent then walks the intake fields below in order, capturing each answer to the lead.</p>
       </div>
 
       <div className="card p-5">
@@ -67,14 +75,16 @@ export default function VoiceAgentForm({ initial, voices, aiConnected }: {
       </div>
 
       <div className="card p-5">
-        <div className="flex items-center justify-between mb-3">
-          <label className="text-xs uppercase tracking-wide text-[var(--muted)]">Information to collect (intake)</label>
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-xs uppercase tracking-wide text-[var(--muted)]">Intake fields (asked in order, saved to the CRM)</label>
           <button type="button" onClick={addQ} className="btn btn-ghost text-xs !py-1">+ Add field</button>
         </div>
+        <p className="text-xs text-[var(--muted)] mb-3">Use field key <code>name</code>, <code>zip</code>, or <code>dob</code> to auto-fill the lead record (dob computes age and reads it back). Other keys are saved to the journey.</p>
         <div className="space-y-2">
           {questions.map((q, i) => (
             <div key={i} className="flex gap-2 items-center">
-              <input className="!w-32" value={q.key} onChange={(e) => setQ(i, "key", e.target.value)} placeholder="key" />
+              <span className="text-[var(--muted)] text-xs w-4">{i + 1}.</span>
+              <input className="!w-28" value={q.field} onChange={(e) => setQ(i, "field", e.target.value)} placeholder="field" />
               <input value={q.ask} onChange={(e) => setQ(i, "ask", e.target.value)} placeholder="What should it ask?" />
               <button type="button" onClick={() => delQ(i)} className="text-[var(--danger)] text-sm px-2">✕</button>
             </div>

@@ -11,6 +11,7 @@ export async function POST(req: NextRequest) {
   if (typeof b.active === "boolean") data.active = b.active;
   if (typeof b.forwardWhenDone === "boolean") data.forwardWhenDone = b.forwardWhenDone;
   if (typeof b.voice === "string") data.voice = b.voice;
+  if (typeof b.tone === "string") data.tone = b.tone;
   if (typeof b.greeting === "string") data.greeting = b.greeting;
   if (typeof b.systemPrompt === "string") data.systemPrompt = b.systemPrompt;
   if (typeof b.maxTurns === "number") data.maxTurns = Math.max(2, Math.min(20, b.maxTurns));
