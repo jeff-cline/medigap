@@ -179,11 +179,14 @@ model AdEvent {
 // INTEGRATIONS — one checklist page; keys live here (encrypt in prod)
 // ---------------------------------------------------------------------------
 model Integration {
-  key       String   @id // twilio|klaviyo|zapmail|groq|stripe|datamoon|google_ads|facebook|claude|affiliate|vibe|google_tv
-  label     String   @default("")
-  config    String   @default("{}") // JSON of keys/fields
-  connected Boolean  @default(false)
-  updatedAt DateTime @default(now())
+  key          String   @id // twilio|klaviyo|zapmail|groq|stripe|datamoon|google_ads|facebook|claude|affiliate|vibe|google_tv
+  label        String   @default("")
+  config       String   @default("{}") // JSON of keys/fields
+  connected    Boolean  @default(false)
+  status       String   @default("unconfigured") // unconfigured|saved|verified|failed
+  lastTestedAt DateTime?
+  lastError    String   @default("")
+  updatedAt    DateTime @default(now())
 }
 
 // ---------------------------------------------------------------------------

@@ -8,10 +8,11 @@ export async function POST(req: NextRequest) {
   if (!s || s.role !== "god") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   const { key, config, connected } = await req.json().catch(() => ({}));
   if (!key) return NextResponse.json({ error: "key required" }, { status: 400 });
+  const status = connected ? "saved" : "unconfigured"; // "verified" only after a successful Test
   await db.integration.upsert({
     where: { key: String(key) },
-    update: { config: JSON.stringify(config ?? {}), connected: !!connected, updatedAt: new Date() },
-    create: { key: String(key), label: String(key), config: JSON.stringify(config ?? {}), connected: !!connected },
+    update: { config: JSON.stringify(config ?? {}), connected: !!connected, status, updatedAt: new Date() },
+    create: { key: String(key), label: String(key), config: JSON.stringify(config ?? {}), connected: !!connected, status },
   });
   return NextResponse.json({ ok: true });
 }
