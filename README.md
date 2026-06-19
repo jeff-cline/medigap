@@ -42,11 +42,11 @@ launcher), User management, **Integrations checklist**, Autonomous Logic, Missed
 **External portals** — `/agent`, `/advertiser`, `/investor` (role-gated; God can view all).
 
 **Integrations hub** (`/dashboard/integrations`) — key slots + step-by-step setup for Twilio, Groq,
-Klaviyo, Zapmail, Datamoon, Stripe, Google Ads, Meta, Vibe.co (CTV), Claude, affiliate networks.
+Klaviyo, Zapmail, PredictiveData, Stripe, Google Ads, Meta, Vibe.co (CTV), Claude, affiliate networks.
 
 ## Deferred / wired-next (need keys + careful testing with real money)
 Live Twilio call routing & whisper · Groq voice intake · real bidding auction execution ·
-Stripe charges/ACH sweeps · Klaviyo/Zapmail sends · Datamoon append · Google/Meta spend sync ·
+Stripe charges/ACH sweeps · Klaviyo/Zapmail sends · PredictiveData append · Google/Meta spend sync ·
 autonomous decision execution. Each page marks these with a "Wired next:" note.
 
 ## Production (Postgres)

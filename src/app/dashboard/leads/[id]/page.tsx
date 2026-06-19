@@ -147,7 +147,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         </Card>
       </Section>
 
-      <Section title="Appended Data" desc="Datamoon enrichment + captured intent.">
+      <Section title="Appended Data" desc="PredictiveData enrichment + captured intent.">
         <Card>
           {appended ? (
             <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">

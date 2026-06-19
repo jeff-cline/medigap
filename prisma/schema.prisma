@@ -75,7 +75,7 @@ model Lead {
   status    String   @default("new") // new|contacted|sold|dead
   valueCents Int     @default(0)
   smsOptOut Boolean  @default(false) // honored STOP / do-not-text
-  appended  String   @default("{}") // Datamoon-appended data (JSON)
+  appended  String   @default("{}") // PredictiveData-appended data (JSON)
   siteId    String?
   site      Site?    @relation(fields: [siteId], references: [id])
   agentId   String?
@@ -184,7 +184,7 @@ model AdEvent {
 // INTEGRATIONS — one checklist page; keys live here (encrypt in prod)
 // ---------------------------------------------------------------------------
 model Integration {
-  key          String   @id // twilio|klaviyo|zapmail|groq|stripe|datamoon|google_ads|facebook|claude|affiliate|vibe|google_tv
+  key          String   @id // twilio|klaviyo|zapmail|groq|xai|stripe|predictivedata|google_ads|facebook|claude|affiliate|vibe|google_tv
   label        String   @default("")
   config       String   @default("{}") // JSON of keys/fields
   connected    Boolean  @default(false)

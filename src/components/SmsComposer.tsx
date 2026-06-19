@@ -102,7 +102,7 @@ export default function SmsComposer({ twilioReady, senderLabel }: { twilioReady:
         <p className="text-xs text-[var(--muted)] mb-3">Paste your past lead phone numbers (one per line or comma-separated). They&apos;ll appear in the Leads CRM as house leads, deduped, ready to text or call.</p>
         <textarea className="font-mono text-sm" rows={10} value={numbers} onChange={(e) => setNumbers(e.target.value)} placeholder={"5551234567\n(305) 555-9988\n+1 480 555 2211"} />
         <button disabled={busy || !numbers.trim()} onClick={doImport} className="btn btn-brand text-sm !py-1.5 mt-3">Import numbers →</button>
-        <p className="mt-2 text-[11px] text-[var(--muted)]">Next: bulk CSV upload + Datamoon append to fill in names/emails.</p>
+        <p className="mt-2 text-[11px] text-[var(--muted)]">Next: bulk CSV upload + PredictiveData append to fill in names/emails.</p>
       </div>
     </div>
   );

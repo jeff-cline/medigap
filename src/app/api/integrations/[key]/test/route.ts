@@ -94,7 +94,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ key: strin
     }
     // Providers without a universal verification endpoint: confirm required fields are present.
     case "zapmail": { ok = !need("apiKey").length; message = ok ? "Keys saved. Cold-email sequencing armed." : "Missing: apiKey"; break; }
-    case "datamoon": { ok = !need("apiKey", "endpoint").length; message = ok ? "Keys saved. Append ready." : `Missing: ${need("apiKey", "endpoint").join(", ")}`; break; }
+    case "predictivedata": { ok = !need("apiKey", "endpoint").length; message = ok ? "Keys saved. Append ready." : `Missing: ${need("apiKey", "endpoint").join(", ")}`; break; }
     case "vibe": { ok = !need("apiKey").length; message = ok ? "Keys saved. CTV ready." : "Missing: apiKey"; break; }
     case "affiliate": { ok = !need("apiKey").length; message = ok ? "Keys saved. Exit-traffic offers armed." : "Missing: apiKey"; break; }
     default: { message = "No test available for this integration."; }

@@ -38,7 +38,7 @@ async function main() {
   const integrations: [string, string][] = [
     ["twilio", "Twilio — toll-free call tracking (1-800-MEDIGAP)"], ["groq", "Groq — voice AI intake & routing"],
     ["klaviyo", "Klaviyo — opted-in remarketing flows"], ["zapmail", "Zapmail — initial 1-2-3 cold email sequence"],
-    ["stripe", "Stripe — all billing, deposits, ACH sweeps"], ["datamoon", "Datamoon — data append"],
+    ["stripe", "Stripe — all billing, deposits, ACH sweeps"], ["predictivedata", "PredictiveData — data append"],
     ["google_ads", "Google Ads — paid search + Google TV/video"], ["facebook", "Facebook/Meta — paid social + video"],
     ["claude", "Claude (Anthropic) — autonomous logic & predictions"], ["affiliate", "Affiliate / exit-traffic networks"],
     ["vibe", "Vibe.co — connected TV advertising"],

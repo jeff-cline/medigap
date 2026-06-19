@@ -18,6 +18,6 @@ export async function POST(req: NextRequest) {
   if (Array.isArray(b.answers)) {
     await db.leadAnswer.createMany({ data: b.answers.map((a: { q: string; a: string }) => ({ leadId: lead.id, question: a.q, answer: a.a })) });
   }
-  // TODO: trigger Zapmail seq #1 + Klaviyo profile + Datamoon append + agent-bid routing.
+  // TODO: trigger Zapmail seq #1 + Klaviyo profile + PredictiveData append + agent-bid routing.
   return NextResponse.json({ ok: true, id: lead.id });
 }

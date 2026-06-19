@@ -57,11 +57,11 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
     fields: [{ name: "apiKey", label: "Zapmail API Key", type: "password", placeholder: "zm_xxx" }, { name: "fromEmail", label: "From Address", placeholder: "offers@medigap.plus" }],
   },
   {
-    phase: "Remarketing", key: "datamoon", label: "Datamoon — Data Append",
+    phase: "Remarketing", key: "predictivedata", label: "PredictiveData — Data Append",
     blurb: "Enrich leads (DOB, address, contact) for remarketing and to share with agents post-sale.",
     dataFlow: "appended fields → each lead's record + agent CRM",
-    steps: ["Request API access from Datamoon.", "Copy your API key & endpoint.", "Save, then Test connection."],
-    fields: [{ name: "apiKey", label: "Datamoon API Key", type: "password", placeholder: "dm_xxx" }, { name: "endpoint", label: "Endpoint URL", placeholder: "https://api.datamoon.io/v1/append" }],
+    steps: ["Request API access at predictivedata.org.", "Copy your API key & endpoint.", "Save, then Test connection."],
+    fields: [{ name: "apiKey", label: "PredictiveData API Key", type: "password", placeholder: "pd_xxx" }, { name: "endpoint", label: "Endpoint URL", placeholder: "https://api.predictivedata.org/v1/append" }],
   },
   {
     phase: "Paid acquisition", key: "google_ads", label: "Google Ads + Google TV/Video", oauth: true,
