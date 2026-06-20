@@ -92,6 +92,13 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
     fields: [{ name: "login", label: "API Login", placeholder: "you@email.com" }, { name: "password", label: "API Password", type: "password" }],
   },
   {
+    phase: "Scale & arbitrage", key: "google_workspace", label: "Google Workspace — Team (Suite for Teams)",
+    blurb: "Connect your Google Workspace for team email, shared mailboxes & calendars. Workspace mailbox SMTP can also power outbound email.",
+    dataFlow: "team accounts + sending domains",
+    steps: ["At admin.google.com, confirm your Workspace domain.", "Create a team/sending mailbox (e.g. alerts@yourdomain) + an App Password.", "Paste the domain + admin email below. Use the App Password in the Zapmail SMTP card to send.", "Save, then Test connection."],
+    fields: [{ name: "domain", label: "Workspace Domain", placeholder: "yourcompany.com" }, { name: "adminEmail", label: "Admin Email", placeholder: "admin@yourcompany.com" }],
+  },
+  {
     phase: "Scale & arbitrage", key: "vibe", label: "Vibe.co — Connected TV",
     blurb: "Streaming-TV ads. Upload spots; track calls/leads as house traffic.",
     dataFlow: "CTV spend → ledger 'spend' (tv)",

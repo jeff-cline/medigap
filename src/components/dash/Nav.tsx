@@ -6,6 +6,7 @@ export const LEFT_NAV: [string, string, string][] = [
   ["Overview", "/dashboard", "▦"],
   ["Leads CRM", "/dashboard/leads", "👥"],
   ["Calls", "/dashboard/calls", "📞"],
+  ["Missed Calls", "/dashboard/missed-calls", "📵"],
   ["Train Agent", "/dashboard/voice-agent", "🎙️"],
   ["SMS Outreach", "/dashboard/sms", "💬"],
   ["Marketing Sites", "/dashboard/sites", "🌐"],

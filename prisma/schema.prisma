@@ -69,6 +69,16 @@ model Counter {
   value Int    @default(0)
 }
 
+// Tracking pixels / tags injected into site <head>. siteId null = global (all sites).
+model Pixel {
+  id        String   @id @default(cuid())
+  name      String
+  code      String   // the raw <script>…</script> / pixel snippet
+  siteId    String?  // null = applies to every site
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
 model Lead {
   id        String   @id @default(cuid())
   refNum    Int?     @unique // human reference: 444-<10 digit sequence>

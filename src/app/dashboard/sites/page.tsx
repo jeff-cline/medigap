@@ -2,11 +2,15 @@ import Link from "next/link";
 import { Card, Stat, Badge, Section } from "@/components/ui";
 import { ToggleActive } from "@/components/CrudForm";
 import LaunchSiteForm from "@/components/LaunchSiteForm";
+import PixelManager from "@/components/PixelManager";
 import { db } from "@/lib/db";
 import { num } from "@/lib/format";
 
 export default async function SitesPage() {
-  const sites = await db.site.findMany({ orderBy: { createdAt: "asc" } });
+  const [sites, pixels] = await Promise.all([
+    db.site.findMany({ orderBy: { createdAt: "asc" } }),
+    db.pixel.findMany({ orderBy: { createdAt: "desc" } }),
+  ]);
 
   const liveSites = sites.filter((s) => s.active).length;
   const management = sites.filter((s) => s.kind === "management").length;
@@ -75,6 +79,27 @@ export default async function SitesPage() {
               )}
             </tbody>
           </table>
+        </Card>
+      </Section>
+
+      <Section title="Tracking Pixels" desc="Install pixels/tags into the <head> of your sites — global (all sites) or per-site. Name each by the KPI it tracks.">
+        <Card>
+          <PixelManager pixels={pixels.map((p) => ({ id: p.id, name: p.name, code: p.code, siteId: p.siteId, active: p.active }))} sites={sites.map((s) => ({ id: s.id, name: s.name, hostname: s.hostname }))} />
+        </Card>
+      </Section>
+
+      <Section title="Google Tag Manager — track everything as you scale" desc="The cleanest way to manage tracking across many sites.">
+        <Card>
+          <div className="text-sm text-[var(--muted)] space-y-2">
+            <p>For 1–2 pixels, use Add Pixel above. As you launch dozens of sites, <b className="text-[var(--text)]">put one GTM container snippet in as a <span className="text-[var(--gold)]">global</span> pixel here</b>, then manage every tag from GTM&apos;s dashboard — no redeploys.</p>
+            <ol className="list-decimal list-inside space-y-1">
+              <li>At <span className="text-[var(--brand2)]">tagmanager.google.com</span>, create one container (Web). Copy both snippet halves.</li>
+              <li>Add Pixel above → name it &ldquo;Google Tag Manager&rdquo;, scope <b>All sites (global)</b>, paste the <code>&lt;head&gt;</code> snippet.</li>
+              <li>In GTM, add your real tags (GA4, Meta Pixel, conversions, etc.) and Publish — they go live on every site instantly.</li>
+              <li>Use GTM <b>triggers</b> for your KPIs: lead-form submit, click-to-call, page views — fire each pixel on the event you care about.</li>
+            </ol>
+            <p className="text-xs">Recommendation: <b className="text-[var(--text)]">GTM is the way to go</b> once you&apos;re past a couple of sites. Keep direct Add-Pixel for one-offs (like the Vibe.co pixel) and route the rest through GTM.</p>
+          </div>
         </Card>
       </Section>
 
