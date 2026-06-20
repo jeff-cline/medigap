@@ -94,6 +94,7 @@ model Lead {
   status    String   @default("new") // new|contacted|sold|dead
   valueCents Int     @default(0)
   smsOptOut Boolean  @default(false) // honored STOP / do-not-text
+  emailOptOut Boolean @default(false) // honored unsubscribe / do-not-email
   appended  String   @default("{}") // PredictiveData-appended data (JSON)
   siteId    String?
   site      Site?    @relation(fields: [siteId], references: [id])
@@ -312,6 +313,59 @@ model AffiliateOffer {
   kind          String  @default("text") // text|banner|exit
   clickValueCents Int   @default(0)
   active        Boolean @default(true)
+}
+
+// ---------------------------------------------------------------------------
+// COMMUNICATIONS — multi-channel outreach (email + SMS) to segments
+// ---------------------------------------------------------------------------
+model EmailMessage {
+  id        String   @id @default(cuid())
+  to        String
+  subject   String   @default("")
+  body      String   @default("")
+  status    String   @default("sent") // sent|failed|skipped
+  error     String   @default("")
+  batch     String   @default("")
+  leadId    String?
+  createdAt DateTime @default(now())
+}
+
+model CommCampaign {
+  id        String   @id @default(cuid())
+  name      String
+  channel   String   @default("sms") // sms|email|both
+  audience  String   @default("{}") // JSON filter (type + value)
+  subject   String   @default("")
+  body      String   @default("")
+  sent      Int      @default(0)
+  failed    Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// COUPONS — deposit credit (flat) or matching-deposit % up to a cap
+// ---------------------------------------------------------------------------
+model Coupon {
+  id             String   @id @default(cuid())
+  code           String   @unique
+  kind           String   @default("credit") // credit (flat bonus) | match (% of deposit, capped)
+  amountCents    Int      @default(0) // credit: bonus granted; match: cap
+  percent        Int      @default(0) // match: % of deposit matched
+  maxRedemptions Int      @default(0) // 0 = unlimited
+  redemptions    Int      @default(0)
+  oncePerUser    Boolean  @default(true)
+  active         Boolean  @default(true)
+  expiresAt      DateTime?
+  note           String   @default("")
+  createdAt      DateTime @default(now())
+}
+
+model CouponRedemption {
+  id         String   @id @default(cuid())
+  couponId   String
+  userId     String
+  bonusCents Int
+  createdAt  DateTime @default(now())
 }
 
 // ---------------------------------------------------------------------------

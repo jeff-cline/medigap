@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { applyCoupon } from "@/lib/coupons";
 
 // Partner self-service: deposit into the pay-per-call balance + toggle availability.
 export async function POST(req: NextRequest) {
@@ -14,7 +15,13 @@ export async function POST(req: NextRequest) {
     if (cents <= 0) return NextResponse.json({ error: "Enter a positive amount." }, { status: 400 });
     await db.user.update({ where: { id: s.uid }, data: { balanceCents: { increment: cents } } });
     await db.transaction.create({ data: { kind: "deposit", userId: s.uid, amountCents: cents, status: "settled", note: "Pay-per-call deposit" } });
-    return NextResponse.json({ ok: true });
+    let bonus = 0; let couponMsg = "";
+    if (b.couponCode) {
+      const r = await applyCoupon(String(b.couponCode), s.uid, cents);
+      if (r.ok) { bonus = r.bonusCents; couponMsg = `Coupon ${r.label}: +$${(bonus / 100).toFixed(2)} bonus`; }
+      else couponMsg = r.error || "Coupon not applied";
+    }
+    return NextResponse.json({ ok: true, bonusCents: bonus, couponMsg });
   }
   if (action === "availability") {
     await db.user.update({ where: { id: s.uid }, data: { available: !!b.available } });

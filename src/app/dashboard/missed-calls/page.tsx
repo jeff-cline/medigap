@@ -73,7 +73,7 @@ export default async function MissedCallsPage() {
           </table>
         </Card>
       </Section>
-      <p className="text-xs text-[var(--muted)]">Reach these callers in bulk from <Link href="/dashboard/sms" className="text-[var(--brand)]">SMS Outreach</Link> (a full Communications portal with email + segments is coming next).</p>
+      <p className="text-xs text-[var(--muted)]">Reach these callers in bulk from <Link href="/dashboard/communications" className="text-[var(--brand)]">Communications</Link> — pick the &ldquo;Missed calls&rdquo; segment and send text, email, or both.</p>
     </>
   );
 }

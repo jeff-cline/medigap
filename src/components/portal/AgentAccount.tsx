@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 export default function AgentAccount({ balanceCents, available, phone }: { balanceCents: number; available: boolean; phone: string }) {
   const router = useRouter();
   const [amt, setAmt] = useState("100");
+  const [coupon, setCoupon] = useState("");
   const [on, setOn] = useState(available);
   const [tel, setTel] = useState(phone || "");
   const [busy, setBusy] = useState(false);
@@ -17,7 +18,7 @@ export default function AgentAccount({ balanceCents, available, phone }: { balan
     setBusy(false); if (d.error) setMsg(d.error); else router.refresh();
     return d;
   }
-  async function deposit() { const d = await post({ action: "deposit", amount: Number(amt) }); if (d.ok) setMsg(`Added $${amt} to your balance.`); }
+  async function deposit() { const d = await post({ action: "deposit", amount: Number(amt), couponCode: coupon.trim() || undefined }); if (d.ok) setMsg(`Added $${amt}${d.couponMsg ? " · " + d.couponMsg : ""}.`); }
   async function toggle() { const next = !on; setOn(next); await post({ action: "availability", available: next }); }
   async function savePhone() { const d = await post({ action: "phone", phone: tel }); if (d.ok) setMsg("Transfer number saved."); }
 
@@ -43,6 +44,7 @@ export default function AgentAccount({ balanceCents, available, phone }: { balan
           </div>
           <button onClick={deposit} disabled={busy} className="btn btn-brand text-sm !py-1.5 shrink-0">Add funds</button>
         </div>
+        <input className="mt-2 text-sm" value={coupon} onChange={(e) => setCoupon(e.target.value.toUpperCase())} placeholder="Coupon code (optional)" />
         <p className="text-[11px] text-[var(--muted)] mt-2">Each won call deducts your bid from this balance. Stripe top-up wires up here once connected.</p>
         {msg && <div className="text-xs text-[var(--brand)] mt-2">{msg}</div>}
       </div>
