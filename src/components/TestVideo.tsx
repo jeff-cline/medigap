@@ -1,44 +1,119 @@
 "use client";
 import { useState } from "react";
 
+type Brief = { headline: string; subhead: string; concept: string };
+type Phase = "image" | "video" | "done" | "error" | "image-done";
+type Fmt = {
+  key: string; label: string; ratio: string; note: string;
+  imageTask: string; promptText: string;
+  imageUrl: string; videoTask: string; videoUrl: string;
+  phase: Phase; error?: string;
+};
+
+const DEFAULT_PROMPT =
+  "A warm, trustworthy ad for a free senior Medicare service — real, smiling older Americans, soft natural light, teal & blue brand. Emphasize 'talk to a licensed specialist, free.'";
+
 export default function TestVideo() {
-  const [prompt, setPrompt] = useState("A warm, trustworthy 9:16 ad for a senior Medicare service — smiling older couple, soft light, bold headline space, teal & blue brand.");
+  const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const [busy, setBusy] = useState(false);
-  const [img, setImg] = useState("");
-  const [video, setVideo] = useState("");
   const [status, setStatus] = useState("");
   const [err, setErr] = useState("");
+  const [brief, setBrief] = useState<Brief | null>(null);
+  const [usedResearch, setUsedResearch] = useState(false);
+  const [formats, setFormats] = useState<Fmt[]>([]);
 
-  async function run() {
-    setBusy(true); setErr(""); setImg(""); setVideo(""); setStatus("Generating image…");
-    const r = await fetch("/api/runway/test", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt }) });
-    const d = await r.json().catch(() => ({}));
-    if (d.error) { setErr(d.error); setBusy(false); setStatus(""); return; }
-    if (d.imageUrl) setImg(d.imageUrl);
-    if (d.videoTask) { setStatus("Rendering video (1-3 min)…"); poll(d.videoTask); }
-    else { setStatus("Image rendering — try again in a moment."); setBusy(false); }
+  function update(key: string, patch: Partial<Fmt>) {
+    setFormats((cur) => cur.map((f) => (f.key === key ? { ...f, ...patch } : f)));
   }
-  async function poll(taskId: string, n = 0) {
-    if (n > 30) { setStatus("Still rendering — check RunwayML."); setBusy(false); return; }
-    const r = await fetch(`/api/runway/task/${taskId}`);
+
+  async function launch() {
+    setBusy(true); setErr(""); setBrief(null); setFormats([]); setStatus("Researching & writing the creative brief…");
+    const r = await fetch("/api/runway/campaign", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt }) });
     const d = await r.json().catch(() => ({}));
-    if (d.status === "SUCCEEDED" && d.urls?.[0]) { setVideo(d.urls[0]); setStatus("Done ✓"); setBusy(false); return; }
-    if (d.status === "FAILED") { setErr("Video generation failed."); setBusy(false); setStatus(""); return; }
-    setTimeout(() => poll(taskId, n + 1), 6000);
+    if (d.error || !d.ok) { setErr(d.error || "Campaign failed."); setBusy(false); setStatus(""); return; }
+    setBrief(d.brief); setUsedResearch(!!d.usedResearch);
+    const fmts: Fmt[] = (d.formats || []).map((f: Fmt) => ({
+      ...f, imageUrl: "", videoTask: "", videoUrl: "",
+      phase: f.imageTask ? "image" : "error", error: f.imageTask ? undefined : (f.error || "image task failed"),
+    }));
+    setFormats(fmts);
+    setStatus("Rendering 3 packages — Facebook, Instagram, TV/digital…");
+    // Drive every format independently.
+    fmts.forEach((f) => { if (f.imageTask) drive(f); });
+    setBusy(false);
   }
+
+  async function drive(f: Fmt, n = 0) {
+    if (n > 80) { update(f.key, { phase: "error", error: "Timed out — check RunwayML." }); return; }
+    const r = await fetch("/api/runway/advance", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ratio: f.ratio, promptText: f.promptText, imageTask: f.imageTask, imageUrl: f.imageUrl, videoTask: f.videoTask }),
+    });
+    const d = await r.json().catch(() => ({}));
+    const next: Fmt = { ...f, imageUrl: d.imageUrl || f.imageUrl, videoTask: d.videoTask || f.videoTask, videoUrl: d.videoUrl || "", phase: d.phase || f.phase, error: d.error };
+    update(f.key, { imageUrl: next.imageUrl, videoTask: next.videoTask, videoUrl: next.videoUrl, phase: next.phase, error: next.error });
+    if (d.phase === "done" || d.phase === "error") return;
+    setTimeout(() => drive(next, n + 1), 6000);
+  }
+
+  const phaseLabel: Record<Phase, string> = {
+    image: "Rendering image…", "image-done": "Image ready — starting video…",
+    video: "Rendering video (1-3 min)…", done: "Done ✓", error: "Failed",
+  };
 
   return (
     <div className="card glow p-5">
-      <div className="font-semibold mb-1">🎬 Test video marketing capacity</div>
-      <p className="text-xs text-[var(--muted)] mb-3">Drop a prompt → get a high-quality vertical (9:16) image + a Facebook/Instagram-ready video via RunwayML.</p>
-      <textarea className="text-sm" rows={3} value={prompt} onChange={(e) => setPrompt(e.target.value)} />
-      <button onClick={run} disabled={busy} className="btn btn-brand text-sm mt-3">{busy ? "Working…" : "Generate test video →"}</button>
-      {status && <span className="ml-3 text-sm text-[var(--muted)]">{status}</span>}
-      {err && <p className="text-sm text-[var(--danger)] mt-2">{err}</p>}
-      <div className="grid sm:grid-cols-2 gap-4 mt-4">
-        {img && <div><div className="text-xs text-[var(--muted)] mb-1">Image</div>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={img} alt="generated" className="rounded-xl w-full max-w-[260px]" /></div>}
-        {video && <div><div className="text-xs text-[var(--muted)] mb-1">Video</div><video src={video} controls className="rounded-xl w-full max-w-[260px]" /></div>}
+      <div className="font-semibold mb-1">🎬 Video Marketing — God test</div>
+      <p className="text-xs text-[var(--muted)] mb-3">
+        Edit the prompt, then launch. Grok does deep research and writes an out-of-script, broadcast-grade concept, then
+        RunwayML renders the <b>full image + full video</b> in three native packages: <b>Facebook</b> (1:1),{" "}
+        <b>Instagram</b> (9:16 reel) and a <b>TV / digital</b> cut (16:9) for vibe.co &amp; Google.
+      </p>
+
+      <label className="text-[10px] uppercase tracking-wide text-[var(--muted)]">Your prompt</label>
+      <textarea className="text-sm mt-1" rows={4} value={prompt} onChange={(e) => setPrompt(e.target.value)} />
+      <div className="flex items-center gap-3 mt-3">
+        <button onClick={launch} disabled={busy || !prompt.trim()} className="btn btn-brand text-sm">{busy ? "Launching…" : "Deep-research & launch campaign →"}</button>
+        {status && <span className="text-sm text-[var(--muted)]">{status}</span>}
       </div>
+      {err && <p className="text-sm text-[var(--danger)] mt-2">{err}</p>}
+
+      {brief && (
+        <div className="mt-4 rounded-xl border border-[var(--border)] bg-[var(--panel2)] p-4">
+          <div className="text-[10px] uppercase tracking-wide text-[var(--muted)] mb-1">{usedResearch ? "AI creative brief (deep research)" : "Creative brief (connect xAI for deep research)"}</div>
+          {brief.headline && <div className="text-lg font-bold">{brief.headline}</div>}
+          {brief.subhead && <div className="text-sm text-[var(--brand)]">{brief.subhead}</div>}
+          {brief.concept && <p className="text-sm text-[var(--muted)] mt-2">{brief.concept}</p>}
+        </div>
+      )}
+
+      {formats.length > 0 && (
+        <div className="grid gap-4 mt-5 md:grid-cols-3">
+          {formats.map((f) => (
+            <div key={f.key} className="rounded-xl border border-[var(--border)] bg-[var(--panel)] p-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-sm font-semibold">{f.label}</div>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${f.phase === "done" ? "bg-[var(--brand)]/20 text-[var(--brand)]" : f.phase === "error" ? "bg-[var(--danger)]/20 text-[var(--danger)]" : "bg-white/5 text-[var(--muted)]"}`}>
+                  {f.phase === "error" ? (f.error || "failed") : phaseLabel[f.phase]}
+                </span>
+              </div>
+              <div className="text-[10px] text-[var(--muted)] mb-2">{f.note} · {f.ratio}</div>
+              <div className="space-y-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {f.imageUrl && <img src={f.imageUrl} alt={`${f.label} still`} className="rounded-lg w-full" />}
+                {f.videoUrl && <video src={f.videoUrl} controls className="rounded-lg w-full" />}
+                {!f.imageUrl && f.phase !== "error" && <div className="aspect-square rounded-lg bg-[var(--panel2)] grid place-items-center text-xs text-[var(--muted)]">rendering…</div>}
+              </div>
+              {f.phase === "done" && (
+                <div className="flex gap-2 mt-2">
+                  {f.imageUrl && <a href={f.imageUrl} download target="_blank" rel="noreferrer" className="btn btn-ghost text-[11px] !py-1">Image ↓</a>}
+                  {f.videoUrl && <a href={f.videoUrl} download target="_blank" rel="noreferrer" className="btn btn-ghost text-[11px] !py-1">Video ↓</a>}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

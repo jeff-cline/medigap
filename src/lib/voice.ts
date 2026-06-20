@@ -98,15 +98,18 @@ export async function getAIProvider(): Promise<{ provider: string; apiKey: strin
 }
 
 export type ChatMsg = { role: "system" | "user" | "assistant"; content: string };
-export async function aiReply(messages: ChatMsg[]): Promise<string | null> {
+export async function aiReply(
+  messages: ChatMsg[],
+  opts: { maxTokens?: number; temperature?: number; timeoutMs?: number } = {},
+): Promise<string | null> {
   const p = await getAIProvider();
   if (!p) return null;
   try {
     const res = await fetch(p.url, {
       method: "POST",
       headers: { Authorization: `Bearer ${p.apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: p.model, messages, temperature: 0.5, max_tokens: 120 }),
-      signal: AbortSignal.timeout(9000),
+      body: JSON.stringify({ model: p.model, messages, temperature: opts.temperature ?? 0.5, max_tokens: opts.maxTokens ?? 120 }),
+      signal: AbortSignal.timeout(opts.timeoutMs ?? 9000),
     });
     if (!res.ok) return null;
     const data = await res.json();

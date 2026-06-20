@@ -23,11 +23,20 @@ async function rw(path: string, init: RequestInit) {
   } catch (e) { return { ok: false, status: 0, data: null, error: e instanceof Error ? e.message : "network error" }; }
 }
 
-// Vertical social ratio by default (IG/FB reels).
+// The three social/broadcast packages every campaign renders. Ratios are valid for
+// BOTH gen4_image (still) and gen4_turbo (motion) so each platform gets a native crop.
+export const SOCIAL_FORMATS: { key: string; label: string; ratio: string; note: string }[] = [
+  { key: "facebook", label: "Facebook — 1:1 feed", ratio: "960:960", note: "Square feed / in-stream ad" },
+  { key: "instagram", label: "Instagram — 9:16 reel/story", ratio: "720:1280", note: "Vertical Reels & Stories" },
+  { key: "tv", label: "TV / Digital — 16:9 (vibe.co + Google)", ratio: "1280:720", note: "Connected-TV & YouTube/Google video" },
+];
+
+// Vertical social ratio by default (IG/FB reels). Full Runway quality.
 export async function createImageTask(promptText: string, ratio = "720:1280") {
   return rw("/text_to_image", { method: "POST", body: JSON.stringify({ promptText: promptText.slice(0, 900), model: "gen4_image", ratio }) });
 }
-export async function createVideoTask(promptImage: string, promptText: string, ratio = "720:1280", duration = 5) {
+// Full-length (10s) gen4_turbo motion — maximize what Runway delivers per render.
+export async function createVideoTask(promptImage: string, promptText: string, ratio = "720:1280", duration = 10) {
   return rw("/image_to_video", { method: "POST", body: JSON.stringify({ promptImage, promptText: promptText.slice(0, 900), model: "gen4_turbo", ratio, duration }) });
 }
 export async function getTask(id: string) {
