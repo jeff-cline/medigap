@@ -3,6 +3,7 @@ import PublicHeader from "@/components/PublicHeader";
 import SiteFooter from "@/components/SiteFooter";
 import MoneyWordSignup from "@/components/MoneyWordSignup";
 import { db } from "@/lib/db";
+import { cpcForMoneyWord } from "@/lib/dataforseo";
 import { usd2, fmtPhone } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -12,11 +13,14 @@ export default async function MoneyWordLanding({ params }: { params: Promise<{ w
   const word = decodeURIComponent(raw).toLowerCase();
 
   const mw = await db.moneyWord.findFirst({ where: { word } });
-  // Live CPC comes from DataForSEO once connected; until then use a sensible default.
+  const claimedAreas = await db.agentBid.count({ where: { keyword: word } });
+  // Live keyword CPC from DataForSEO (cached on the money word); modeled default otherwise.
   const ds = await db.integration.findUnique({ where: { key: "dataforseo" } }).catch(() => null);
-  const cpcCents = 1500; // placeholder $15 CPC; replaced by live DataForSEO keyword CPC when connected
+  const live = mw && ds?.connected ? await cpcForMoneyWord(mw.id, word, mw.cpcCents) : 0;
+  const cpcLive = live > 0;
+  const cpcCents = cpcLive ? live : 1200; // default $12 CPC when no live data
   const lowCallValue = cpcCents * 5; // "highest CPC × 5"
-  const highCallValue = 7500; // $75 high-intent
+  const highCallValue = Math.max(7500, lowCallValue); // $75 floor for a high-intent call
 
   // Free demo lead tied to this money word.
   const demo = await db.lead.findFirst({
@@ -32,7 +36,12 @@ export default async function MoneyWordLanding({ params }: { params: Promise<{ w
         <Link href="/money-word-cloud" className="text-sm text-[var(--muted)] hover:text-[var(--brand)]">← Back to the cloud</Link>
         <div className="grid lg:grid-cols-2 gap-10 mt-4 items-start">
           <div>
-            <div className="text-xs uppercase tracking-wide text-[var(--gold)]">Money Word</div>
+            <div className="flex items-center gap-3">
+              <div className="text-xs uppercase tracking-wide text-[var(--gold)]">Money Word</div>
+              {claimedAreas > 0
+                ? <span className="inline-flex items-center gap-1 rounded-full border border-[var(--gold)]/40 bg-[var(--gold)]/10 px-2 py-0.5 text-[11px] text-[var(--gold)]">● {claimedAreas} area{claimedAreas === 1 ? "" : "s"} claimed</span>
+                : <span className="inline-flex items-center gap-1 rounded-full border border-[var(--brand)]/40 bg-[var(--brand)]/10 px-2 py-0.5 text-[11px] text-[var(--brand)]">● Available now</span>}
+            </div>
             <h1 className="text-5xl font-extrabold text-gradient">{word}</h1>
             <p className="mt-4 text-lg text-[var(--muted)]">Based on our data, <b className="text-[var(--text)]">{word}</b> is a high-value, high-intent topic seniors are calling about{mw && mw.triggers > 0 ? <> — heard <b className="text-[var(--text)]">{mw.triggers}×</b> on our network so far</> : null}.</p>
 
@@ -43,7 +52,7 @@ export default async function MoneyWordLanding({ params }: { params: Promise<{ w
                 <div className="text-2xl text-[var(--muted)]">—</div>
                 <div><div className="text-3xl font-bold text-[var(--gold)]">{usd2(highCallValue)}</div><div className="text-xs text-[var(--muted)]">high-intent call</div></div>
               </div>
-              <p className="text-xs text-[var(--muted)] mt-3">{ds?.connected ? "Live keyword CPC via DataForSEO." : "CPC modeled — connect DataForSEO in the back office for live, keyword-exact pricing."}</p>
+              <p className="text-xs text-[var(--muted)] mt-3">{cpcLive ? `Live keyword CPC ${usd2(cpcCents)} via DataForSEO.` : "CPC modeled — connect DataForSEO in the back office for live, keyword-exact pricing."}</p>
             </div>
 
             {demo && (

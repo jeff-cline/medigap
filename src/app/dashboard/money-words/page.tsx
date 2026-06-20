@@ -20,6 +20,9 @@ export default async function MoneyWordsPage() {
     db.user.findMany({ where: { role: { not: "consumer" } }, orderBy: { name: "asc" }, select: { id: true, name: true, email: true, role: true, phone: true } }),
   ]);
   const userName = new Map(users.map((u) => [u.id, u.name || u.email]));
+  const claimRows = await db.agentBid.findMany({ where: { keyword: { not: "" } }, select: { keyword: true } });
+  const claimCount = new Map<string, number>();
+  claimRows.forEach((c) => claimCount.set(c.keyword.toLowerCase(), (claimCount.get(c.keyword.toLowerCase()) || 0) + 1));
   const routeOptions = [
     { value: "", label: "— Auction / house default —" },
     ...users.map((u) => ({ value: u.id, label: `${u.name || u.email} (${u.role}${u.phone ? "" : " · no phone!"})` })),
@@ -69,6 +72,7 @@ export default async function MoneyWordsPage() {
               <tr>
                 <th>Word</th>
                 <th className="text-right">Triggered</th>
+                <th>Claimed</th>
                 <th>Partner</th>
                 <th>Action</th>
                 <th>Routes To</th>
@@ -82,6 +86,7 @@ export default async function MoneyWordsPage() {
                 <tr key={w.id}>
                   <td className="font-medium">&ldquo;{w.word}&rdquo;</td>
                   <td className="text-right font-medium text-[var(--gold)]">{w.triggers}×</td>
+                  <td>{claimCount.get(w.word.toLowerCase()) ? <Badge tone="up">{claimCount.get(w.word.toLowerCase())} claimed</Badge> : <Badge tone="default">available</Badge>}</td>
                   <td>{w.partner || "—"}</td>
                   <td>
                     {w.action === "transfer" ? <Badge tone="brand">hot transfer</Badge> : <Badge tone="up">AI qualify</Badge>}
@@ -96,7 +101,7 @@ export default async function MoneyWordsPage() {
               ))}
               {words.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="text-center text-[var(--muted)] py-8">
+                  <td colSpan={9} className="text-center text-[var(--muted)] py-8">
                     No money words yet — add one below.
                   </td>
                 </tr>

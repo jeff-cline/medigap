@@ -50,11 +50,11 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
     fields: [{ name: "privateKey", label: "Private API Key", type: "password", placeholder: "pk_xxx" }, { name: "publicId", label: "Public / Site ID", placeholder: "ABC123" }, { name: "clientId", label: "OAuth Client ID (optional)" }, { name: "clientSecret", label: "OAuth Client Secret (optional)", type: "password" }],
   },
   {
-    phase: "Remarketing", key: "zapmail", label: "Zapmail — Cold Email Sequence",
-    blurb: "Your existing rule: sends the initial 1-2-3 emails to non-opted-in leads until they engage.",
-    dataFlow: "email sends/opens push leads toward Klaviyo opt-in",
-    steps: ["Reuse your existing Zapmail account/rule.", "Grab the API key from Zapmail settings.", "Save, then Test connection."],
-    fields: [{ name: "apiKey", label: "Zapmail API Key", type: "password", placeholder: "zm_xxx" }, { name: "fromEmail", label: "From Address", placeholder: "offers@medigap.plus" }],
+    phase: "Remarketing", key: "zapmail", label: "Zapmail — Email (cold sequence + alerts)",
+    blurb: "Cold 1-2-3 emails to leads AND transactional alerts (e.g. new-account notifications to you). Sends via your Zapmail mailbox SMTP.",
+    dataFlow: "email sends/opens → Klaviyo opt-in; new-account alerts → your inbox",
+    steps: ["In Zapmail, open the mailbox you want to send from; get its SMTP host, port, username (the email), and password/app-password.", "For Google Workspace mailboxes: host smtp.gmail.com, port 587, and an App Password.", "Paste below + your From address, then Test connection (we verify the SMTP login).", "Optional: paste the Zapmail API key for the cold-email sequence."],
+    fields: [{ name: "fromEmail", label: "From Address", placeholder: "alerts@medigap.plus" }, { name: "smtpHost", label: "SMTP Host", placeholder: "smtp.gmail.com" }, { name: "smtpPort", label: "SMTP Port", placeholder: "587" }, { name: "smtpUser", label: "SMTP Username (email)", placeholder: "alerts@medigap.plus" }, { name: "smtpPass", label: "SMTP Password / App Password", type: "password" }, { name: "apiKey", label: "Zapmail API Key (optional)", type: "password" }],
   },
   {
     phase: "Remarketing", key: "predictivedata", label: "PredictiveData — Data Append",
@@ -88,7 +88,7 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
     phase: "Scale & arbitrage", key: "dataforseo", label: "DataForSEO — Keyword CPC & Search Volume",
     blurb: "Live cost-per-click & search volume per keyword — powers Money Word Cloud pricing (CPC × 5 call value).",
     dataFlow: "keyword CPC → money-word call values on /money-word-cloud",
-    steps: ["Create an account at dataforseo.com.", "Find your API Login (email) and API Password in the dashboard.", "Paste both below and Test connection.", "Money-word call values switch from modeled to live CPC."],
+    steps: ["Create an account at dataforseo.com.", "If it asks for an IP to whitelist, use this server's IP: 137.220.56.129.", "Find your API Login (email) and API Password in the dashboard.", "Paste both below and Test connection.", "Money-word call values switch from modeled to live CPC."],
     fields: [{ name: "login", label: "API Login", placeholder: "you@email.com" }, { name: "password", label: "API Password", type: "password" }],
   },
   {

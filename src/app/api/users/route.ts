@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { notifyNewAccount } from "@/lib/email";
 
 const TEMP_PASSWORD = "TEMP!234";
 
@@ -23,8 +24,9 @@ export async function POST(req: NextRequest) {
     const passwordHash = await bcrypt.hash(TEMP_PASSWORD, 10);
     try {
       const user = await db.user.create({
-        data: { email, name, role, passwordHash, mustChangePassword: true, status: "active" },
+        data: { email, name, role, passwordHash, mustChangePassword: true, status: "active", source: "Admin (created in dashboard)" },
       });
+      notifyNewAccount({ name: user.name, email: user.email, role: user.role, phone: user.phone, source: user.source, id: user.id }).catch(() => {});
       return NextResponse.json({ ok: true, id: user.id, tempPassword: TEMP_PASSWORD });
     } catch {
       return NextResponse.json({ error: `A user with ${email} already exists.` }, { status: 409 });

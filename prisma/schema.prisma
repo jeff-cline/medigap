@@ -43,6 +43,7 @@ model User {
   stars             Float    @default(0) // agent rating 0-5
   balanceCents      Int      @default(0) // prepaid bucket for pay-per-call bidding
   available         Boolean  @default(false) // taking calls right now (on/off)
+  source            String   @default("") // attribution: where the account came in from
   createdAt         DateTime @default(now())
 
   agentBids   AgentBid[]
@@ -249,6 +250,7 @@ model MoneyWord {
   routeNumber String  @default("") // OR a direct phone number to bridge to
   aliases   String  @default("[]") // JSON variant cloud, e.g. ["incontinent","incontinence supplies"]
   triggers  Int     @default(0) // how many times heard on a call (sizes the cloud)
+  cpcCents  Int     @default(0) // cached live keyword CPC from DataForSEO
   active    Boolean @default(true)
 }
 

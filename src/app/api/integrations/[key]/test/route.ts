@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { verifyEmail } from "@/lib/email";
 
 // Live health check per provider. Returns {ok, status, message} and records it on the
 // Integration row so the panel can show green / amber / red.
@@ -100,7 +101,12 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ key: strin
       ok = r.ok; message = ok ? "DataForSEO connected. Live keyword CPC enabled." : `DataForSEO rejected the credentials (HTTP ${r.code}).`;
       break;
     }
-    case "zapmail": { ok = !need("apiKey").length; message = ok ? "Keys saved. Cold-email sequencing armed." : "Missing: apiKey"; break; }
+    case "zapmail": {
+      if (need("smtpHost", "smtpUser", "smtpPass").length) { message = "Add SMTP host, username & password to send email."; break; }
+      const v = await verifyEmail();
+      ok = v.ok; message = ok ? "Zapmail SMTP verified — email alerts ready." : `SMTP login failed: ${v.error}`;
+      break;
+    }
     case "predictivedata": {
       const miss = need("apiKey", "website");
       if (miss.length) { message = `Missing: ${miss.join(", ")}`; break; }
