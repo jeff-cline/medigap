@@ -60,6 +60,7 @@ export default function AgentAccount({ balanceCents, available, phone }: { balan
           <p className="text-sm text-[var(--muted)] mt-2">
             {on ? "You're LIVE — your active bids compete for inbound calls right now." : "You're OFF — you won't receive any calls until you switch on."}
           </p>
+          {on && <p className="text-xs text-[var(--danger)] mt-2"><b>No refunds:</b> you keep paying for every call you win while this is on. Switch off when you&apos;re done.</p>}
         </div>
         <div className={`mt-3 text-sm font-medium ${on ? "text-[var(--brand)]" : "text-[var(--muted)]"}`}>{on ? "● Online" : "○ Offline"}</div>
       </div>

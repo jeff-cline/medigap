@@ -95,7 +95,10 @@ export default async function AgentPortal() {
         </Section>
       )}
 
-      <Section title="My Bids" desc="Pay-per-call auction. Highest active bid in scope wins the next call.">
+      <Section title="My Bids" desc="Bid by money word — select a money word and your price. Highest active bid in scope wins the next call while you're taking calls.">
+        <div className="card !p-3 mb-3 border-l-4 border-l-[var(--danger)] text-sm">
+          <b className="text-[var(--danger)]">No refunds.</b> While <b>Taking Calls</b> is ON you keep paying for every call you win — if you forget to switch it OFF, those charges stand. Turn it off when you&apos;re done.
+        </div>
         {myBids.length ? (
           <Card className="!p-0 overflow-hidden">
             <table>
@@ -138,7 +141,7 @@ export default async function AgentPortal() {
         )}
       </Section>
 
-      <Section title="Place a Bid" desc={`Minimum bid is $${minDollars} per call. Highest active bid in scope wins.`}>
+      <Section title="Place a Bid" desc={`Pick a money word and your price (min $${minDollars}/call). Highest active bid in scope wins the next call while you're taking calls.`}>
         <BidForm minBidCents={minCallBidCents} />
       </Section>
 
