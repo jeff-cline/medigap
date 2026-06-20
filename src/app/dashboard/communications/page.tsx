@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { Stat, Badge, Section } from "@/components/ui";
 import { num, cst } from "@/lib/format";
 import CommComposer from "@/components/CommComposer";
+import CommInbox from "@/components/CommInbox";
 
 export const dynamic = "force-dynamic";
 
@@ -32,8 +33,12 @@ export default async function CommunicationsPage() {
         <Stat label="Campaigns" value={num(campaigns.length)} sub="recent" tone="gold" />
       </div>
 
-      <Section title="Compose & send" desc="Pick an audience, channel, and message.">
+      <Section title="Compose & send" desc="Text + cold email (via Zapmail). Opted-in marketing runs in Klaviyo.">
         <CommComposer sites={sites} moneyWords={words.map((w) => w.word)} smtpReady={smtpReady} />
+      </Section>
+
+      <Section title="Inbox" desc="Inbound across your three email systems — cold replies (Zapmail), business (Workspace), and opted-in (Klaviyo).">
+        <CommInbox />
       </Section>
 
       <Section title="Campaign Log" desc="Every blast you've sent.">

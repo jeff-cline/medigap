@@ -102,9 +102,15 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ key: strin
       break;
     }
     case "zapmail": {
-      if (need("smtpHost", "smtpUser", "smtpPass").length) { message = "Add SMTP host, username & password to send email."; break; }
-      const v = await verifyEmail();
-      ok = v.ok; message = ok ? "Zapmail SMTP verified — email alerts ready." : `SMTP login failed: ${v.error}`;
+      if (need("smtpHost", "smtpUser", "smtpPass").length) { message = "Add the mailbox SMTP host, email & app password."; break; }
+      const v = await verifyEmail("zapmail");
+      ok = v.ok; message = ok ? "Zapmail mailbox verified — cold email ready." : `SMTP login failed: ${v.error}`;
+      break;
+    }
+    case "google_workspace": {
+      if (need("smtpHost", "smtpUser", "smtpPass").length) { message = "Add the mailbox SMTP host, email & app password."; break; }
+      const v = await verifyEmail("google_workspace");
+      ok = v.ok; message = ok ? "Google Workspace verified — business email & alerts ready." : `SMTP login failed: ${v.error}`;
       break;
     }
     case "predictivedata": {
@@ -126,7 +132,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ key: strin
   }
 
   // For providers we can only field-check, treat success as "saved" (amber→ok); live-pinged ones are "verified".
-  const liveTested = ["twilio", "groq", "xai", "claude", "stripe", "klaviyo", "facebook", "predictivedata", "dataforseo"].includes(key);
+  const liveTested = ["twilio", "groq", "xai", "claude", "stripe", "klaviyo", "facebook", "predictivedata", "dataforseo", "zapmail", "google_workspace"].includes(key);
   const status = ok ? (liveTested ? "verified" : "saved") : (Object.keys(cfg).length ? "failed" : "unconfigured");
   await db.integration.upsert({
     where: { key },

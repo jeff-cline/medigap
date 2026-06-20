@@ -50,11 +50,11 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
     fields: [{ name: "privateKey", label: "Private API Key", type: "password", placeholder: "pk_xxx" }, { name: "publicId", label: "Public / Site ID", placeholder: "ABC123" }, { name: "clientId", label: "OAuth Client ID (optional)" }, { name: "clientSecret", label: "OAuth Client Secret (optional)", type: "password" }],
   },
   {
-    phase: "Remarketing", key: "zapmail", label: "Zapmail — Email (cold sequence + alerts)",
-    blurb: "Cold 1-2-3 emails to leads AND transactional alerts (e.g. new-account notifications to you). Sends via your Zapmail mailbox SMTP.",
-    dataFlow: "email sends/opens → Klaviyo opt-in; new-account alerts → your inbox",
-    steps: ["In Zapmail, open the mailbox you want to send from; get its SMTP host, port, username (the email), and password/app-password.", "For Google Workspace mailboxes: host smtp.gmail.com, port 587, and an App Password.", "Paste below + your From address, then Test connection (we verify the SMTP login).", "Optional: paste the Zapmail API key for the cold-email sequence."],
-    fields: [{ name: "fromEmail", label: "From Address", placeholder: "alerts@medigap.plus" }, { name: "smtpHost", label: "SMTP Host", placeholder: "smtp.gmail.com" }, { name: "smtpPort", label: "SMTP Port", placeholder: "587" }, { name: "smtpUser", label: "SMTP Username (email)", placeholder: "alerts@medigap.plus" }, { name: "smtpPass", label: "SMTP Password / App Password", type: "password" }, { name: "apiKey", label: "Zapmail API Key (optional)", type: "password" }],
+    phase: "Remarketing", key: "zapmail", label: "Zapmail — Cold / Non-Opted Email",
+    blurb: "Seasoned mailboxes for cold (non-opted-in) outreach. Sends + reads replies via the Zapmail mailbox's SMTP/IMAP. Goal: move engagers into Klaviyo's opted-in flows.",
+    dataFlow: "cold sends → engaged leads → Klaviyo opt-in; replies show in Communications → Cold inbox",
+    steps: ["In Zapmail (zapmail.io), open a sending mailbox; copy its SMTP + IMAP creds (host smtp.gmail.com / imap.gmail.com for Google mailboxes, port 587/993, the email, an App Password).", "Paste below + your From address, then Test connection (we verify the SMTP login).", "Optional: add your Zapmail API key (mailbox management).", "Used ONLY for cold/non-opted email — opted-in marketing runs through Klaviyo."],
+    fields: [{ name: "fromEmail", label: "From Address (the mailbox)", placeholder: "outreach@yoursend.com" }, { name: "smtpHost", label: "SMTP Host", placeholder: "smtp.gmail.com" }, { name: "smtpPort", label: "SMTP Port", placeholder: "587" }, { name: "imapHost", label: "IMAP Host (read replies)", placeholder: "imap.gmail.com" }, { name: "smtpUser", label: "Mailbox Email", placeholder: "outreach@yoursend.com" }, { name: "smtpPass", label: "App Password", type: "password" }, { name: "apiKey", label: "Zapmail API Key (optional)", type: "password" }],
   },
   {
     phase: "Remarketing", key: "predictivedata", label: "PredictiveData — Data Append",
@@ -92,11 +92,11 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
     fields: [{ name: "login", label: "API Login", placeholder: "you@email.com" }, { name: "password", label: "API Password", type: "password" }],
   },
   {
-    phase: "Scale & arbitrage", key: "google_workspace", label: "Google Workspace — Team (Suite for Teams)",
-    blurb: "Connect your Google Workspace for team email, shared mailboxes & calendars. Workspace mailbox SMTP can also power outbound email.",
-    dataFlow: "team accounts + sending domains",
-    steps: ["At admin.google.com, confirm your Workspace domain.", "Create a team/sending mailbox (e.g. alerts@yourdomain) + an App Password.", "Paste the domain + admin email below. Use the App Password in the Zapmail SMTP card to send.", "Save, then Test connection."],
-    fields: [{ name: "domain", label: "Workspace Domain", placeholder: "yourcompany.com" }, { name: "adminEmail", label: "Admin Email", placeholder: "admin@yourcompany.com" }],
+    phase: "Scale & arbitrage", key: "google_workspace", label: "Google Workspace — Business Email",
+    blurb: "Your company/employee email. Powers all transactional alerts (new-account notifications, etc.) and the business inbox shown in Communications.",
+    dataFlow: "transactional alerts out; business inbox in",
+    steps: ["At admin.google.com confirm your Workspace domain.", "Create/choose a sending mailbox (e.g. alerts@yourcompany.com) and generate an App Password (myaccount.google.com → Security → App passwords).", "Host smtp.gmail.com / imap.gmail.com, ports 587 / 993.", "Paste below, then Test connection (verifies SMTP)."],
+    fields: [{ name: "domain", label: "Workspace Domain", placeholder: "yourcompany.com" }, { name: "fromEmail", label: "From Address", placeholder: "alerts@yourcompany.com" }, { name: "smtpHost", label: "SMTP Host", placeholder: "smtp.gmail.com" }, { name: "smtpPort", label: "SMTP Port", placeholder: "587" }, { name: "imapHost", label: "IMAP Host (read inbox)", placeholder: "imap.gmail.com" }, { name: "smtpUser", label: "Mailbox Email", placeholder: "alerts@yourcompany.com" }, { name: "smtpPass", label: "App Password", type: "password" }],
   },
   {
     phase: "Scale & arbitrage", key: "vibe", label: "Vibe.co — Connected TV",

@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   if (b.testTo || b.testEmail) {
     const fake = { name: "Test", phone: String(b.testTo || ""), email: String(b.testEmail || ""), refNum: null, zip: "" };
     if (b.testTo && wantSms) await sendSms({ to: String(b.testTo), body: merge(body, fake), batch: "comms-test" });
-    if (b.testEmail && wantEmail) await sendEmail(String(b.testEmail), subject, emailHtml(merge(body, fake), String(b.testEmail)));
+    if (b.testEmail && wantEmail) await sendEmail(String(b.testEmail), subject, emailHtml(merge(body, fake), String(b.testEmail)), "zapmail");
     return NextResponse.json({ ok: true, test: true });
   }
 
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
       r.ok ? sms++ : failed++;
     }
     if (wantEmail && lead.email && !lead.emailOptOut) {
-      const r = await sendEmail(lead.email, subject, emailHtml(merge(body, lead), lead.email));
+      const r = await sendEmail(lead.email, subject, emailHtml(merge(body, lead), lead.email), "zapmail"); // cold/non-opted → Zapmail
       await db.emailMessage.create({ data: { to: lead.email, subject, body: merge(body, lead), status: r.ok ? "sent" : "failed", error: r.error || "", batch: label, leadId: lead.id } }).catch(() => {});
       r.ok ? emails++ : failed++;
     }
