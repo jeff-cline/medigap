@@ -38,6 +38,51 @@ model Site {
   calls     Call[]
 }
 
+// Partner onboarding: a business owner fills the deep-research intake (shareable link),
+// admin sets rev-share, then one-click generates their baked standalone lead-gen site.
+model PartnerApplication {
+  id            String   @id @default(cuid())
+  businessName  String
+  contactName   String   @default("")
+  email         String   @default("")
+  phone         String   @default("")
+  website       String   @default("")
+  hostname      String   @default("") // desired domain (already pointed at our IP)
+  vertical      String   @default("medicare")
+  services      String   @default("")
+  audience      String   @default("")
+  geography     String   @default("") // states/regions served
+  territoryZips String   @default("") // ZIPs the owner keeps
+  unwantedLeads String   @default("") // lead types they DON'T want → affiliate to us
+  usp           String   @default("")
+  competitors   String   @default("")
+  moneyWords    String   @default("")
+  brandColors   String   @default("")
+  logoUrl       String   @default("")
+  primaryCta    String   @default("call")
+  notes         String   @default("")
+  status        String   @default("new") // new|approved|generated|rejected
+  revSharePct   Int      @default(50)
+  ownerId       String?
+  siteId        String?
+  createdAt     DateTime @default(now())
+}
+
+// $1,500 upgrades: social-media video series + media kit / brand-guidelines (RunwayML).
+model Upgrade {
+  id            String   @id @default(cuid())
+  applicationId String?
+  siteId        String?
+  kind          String   // video | mediakit
+  amountCents   Int      @default(150000)
+  paidCents     Int      @default(0)
+  couponCode    String   @default("")
+  status        String   @default("ordered") // ordered|generating|delivered|failed
+  resultUrls    String   @default("[]")
+  note          String   @default("")
+  createdAt     DateTime @default(now())
+}
+
 // Affiliate leads: overflow leads a standalone site sent into the network that we sold,
 // revenue-shared back to the source owner. Minimal PII (first name) + the money.
 model AffiliateLead {

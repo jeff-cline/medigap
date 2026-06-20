@@ -11,6 +11,7 @@ export const LEFT_NAV: [string, string, string][] = [
   ["Communications", "/dashboard/communications", "✉️"],
   ["Coupons", "/dashboard/coupons", "🎟️"],
   ["Marketing Sites", "/dashboard/sites", "🌐"],
+  ["Affiliate Partners", "/dashboard/partners", "🤝"],
   ["Marketing / Ads", "/dashboard/marketing", "📣"],
   ["Integrations", "/dashboard/integrations", "🔌"],
   ["User Management", "/dashboard/users", "🔐"],

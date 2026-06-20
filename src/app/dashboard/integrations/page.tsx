@@ -85,6 +85,13 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
     fields: [{ name: "network", label: "Network Name", placeholder: "MediaAlpha" }, { name: "affiliateCode", label: "Affiliate Code" }, { name: "apiKey", label: "API Key", type: "password" }, { name: "postbackUrl", label: "Postback / Click-Value URL", placeholder: "https://…" }],
   },
   {
+    phase: "Scale & arbitrage", key: "runway", label: "RunwayML — AI Video & Graphics",
+    blurb: "Generates the social-media video series, media kit graphics & brand visuals for partner sites and the video-marketing test tool.",
+    dataFlow: "AI-generated video/image assets → partner media kits + upgrades",
+    steps: ["Create an account at runwayml.com → dev.runwayml.com (developer API).", "API Keys → create a key.", "Paste below and Test connection.", "Powers the $1,500 video/media-kit upgrades + the God 'Test video marketing capacity' tool."],
+    fields: [{ name: "apiKey", label: "RunwayML API Key", type: "password", placeholder: "key_..." }],
+  },
+  {
     phase: "Scale & arbitrage", key: "dataforseo", label: "DataForSEO — Keyword CPC & Search Volume",
     blurb: "Live cost-per-click & search volume per keyword — powers Money Word Cloud pricing (CPC × 5 call value).",
     dataFlow: "keyword CPC → money-word call values on /money-word-cloud",
