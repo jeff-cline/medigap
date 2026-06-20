@@ -4,9 +4,13 @@ import SiteFooter from "@/components/SiteFooter";
 import AdSlot from "@/components/AdSlot";
 import { TOLLFREE, TOLLFREE_TEL, usd, num } from "@/lib/format";
 import { getMoneySnapshot } from "@/lib/queries";
+import { getCurrentSite } from "@/lib/site";
 
 export default async function Home() {
-  const m = await getMoneySnapshot().catch(() => null);
+  const [m, brand] = await Promise.all([getMoneySnapshot().catch(() => null), getCurrentSite()]);
+  const brandName = brand?.name || "medigap.plus";
+  const brandStyle = brand?.brandColor ? ({ "--brand": brand.brandColor } as React.CSSProperties) : undefined;
+  const headline = brand?.heroHeadline;
   const ticker = [
     `Calls routed today: ${num((m?.calls ?? 0))}`,
     `Network leads: ${num(m?.leads ?? 0)}`,
@@ -16,11 +20,13 @@ export default async function Home() {
   ];
 
   return (
-    <>
+    <div style={brandStyle}>
       {/* Top bar */}
       <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur">
         <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold text-gradient">medigap.plus</Link>
+          <Link href="/" className="flex items-center gap-2 text-xl font-bold text-gradient">
+            {brand?.logoUrl ? <img src={brand.logoUrl} alt={brandName} className="h-8 w-auto" /> : brandName}
+          </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm text-[var(--muted)]">
             <Link href="/medicare" className="hover:text-[var(--text)]">Medicare</Link>
             <Link href="/medigap" className="hover:text-[var(--text)]">Supplements</Link>
@@ -42,7 +48,11 @@ export default async function Home() {
               <span className="live-dot text-[var(--brand)]">●</span> Trusted by seniors in all 50 states
             </div>
             <h1 className="mt-5 text-4xl md:text-6xl font-extrabold leading-tight">
-              Every Medicare &amp; senior decision, <span className="text-gradient">handled by real experts.</span>
+              {headline ? (
+                <span className="text-gradient">{headline}</span>
+              ) : (
+                <>Every Medicare &amp; senior decision, <span className="text-gradient">handled by real experts.</span></>
+              )}
             </h1>
             <p className="mt-5 text-lg text-[var(--muted)]">
               Compare Medicare Advantage, Medigap supplements, senior housing, in-home care and Alzheimer&apos;s care — all in one place.
@@ -99,7 +109,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <SiteFooter ticker={ticker} />
-    </>
+      <SiteFooter ticker={ticker} brand={brand} />
+    </div>
   );
 }

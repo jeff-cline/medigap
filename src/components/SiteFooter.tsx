@@ -30,24 +30,31 @@ const company = [
   ["Contact", "/contact"],
 ];
 
-export default function SiteFooter({ ticker }: { ticker?: string[] }) {
+type Brand = { name: string; logoUrl?: string; footerLinks?: { label: string; href: string }[] };
+
+export default function SiteFooter({ ticker, brand }: { ticker?: string[]; brand?: Brand | null }) {
+  const custom = (brand?.footerLinks || []).map((l) => [l.label, l.href] as string[]);
   return (
     <footer className="mt-auto">
       {ticker && ticker.length > 0 && <Ticker items={ticker} />}
       <div className="border-t border-[var(--border)] bg-[var(--panel)]">
         <div className="mx-auto max-w-7xl px-6 py-12 grid gap-10 md:grid-cols-4">
           <div>
-            <div className="text-xl font-bold text-gradient">medigap.plus</div>
-            <p className="mt-3 text-sm text-[var(--muted)]">The senior-population marketing network. One platform, every over-65 product.</p>
+            {brand?.logoUrl ? (
+              <img src={brand.logoUrl} alt={brand.name} className="h-10 w-auto" />
+            ) : (
+              <div className="text-xl font-bold text-gradient">{brand?.name || "medigap.plus"}</div>
+            )}
+            <p className="mt-3 text-sm text-[var(--muted)]">{brand ? `${brand.name} — trusted senior coverage and guidance.` : "The senior-population marketing network. One platform, every over-65 product."}</p>
             <a href={`tel:${TOLLFREE_TEL}`} className="btn btn-brand mt-4 text-sm">📞 {TOLLFREE}</a>
           </div>
           <FooterCol title="Products" links={verticals} />
-          <FooterCol title="Partner & Business" links={business} />
+          {custom.length > 0 ? <FooterCol title="More" links={custom} /> : <FooterCol title="Partner & Business" links={business} />}
           <FooterCol title="Company" links={company} />
         </div>
         <div className="border-t border-[var(--border)]">
           <div className="mx-auto max-w-7xl px-6 py-4 text-xs text-[var(--muted)] flex flex-wrap justify-between gap-2">
-            <span>© {""}2026 medigap.plus — all rights reserved. Not affiliated with the U.S. government or federal Medicare program.</span>
+            <span>© {""}2026 {brand?.name || "medigap.plus"} — all rights reserved. Not affiliated with the U.S. government or federal Medicare program.</span>
             <span>Privacy is centrally managed across the network.</span>
           </div>
         </div>

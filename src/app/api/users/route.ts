@@ -58,6 +58,12 @@ export async function POST(req: NextRequest) {
     await db.user.update({ where: { id }, data });
     return NextResponse.json({ ok: true });
   }
+  if (action === "features") {
+    // God toggles which partner-portal features this account can see.
+    const list = Array.isArray(body.features) ? body.features.map((k: unknown) => String(k)) : [];
+    await db.user.update({ where: { id }, data: { features: JSON.stringify(list) } });
+    return NextResponse.json({ ok: true });
+  }
   if (action === "deposit") {
     const cents = Math.round((Number(body.amount) || 0) * 100);
     if (cents <= 0) return NextResponse.json({ error: "Amount must be positive." }, { status: 400 });

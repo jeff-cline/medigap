@@ -32,6 +32,9 @@ model Site {
   audience  String   @default("")
   primaryCta String  @default("call") // call | form
   brandColor String  @default("")
+  logoUrl   String   @default("")
+  footerLinks String @default("[]") // JSON [{label, href}] — partner's custom footer
+  heroHeadline String @default("")
   moneyWords String  @default("")
   createdAt DateTime @default(now())
   leads     Lead[]
@@ -112,6 +115,7 @@ model User {
   balanceCents      Int      @default(0) // prepaid bucket for pay-per-call bidding
   available         Boolean  @default(false) // taking calls right now (on/off)
   source            String   @default("") // attribution: where the account came in from
+  features          String   @default("") // JSON: partner portal features the God account enabled
   createdAt         DateTime @default(now())
 
   agentBids   AgentBid[]

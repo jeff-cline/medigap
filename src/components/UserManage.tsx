@@ -1,10 +1,12 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { PARTNER_FEATURES, ALWAYS_ON, enabledSet, type FeatureKey } from "@/lib/features";
 
-const ROLES = ["agent", "advertiser", "investor", "marketing", "accounting", "moneywords", "risk", "god"];
+const ROLES = ["agent", "advertiser", "investor", "marketing", "marketing_partner", "accounting", "moneywords", "risk", "god"];
+const PORTAL_ROLES = ["marketing_partner", "agent"];
 
-export default function UserManage({ user }: { user: { id: string; name: string; phone: string; role: string; status: string } }) {
+export default function UserManage({ user }: { user: { id: string; name: string; phone: string; role: string; status: string; features?: string } }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(user.name);
@@ -14,6 +16,16 @@ export default function UserManage({ user }: { user: { id: string; name: string;
   const [amt, setAmt] = useState("100");
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
+  const [feats, setFeats] = useState<FeatureKey[]>(() => enabledSet(user.features));
+
+  function toggleFeat(k: FeatureKey) {
+    if (ALWAYS_ON.includes(k)) return; // base CRM always on
+    setFeats((cur) => (cur.includes(k) ? cur.filter((x) => x !== k) : [...cur, k]));
+  }
+  async function saveFeatures() {
+    const d = await call({ id: user.id, action: "features", features: feats });
+    if (!d.error) setNote("Features saved");
+  }
 
   async function call(body: object) {
     setBusy(true); setNote("");
@@ -55,6 +67,25 @@ export default function UserManage({ user }: { user: { id: string; name: string;
             <input className="!w-20" value={amt} onChange={(e) => setAmt(e.target.value)} />
             <button onClick={deposit} disabled={busy} className="btn btn-ghost text-xs !py-1.5">Deposit</button>
           </div>
+
+          {PORTAL_ROLES.includes(role) && (
+            <div className="mt-2 border-t border-[var(--border)] pt-3">
+              <div className="text-[10px] uppercase text-[var(--muted)] mb-2">Portal features this partner can see <span className="text-[var(--muted)]">(base CRM always on)</span></div>
+              <div className="grid grid-cols-2 gap-1.5">
+                {PARTNER_FEATURES.map((f) => {
+                  const locked = ALWAYS_ON.includes(f.key);
+                  const on = feats.includes(f.key);
+                  return (
+                    <label key={f.key} className={`flex items-start gap-2 rounded-lg border px-2 py-1.5 cursor-pointer ${on ? "border-[var(--brand)] bg-[var(--panel)]" : "border-[var(--border)]"} ${locked ? "opacity-70 cursor-not-allowed" : ""}`}>
+                      <input type="checkbox" checked={on} disabled={locked} onChange={() => toggleFeat(f.key)} className="mt-0.5" />
+                      <span><span className="text-xs font-medium">{f.label}</span><span className="block text-[10px] text-[var(--muted)]">{locked ? "always on" : f.desc}</span></span>
+                    </label>
+                  );
+                })}
+              </div>
+              <button onClick={saveFeatures} disabled={busy} className="btn btn-brand text-xs !py-1.5 mt-2">Save features</button>
+            </div>
+          )}
         </div>
       )}
       {note && <div className="text-[11px] text-[var(--muted)] mt-1">{note}</div>}

@@ -19,11 +19,43 @@ function isGodOrStaff(role?: string) {
 export async function POST(req: NextRequest) {
   const s = await getSession();
   const isGod = s?.role === "god" || !!s?.impersonatorUid;
-  if (!s || (!isGod && !isGodOrStaff(s.role))) {
-    return NextResponse.json({ error: "God / staff only" }, { status: 403 });
-  }
+  if (!s) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
+
+  // Branding editor — the God account OR the site's own partner can update
+  // logo, colors, hero headline and custom footer links.
+  if (body.action === "branding" && body.id) {
+    const site = await db.site.findUnique({ where: { id: String(body.id) } });
+    if (!site) return NextResponse.json({ error: "Site not found" }, { status: 404 });
+    const owns = site.ownerId && site.ownerId === s.uid;
+    if (!isGod && !isGodOrStaff(s.role) && !owns) {
+      return NextResponse.json({ error: "Not your site." }, { status: 403 });
+    }
+    let footerLinks = site.footerLinks;
+    if (Array.isArray(body.footerLinks)) {
+      const clean = body.footerLinks
+        .map((l: { label?: string; href?: string }) => ({ label: String(l?.label || "").trim().slice(0, 60), href: String(l?.href || "").trim().slice(0, 300) }))
+        .filter((l: { label: string; href: string }) => l.label && l.href)
+        .slice(0, 20);
+      footerLinks = JSON.stringify(clean);
+    }
+    await db.site.update({
+      where: { id: site.id },
+      data: {
+        logoUrl: typeof body.logoUrl === "string" ? body.logoUrl.trim() : site.logoUrl,
+        brandColor: typeof body.brandColor === "string" ? body.brandColor.trim() : site.brandColor,
+        heroHeadline: typeof body.heroHeadline === "string" ? body.heroHeadline.trim().slice(0, 140) : site.heroHeadline,
+        footerLinks,
+      },
+    });
+    return NextResponse.json({ ok: true });
+  }
+
+  // Everything below is God / staff only.
+  if (!isGod && !isGodOrStaff(s.role)) {
+    return NextResponse.json({ error: "God / staff only" }, { status: 403 });
+  }
 
   // Toggle active flag. Accepts {id, toggle:true} or {id, action:"toggle"}.
   if ((body.toggle || body.action === "toggle") && body.id) {

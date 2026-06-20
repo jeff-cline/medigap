@@ -80,7 +80,7 @@ export default async function UsersPage() {
                   <td><Badge tone={statusTone[u.status] ?? "default"}>{u.status}</Badge></td>
                   <td className="text-right">{u.role === "god" ? "—" : usd2(u.balanceCents)}</td>
                   <td className="text-right">
-                    <UserManage user={{ id: u.id, name: u.name, phone: u.phone, role: u.role, status: u.status }} />
+                    <UserManage user={{ id: u.id, name: u.name, phone: u.phone, role: u.role, status: u.status, features: u.features }} />
                   </td>
                 </tr>
               ))}
