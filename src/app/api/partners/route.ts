@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     // 1) Owner account (partner portal + CRM).
     const email = (app.email || `${app.businessName.toLowerCase().replace(/[^a-z0-9]/g, "")}@partner.medigap.plus`).toLowerCase();
     let owner = await db.user.findUnique({ where: { email } });
-    if (!owner) owner = await db.user.create({ data: { email, name: app.contactName || app.businessName, role: "agent", passwordHash: await bcrypt.hash("TEMP!234", 10), mustChangePassword: true, status: "active", source: `Partner: ${app.businessName}` } });
+    if (!owner) owner = await db.user.create({ data: { email, name: app.contactName || app.businessName, role: "marketing_partner", passwordHash: await bcrypt.hash("TEMP!234", 10), mustChangePassword: true, status: "active", source: `Partner: ${app.businessName}` } });
     // 2) Standalone site from the intake.
     const hostname = (app.hostname || `${app.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.medigap.plus`).toLowerCase();
     const territory = JSON.stringify((app.territoryZips || "").split(/[\s,]+/).map((z) => z.replace(/\D/g, "").slice(0, 5)).filter(Boolean));

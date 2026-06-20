@@ -12,6 +12,7 @@ const verticals = [
   ["Life & Final Expense", "/life"],
 ];
 const business = [
+  ["Become a Marketing Partner", "/onboard"],
   ["Advertise With Us", "/advertise"],
   ["Agents — Work With Us", "/agents"],
   ["Investor Relations", "/investors"],

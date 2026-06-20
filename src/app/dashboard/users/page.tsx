@@ -12,6 +12,7 @@ const roleTone: Record<string, "default" | "up" | "down" | "gold" | "brand"> = {
   marketing: "brand",
   accounting: "default",
   moneywords: "brand",
+  marketing_partner: "up",
   risk: "down",
   consumer: "default",
 };
@@ -109,6 +110,7 @@ export default async function UsersPage() {
                     { value: "marketing", label: "Marketing" },
                     { value: "accounting", label: "Accounting" },
                     { value: "moneywords", label: "Money Words" },
+                    { value: "marketing_partner", label: "Marketing Partner (white-label site owner)" },
                     { value: "risk", label: "Risk" },
                   ],
                 },

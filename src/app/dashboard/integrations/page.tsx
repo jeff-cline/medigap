@@ -85,6 +85,13 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
     fields: [{ name: "network", label: "Network Name", placeholder: "MediaAlpha" }, { name: "affiliateCode", label: "Affiliate Code" }, { name: "apiKey", label: "API Key", type: "password" }, { name: "postbackUrl", label: "Postback / Click-Value URL", placeholder: "https://…" }],
   },
   {
+    phase: "Scale & arbitrage", key: "cloudflare", label: "Cloudflare DNS — auto subdomains",
+    blurb: "Auto-create the A/CNAME records pointing partner sites at the server IP (137.220.56.129) so subdomains brand instantly.",
+    dataFlow: "partner site generated → DNS record created automatically",
+    steps: ["Move your domain's DNS to Cloudflare (or use Cloudflare for medigap.plus).", "My Profile → API Tokens → create a token with Zone:DNS:Edit for the zone.", "Find the Zone ID on the domain's Overview page.", "Paste both below and Save."],
+    fields: [{ name: "apiToken", label: "Cloudflare API Token", type: "password" }, { name: "zoneId", label: "Zone ID" }],
+  },
+  {
     phase: "Scale & arbitrage", key: "runway", label: "RunwayML — AI Video & Graphics",
     blurb: "Generates the social-media video series, media kit graphics & brand visuals for partner sites and the video-marketing test tool.",
     dataFlow: "AI-generated video/image assets → partner media kits + upgrades",

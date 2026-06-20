@@ -1,5 +1,6 @@
 import { Card, Stat, Section, Badge, Stars } from "@/components/ui";
 import AgentAccount from "@/components/portal/AgentAccount";
+import UpgradeBuy from "@/components/portal/UpgradeBuy";
 import BidForm, { SeatForm } from "@/components/portal/BidForm";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
@@ -22,7 +23,7 @@ export default async function AgentPortal() {
   const minCallBidCents = settings.minCallBidCents;
   const minDollars = Math.round(minCallBidCents / 100);
 
-  const [agent, myBids, mySeats, myLeads, callsToday] = await Promise.all([
+  const [agent, myBids, mySeats, myLeads, callsToday, affLeads] = await Promise.all([
     db.user.findUnique({ where: { id: session.uid } }),
     db.agentBid.findMany({ where: { agentId: session.uid }, orderBy: { createdAt: "desc" } }),
     db.agentSeat.findMany({ where: { agentId: session.uid }, orderBy: { createdAt: "desc" } }),
@@ -32,7 +33,9 @@ export default async function AgentPortal() {
       start.setHours(0, 0, 0, 0);
       return db.call.count({ where: { bidWinnerId: session.uid, createdAt: { gte: start } } });
     })(),
+    db.affiliateLead.findMany({ where: { ownerId: session.uid }, orderBy: { createdAt: "desc" }, take: 50 }),
   ]);
+  const affEarned = affLeads.reduce((s, a) => s + a.revShareCents, 0);
 
   const stars = agent?.stars ?? 0;
   const activeBids = myBids.filter((b) => b.active);
@@ -81,6 +84,10 @@ export default async function AgentPortal() {
 
       <Section title="Account & Availability" desc="Set your transfer number, add funds, then switch on to enter the live-call auction.">
         <AgentAccount balanceCents={agent?.balanceCents ?? 0} available={agent?.available ?? false} phone={agent?.phone ?? ""} />
+      </Section>
+
+      <Section title="Grow your site" desc="One-click marketing builds from your data — Stripe checkout, coupon-eligible.">
+        <UpgradeBuy />
       </Section>
 
       {hasNothing && (
@@ -203,6 +210,23 @@ export default async function AgentPortal() {
         <p className="text-xs text-[var(--muted)] mt-2">
           Agents see contact details only — the AI qualification journey and appended data stay internal.
         </p>
+      </Section>
+
+      <Section title="Affiliate Earnings" desc="Leads from your site we sold into the network — you earn your rev-share. Paid out on the 21st for the prior month.">
+        <div className="grid gap-4 md:grid-cols-2 mb-3">
+          <Stat label="Affiliate Rev-Share Earned" value={usd2(affEarned)} sub={`${num(affLeads.length)} leads sold for you`} tone="gold" />
+          <Stat label="Current Balance" value={usd2(agent?.balanceCents ?? 0)} sub="prepaid + earnings" tone="up" />
+        </div>
+        <Card className="!p-0 overflow-hidden">
+          <table>
+            <thead><tr><th>First name</th><th className="text-right">Sold for</th><th className="text-right">Your share</th></tr></thead>
+            <tbody>
+              {affLeads.length ? affLeads.map((a) => (
+                <tr key={a.id}><td className="font-medium">{a.firstName || "—"}</td><td className="text-right text-[var(--muted)]">{usd2(a.soldForCents)}</td><td className="text-right text-[var(--brand)]">{usd2(a.revShareCents)}</td></tr>
+              )) : <tr><td colSpan={3} className="text-[var(--muted)] py-4 text-center">No affiliate leads yet — overflow leads from your site appear here.</td></tr>}
+            </tbody>
+          </table>
+        </Card>
       </Section>
     </>
   );
