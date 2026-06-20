@@ -32,8 +32,13 @@ export const SOCIAL_FORMATS: { key: string; label: string; ratio: string; note: 
 ];
 
 // Vertical social ratio by default (IG/FB reels). Full Runway quality.
-export async function createImageTask(promptText: string, ratio = "720:1280") {
-  return rw("/text_to_image", { method: "POST", body: JSON.stringify({ promptText: promptText.slice(0, 900), model: "gen4_image", ratio }) });
+// Optional referenceImages let Runway SEE a dropped-in brand asset and carry its
+// look, colors, logo and text into the render (gen4_image supports up to 3, tagged).
+export async function createImageTask(promptText: string, ratio = "720:1280", referenceUrls: string[] = []) {
+  const refs = referenceUrls.filter(Boolean).slice(0, 3);
+  const body: Record<string, unknown> = { promptText: promptText.slice(0, 900), model: "gen4_image", ratio };
+  if (refs.length) body.referenceImages = refs.map((uri, i) => ({ uri, tag: i === 0 ? "brand" : `ref${i}` }));
+  return rw("/text_to_image", { method: "POST", body: JSON.stringify(body) });
 }
 // Full-length (10s) gen4_turbo motion — maximize what Runway delivers per render.
 export async function createVideoTask(promptImage: string, promptText: string, ratio = "720:1280", duration = 10) {
