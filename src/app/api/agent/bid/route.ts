@@ -27,6 +27,10 @@ export async function POST(req: NextRequest) {
   if (scope !== "national" && !scopeValue) {
     return NextResponse.json({ error: "A target (ZIP/city/state) is required for this scope." }, { status: 400 });
   }
+  // Money-word partners can only buy keyword-triggered calls — never general inbound.
+  if (session.role === "moneywords" && !keyword) {
+    return NextResponse.json({ error: "Money-word partners must set a keyword on every bid (you only receive calls for your keyword)." }, { status: 400 });
+  }
 
   if (b.id) {
     const existing = await db.agentBid.findUnique({ where: { id: String(b.id) } });

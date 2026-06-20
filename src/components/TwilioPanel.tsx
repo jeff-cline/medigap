@@ -2,6 +2,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { Card, Badge } from "@/components/ui";
 import PhoneLink from "@/components/PhoneLink";
+import { usd2 } from "@/lib/format";
 
 // Live Twilio account view — pulls balance, numbers + their webhooks, and recent call logs
 // straight from Twilio using the saved credentials ("logs in" each render).
@@ -27,11 +28,18 @@ export default async function TwilioPanel() {
   const [bal, nums, calls] = await Promise.all([
     tw("/Balance.json", sid, token),
     tw("/IncomingPhoneNumbers.json?PageSize=50", sid, token),
-    tw("/Calls.json?PageSize=10", sid, token),
+    tw("/Calls.json?PageSize=12", sid, token),
   ]);
   const numbers = nums?.incoming_phone_numbers ?? [];
   const ours = numbers.filter((n: { voice_url?: string }) => (n.voice_url || "").includes("medigap.plus"));
   const recentCalls = calls?.calls ?? [];
+
+  // Map raw Twilio calls → our Call records (by CallSid) so we can show who it sold to + our revenue.
+  const sids = recentCalls.map((c: { sid: string }) => c.sid).filter(Boolean);
+  const ourCalls = sids.length ? await db.call.findMany({ where: { providerSid: { in: sids } }, select: { id: true, providerSid: true, disposition: true, priceCents: true, realized: true, bidWinnerId: true } }) : [];
+  const agents = await db.user.findMany({ where: { role: { in: ["agent", "moneywords"] } }, select: { id: true, name: true, email: true } });
+  const agentName = new Map(agents.map((a) => [a.id, a.name || a.email]));
+  const bySid = new Map(ourCalls.map((c) => [c.providerSid, c]));
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">
@@ -62,21 +70,28 @@ export default async function TwilioPanel() {
       </Card>
 
       <Card className="lg:col-span-3 !p-0 overflow-hidden">
-        <div className="px-4 pt-3 text-xs uppercase tracking-wide text-[var(--muted)]">Recent Twilio Calls (raw, all numbers) — click a number or the seconds to drill in</div>
+        <div className="px-4 pt-3 text-xs uppercase tracking-wide text-[var(--muted)]">Recent Twilio Calls — status, who it sold to & our revenue. Click status/seconds to drill into the full call.</div>
         <table className="mt-2">
-          <thead><tr><th>Started</th><th>From</th><th>To</th><th>Status</th><th className="text-right">Sec</th><th className="text-right">Price</th></tr></thead>
+          <thead><tr><th>Started</th><th>From</th><th>To</th><th>Status</th><th>Sold To</th><th className="text-right">Our $</th><th className="text-right">Sec</th><th className="text-right">Twilio $</th></tr></thead>
           <tbody>
-            {recentCalls.length === 0 && <tr><td colSpan={6} className="text-center text-[var(--muted)] py-4">No calls in Twilio yet.</td></tr>}
-            {recentCalls.map((c: { sid: string; start_time: string; from: string; to: string; status: string; duration: string; price: string | null }) => (
-              <tr key={c.sid}>
-                <td className="text-[var(--muted)] text-xs">{c.start_time?.slice(5, 22)}</td>
-                <td><PhoneLink phone={c.from} raw /></td>
-                <td><PhoneLink phone={c.to} raw /></td>
-                <td><Badge tone={c.status === "completed" ? "up" : c.status === "no-answer" || c.status === "failed" ? "down" : "default"}>{c.status}</Badge></td>
-                <td className="text-right"><Link href={`/dashboard/lookup?sid=${c.sid}&phone=${encodeURIComponent(c.from)}`} className="text-[var(--brand)] hover:underline font-medium">{c.duration}</Link></td>
-                <td className="text-right text-[var(--muted)]">{c.price ? `$${Math.abs(parseFloat(c.price)).toFixed(3)}` : "—"}</td>
-              </tr>
-            ))}
+            {recentCalls.length === 0 && <tr><td colSpan={8} className="text-center text-[var(--muted)] py-4">No calls in Twilio yet.</td></tr>}
+            {recentCalls.map((c: { sid: string; start_time: string; from: string; to: string; status: string; duration: string; price: string | null }) => {
+              const oc = bySid.get(c.sid);
+              const drill = oc ? `/dashboard/calls/${oc.id}` : `/dashboard/lookup?sid=${c.sid}&phone=${encodeURIComponent(c.from)}`;
+              const soldTo = oc?.bidWinnerId ? (agentName.get(oc.bidWinnerId) || "agent") : oc?.disposition === "default" ? "House (default)" : oc ? "—" : "";
+              return (
+                <tr key={c.sid}>
+                  <td className="text-[var(--muted)] text-xs">{c.start_time?.slice(5, 22)}</td>
+                  <td><PhoneLink phone={c.from} raw /></td>
+                  <td><PhoneLink phone={c.to} raw /></td>
+                  <td><Link href={drill}><Badge tone={c.status === "completed" ? "up" : c.status === "no-answer" || c.status === "failed" ? "down" : "default"}>{c.status}</Badge></Link></td>
+                  <td className="text-sm">{oc?.bidWinnerId ? <span className="text-[var(--brand)]">{soldTo}</span> : <span className="text-[var(--muted)]">{soldTo}</span>}</td>
+                  <td className="text-right font-medium">{oc && oc.priceCents > 0 ? <span className={oc.realized ? "text-[var(--brand)]" : "text-[var(--gold)]"}>{usd2(oc.priceCents)}</span> : "—"}</td>
+                  <td className="text-right"><Link href={drill} className="text-[var(--brand)] hover:underline font-medium">{c.duration}</Link></td>
+                  <td className="text-right text-[var(--muted)]">{c.price ? `$${Math.abs(parseFloat(c.price)).toFixed(3)}` : "—"}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </Card>

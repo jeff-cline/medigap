@@ -25,9 +25,15 @@ export async function routeCall(input: { zip: string; state: string; leadId?: st
   const s = await getSettings();
   const bidRows = await db.agentBid.findMany({ where: { active: true }, include: { agent: true } });
   // Only agents who are AVAILABLE and have enough prepaid balance compete; optional keyword filter.
+  const callWord = input.moneyWord ? String(input.moneyWord).toLowerCase() : "";
   const bids: (BidLike & { id: string; phone: string })[] = bidRows
-    // A keyword bid ONLY competes when the call carries that exact money word. No-keyword bids take any call.
-    .filter((b) => b.agent.available && b.agent.balanceCents >= b.amountCents && (!b.keyword || (!!input.moneyWord && b.keyword === String(input.moneyWord).toLowerCase())))
+    .filter((b) => {
+      if (!b.agent.available || b.agent.balanceCents < b.amountCents) return false;
+      // Money-word partners ONLY win calls whose money word matches their bid keyword — never general inbound.
+      if (b.agent.role === "moneywords") return !!b.keyword && b.keyword === callWord;
+      // Regular agents: a keyword bid competes only on that word; a no-keyword bid takes any call.
+      return !b.keyword || (!!callWord && b.keyword === callWord);
+    })
     .map((b) => ({ id: b.id, agentId: b.agentId, amountCents: b.amountCents, stars: b.agent.stars, active: b.active, dailyCap: b.dailyCap, scope: b.scope, scopeValue: b.scopeValue, phone: b.agent.phone }));
   const winner = pickWinner(bids, { zip: input.zip, state: input.state }) as (BidLike & { phone: string }) | null;
 
