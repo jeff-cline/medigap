@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { headers } from "next/headers";
 import { appendLeadBackground } from "@/lib/predictivedata";
-import { assignLeadBackground } from "@/lib/logic";
+import { assignLeadBackground, routeStandaloneLeadBackground } from "@/lib/logic";
 
 export async function POST(req: NextRequest) {
   const b = await req.json().catch(() => ({}));
@@ -21,7 +21,9 @@ export async function POST(req: NextRequest) {
     await db.leadAnswer.createMany({ data: b.answers.map((a: { q: string; a: string }) => ({ leadId: lead.id, question: a.q, answer: a.a })) });
   }
   appendLeadBackground(lead.id); // real-time PredictiveData enrichment
-  assignLeadBackground(lead.id); // route the web lead to the best agent by ZIP (charges the lead price)
+  // Standalone sites keep territory leads & affiliate the overflow; network sites use the auction.
+  if (site?.mode === "standalone") routeStandaloneLeadBackground(lead.id);
+  else assignLeadBackground(lead.id);
   // TODO: trigger Zapmail seq #1 + Klaviyo profile.
   return NextResponse.json({ ok: true, id: lead.id });
 }

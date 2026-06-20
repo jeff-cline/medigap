@@ -4,13 +4,18 @@ import { ToggleActive } from "@/components/CrudForm";
 import LaunchSiteForm from "@/components/LaunchSiteForm";
 import PixelManager from "@/components/PixelManager";
 import { db } from "@/lib/db";
-import { num } from "@/lib/format";
+import { num, usd } from "@/lib/format";
 
 export default async function SitesPage() {
-  const [sites, pixels] = await Promise.all([
+  const [sites, pixels, partners, affLeads] = await Promise.all([
     db.site.findMany({ orderBy: { createdAt: "asc" } }),
     db.pixel.findMany({ orderBy: { createdAt: "desc" } }),
+    db.user.findMany({ where: { role: { in: ["agent", "moneywords", "advertiser"] } }, select: { id: true, name: true, email: true } }),
+    db.affiliateLead.findMany({ orderBy: { createdAt: "desc" }, take: 50 }),
   ]);
+  const affRevTotal = affLeads.reduce((s, a) => s + a.revShareCents, 0);
+  const affSoldTotal = affLeads.reduce((s, a) => s + a.soldForCents, 0);
+  const siteName = new Map(sites.map((s) => [s.id, s.name]));
 
   const liveSites = sites.filter((s) => s.active).length;
   const management = sites.filter((s) => s.kind === "management").length;
@@ -103,9 +108,34 @@ export default async function SitesPage() {
         </Card>
       </Section>
 
-      <Section title="Launch a new site" desc="Add a URL + a goal prompt; the platform provisions a unique funnel.">
+      <Section title="Quick Start — launch a new site" desc="Add a URL + goal and launch in one click, or open Advanced for ownership model + deeper intent.">
         <Card glow>
-          <LaunchSiteForm />
+          <LaunchSiteForm partners={partners.map((p) => ({ id: p.id, name: p.name || p.email }))} />
+        </Card>
+      </Section>
+
+      <Section title="Affiliate Leads" desc="Overflow leads from standalone sites that we sold into the network — revenue-shared back to the source owner.">
+        <div className="grid gap-4 md:grid-cols-3 mb-4">
+          <Stat label="Affiliate Leads" value={num(affLeads.length)} sub="overflow sold" tone="gold" />
+          <Stat label="Sold For (total)" value={usd(affSoldTotal)} sub="network value" tone="up" />
+          <Stat label="Partner Rev-Share" value={usd(affRevTotal)} sub="paid to owners" tone="gold" />
+        </div>
+        <Card className="!p-0 overflow-hidden">
+          <table>
+            <thead><tr><th>First name</th><th>Source site</th><th className="text-right">Sold for</th><th className="text-right">Owner share</th><th></th></tr></thead>
+            <tbody>
+              {affLeads.length === 0 && <tr><td colSpan={5} className="text-center text-[var(--muted)] py-6">No affiliate leads yet. Launch a standalone site (Advanced) to start.</td></tr>}
+              {affLeads.map((a) => (
+                <tr key={a.id}>
+                  <td className="font-medium">{a.firstName || "—"}</td>
+                  <td className="text-[var(--muted)]">{a.siteId ? siteName.get(a.siteId) || "site" : "—"}</td>
+                  <td className="text-right">{usd(a.soldForCents)}</td>
+                  <td className="text-right text-[var(--brand)]">{usd(a.revShareCents)}</td>
+                  <td className="text-right"><Link href={`/dashboard/leads/${a.leadId}`} className="text-[var(--brand)] text-sm hover:underline">View</Link></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </Card>
       </Section>
     </>

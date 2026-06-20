@@ -44,9 +44,25 @@ export async function POST(req: NextRequest) {
 
   const theme = JSON.stringify(VARIANTS[hostname.length % VARIANTS.length]);
 
+  // Advanced / standalone fields (optional).
+  const mode = body.mode === "standalone" ? "standalone" : "network";
+  const territoryZips = Array.isArray(body.territoryZips)
+    ? JSON.stringify(body.territoryZips.map((z: string) => String(z).replace(/\D/g, "").slice(0, 5)).filter(Boolean))
+    : JSON.stringify(String(body.territoryZips || "").split(/[\s,]+/).map((z) => z.replace(/\D/g, "").slice(0, 5)).filter(Boolean));
+
   try {
     const site = await db.site.create({
-      data: { hostname, name, vertical, goal, kind, theme, active: true },
+      data: {
+        hostname, name, vertical, goal, kind, theme, active: true,
+        mode,
+        ownerId: body.ownerId ? String(body.ownerId) : null,
+        territoryZips,
+        affiliateRevSharePct: Math.max(0, Math.min(100, Math.round(Number(body.affiliateRevSharePct) || 0))),
+        audience: String(body.audience || "").trim(),
+        primaryCta: body.primaryCta === "form" ? "form" : "call",
+        brandColor: String(body.brandColor || "").trim(),
+        moneyWords: String(body.moneyWords || "").trim(),
+      },
     });
     return NextResponse.json({ ok: true, id: site.id });
   } catch {

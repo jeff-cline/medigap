@@ -23,9 +23,32 @@ model Site {
   vertical  String   @default("medicare") // medicare | housing | care | alzheimers | ...
   theme     String   @default("{}") // JSON: colors, layout variant for A/B testing
   active    Boolean  @default(true)
+  // --- mode: network (leads go to the network auction) vs standalone (partner-owned) ---
+  mode      String   @default("network") // network | standalone
+  ownerId   String?  // standalone site owner (a partner)
+  territoryZips String @default("[]") // ZIPs the owner keeps for themselves (JSON)
+  affiliateRevSharePct Int @default(0) // % paid to the owner on overflow leads we sell
+  // --- advanced intent ---
+  audience  String   @default("")
+  primaryCta String  @default("call") // call | form
+  brandColor String  @default("")
+  moneyWords String  @default("")
   createdAt DateTime @default(now())
   leads     Lead[]
   calls     Call[]
+}
+
+// Affiliate leads: overflow leads a standalone site sent into the network that we sold,
+// revenue-shared back to the source owner. Minimal PII (first name) + the money.
+model AffiliateLead {
+  id          String   @id @default(cuid())
+  siteId      String?
+  ownerId     String?
+  leadId      String
+  firstName   String   @default("")
+  soldForCents Int     @default(0)
+  revShareCents Int    @default(0)
+  createdAt   DateTime @default(now())
 }
 
 // ---------------------------------------------------------------------------

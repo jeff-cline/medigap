@@ -84,7 +84,7 @@ export async function routeCall(input: { zip: string; state: string; leadId?: st
 // Same auction rules as calls: available + funded agents only, highest bid wins, ties by stars.
 export async function assignLead(leadId: string) {
   const lead = await db.lead.findUnique({ where: { id: leadId } });
-  if (!lead || lead.agentId) return { assigned: false };
+  if (!lead || lead.agentId) return { assigned: false, priceCents: 0 };
   const s = await getSettings();
   const price = s.leadPriceCents;
   const bidRows = await db.agentBid.findMany({ where: { active: true }, include: { agent: true } });
@@ -92,15 +92,45 @@ export async function assignLead(leadId: string) {
     .filter((b) => b.agent.available && b.agent.balanceCents >= price && (!b.keyword || b.keyword === lead.vertical.toLowerCase()))
     .map((b) => ({ agentId: b.agentId, amountCents: b.amountCents, stars: b.agent.stars, active: b.active, dailyCap: b.dailyCap, scope: b.scope, scopeValue: b.scopeValue }));
   const winner = pickWinner(pool, { zip: lead.zip, state: lead.state });
-  if (!winner) return { assigned: false };
+  if (!winner) return { assigned: false, priceCents: 0 };
   await db.lead.update({ where: { id: leadId }, data: { agentId: winner.agentId, status: "contacted", valueCents: price } });
   await db.user.update({ where: { id: winner.agentId }, data: { balanceCents: { decrement: price } } }).catch(() => {});
   await db.ledgerEntry.create({ data: { type: "revenue", category: "lead", channel: "webform", amountCents: price, realized: true, note: `Web lead ${leadId} → agent ${winner.agentId}` } }).catch(() => {});
   await db.transaction.create({ data: { kind: "charge", userId: winner.agentId, amountCents: price, status: "settled", note: `Lead charge — ${leadId}` } }).catch(() => {});
   notifyPartnerNewLead(winner.agentId, lead.name || "a new lead").catch(() => {});
-  return { assigned: true, agentId: winner.agentId };
+  return { assigned: true, agentId: winner.agentId, priceCents: price };
 }
 export function assignLeadBackground(leadId: string) { assignLead(leadId).catch(() => {}); }
+
+// Standalone site routing: the owner KEEPS leads in their territory ZIPs; overflow leads are
+// sold into the network and the owner is paid an affiliate revenue share (money tracked, not data).
+export async function routeStandaloneLead(leadId: string) {
+  const lead = await db.lead.findUnique({ where: { id: leadId } });
+  if (!lead?.siteId) return;
+  const site = await db.site.findUnique({ where: { id: lead.siteId } });
+  if (!site || site.mode !== "standalone") return;
+  let territory: string[] = [];
+  try { territory = JSON.parse(site.territoryZips); } catch {}
+  const zip = (lead.zip || "").replace(/\D/g, "").slice(0, 5);
+
+  if (site.ownerId && zip && territory.includes(zip)) {
+    // In the owner's territory → they keep it (their own lead, no charge).
+    await db.lead.update({ where: { id: leadId }, data: { agentId: site.ownerId } }).catch(() => {});
+    notifyPartnerNewLead(site.ownerId, lead.name || "a new lead").catch(() => {});
+    return;
+  }
+  // Overflow → sell into the network and revenue-share with the owner.
+  const r = await assignLead(leadId);
+  if (r.assigned && site.ownerId) {
+    const revShare = Math.round(((r.priceCents || 0) * site.affiliateRevSharePct) / 100);
+    if (revShare > 0) {
+      await db.user.update({ where: { id: site.ownerId }, data: { balanceCents: { increment: revShare } } }).catch(() => {});
+      await db.transaction.create({ data: { kind: "payout", userId: site.ownerId, amountCents: revShare, status: "settled", note: `Affiliate rev-share — lead ${leadId}` } }).catch(() => {});
+    }
+    await db.affiliateLead.create({ data: { siteId: site.id, ownerId: site.ownerId, leadId, firstName: (lead.name || "").split(/\s+/)[0], soldForCents: r.priceCents || 0, revShareCents: revShare } }).catch(() => {});
+  }
+}
+export function routeStandaloneLeadBackground(leadId: string) { routeStandaloneLead(leadId).catch(() => {}); }
 
 // ---- Investor profit waterfall ----
 export type WaterfallInput = { depositCents: number; grossProfitCents: number; mgmtFeePct: number; profitSharePct: number; futureProofingPct: number; aiFeePct: number; expenseCents?: number };
