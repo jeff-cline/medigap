@@ -28,6 +28,7 @@ export default async function JvDealPage({ params }: { params: Promise<{ id: str
     id: lead.id, name: lead.name, phone: lead.phone, email: lead.email, zip: lead.zip, state: lead.state,
     priority: lead.priority, ltvMonthly: lead.ltvMonthlyCents ? String(lead.ltvMonthlyCents / 100) : "",
     jvInterest: lead.jvInterest, status: lead.status, optOut: lead.smsOptOut,
+    autoReply: lead.autoReply, autoReplySent: lead.autoReplySent,
   };
   const messages = sms.map((m) => ({ dir: m.direction, body: m.body, at: cstFull(m.createdAt) }));
   const notes = lead.notes.map((n) => ({ author: n.authorName || "team", body: n.body, at: cstFull(n.createdAt) }));

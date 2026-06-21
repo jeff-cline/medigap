@@ -61,6 +61,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
+  if (action === "autoreply") {
+    // Arm (or clear) the first-time auto-reply for this contact. Saving re-arms it
+    // so it fires on the next inbound reply.
+    const body = String(b.body || "").trim().slice(0, 600);
+    await db.lead.update({ where: { id }, data: { autoReply: body, autoReplySent: false } });
+    return NextResponse.json({ ok: true, armed: !!body });
+  }
+
   if (action === "note") {
     const body = String(b.body || "").trim();
     if (!body) return NextResponse.json({ error: "Note is empty." }, { status: 400 });

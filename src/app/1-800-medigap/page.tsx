@@ -38,24 +38,33 @@ export default function Page() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 brand-gradient opacity-[0.07]" />
+
+        {/* Red corner "Lock in now" ribbon → jumps to the interest form (which sends to the founder) */}
+        <Link href="#interest" aria-label="Lock in now" className="absolute -right-16 top-8 z-30 rotate-45 bg-[var(--danger)] px-20 py-2 text-center text-sm font-extrabold uppercase tracking-wide text-white shadow-xl hover:brightness-110">
+          🔒 Lock in now
+        </Link>
+
         <div className="mx-auto max-w-7xl px-6 py-16 md:py-24 grid lg:grid-cols-2 gap-12 items-center relative">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1 text-xs text-[var(--muted)]">
-              <span className="live-dot text-[var(--brand)]">●</span> The category-defining vanity brand in senior insurance
+            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--danger)]/40 bg-[var(--danger)]/10 px-3 py-1 text-xs font-semibold text-[var(--danger)]">
+              <span className="live-dot">●</span> Disruption is coming
             </div>
-            <h1 className="mt-5 text-4xl md:text-6xl font-extrabold leading-tight">
-              Partner with <span className="text-gradient">1-800-MEDIGAP.</span>
+            <p className="mt-5 text-2xl md:text-3xl font-bold leading-snug">
+              New opportunities this <span className="text-[var(--brand)]">AEP/OEP</span>. Lock in your position to be part of the disruption.
+            </p>
+            <h1 className="mt-6 text-5xl md:text-7xl font-black leading-none">
+              <span className="throb text-gradient">1-800-MEDIGAP</span>
             </h1>
-            <p className="mt-5 text-lg text-[var(--muted)]">
+            <p className="mt-6 text-lg text-[var(--muted)]">
               Sponsor a ZIP, city, state, or the whole country. Agents lock in their territory. National providers explore
               a full brand takeover. One trusted vanity number — more recall, more trust, lower acquisition cost.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <Link href="#interest" className="btn btn-brand text-base">Express interest →</Link>
+              <Link href="#interest" className="btn btn-brand text-base">Express Interest — Check Availability →</Link>
               <Link href="/1-800-medigap-opportunity" className="btn btn-ghost text-base">See the opportunity</Link>
             </div>
           </div>
-          <div id="interest"><JvForm cta="Send to the founder" /></div>
+          <div id="interest"><JvForm cta="Express Interest — Check Availability" /></div>
         </div>
       </section>
 

@@ -9,6 +9,7 @@ type Doc = { url: string; label: string; by: string; at: string };
 export type DealLead = {
   id: string; name: string; phone: string; email: string; zip: string; state: string;
   priority: string; ltvMonthly: string; jvInterest: string; status: string; optOut: boolean;
+  autoReply: string; autoReplySent: boolean;
 };
 
 const F = "w-full rounded-lg bg-[var(--panel2)] border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-[var(--brand)]";
@@ -20,6 +21,8 @@ export default function JvDeal({ lead, messages, notes, docs }: { lead: DealLead
   const [msg, setMsg] = useState("");
   const [text, setText] = useState("");
   const [noteBody, setNoteBody] = useState("");
+  const [autoOpen, setAutoOpen] = useState(false);
+  const [autoReply, setAutoReply] = useState(lead.autoReply || "");
   const set = (k: keyof DealLead, v: string) => setF({ ...f, [k]: v });
 
   async function call(body: object, label: string) {
@@ -33,6 +36,7 @@ export default function JvDeal({ lead, messages, notes, docs }: { lead: DealLead
   async function save() { const d = await call({ action: "update", priority: f.priority, ltvMonthly: f.ltvMonthly, jvInterest: f.jvInterest, status: f.status, name: f.name, email: f.email, phone: f.phone }, "save"); if (!d.error) { setMsg("Saved"); router.refresh(); } }
   async function sendText() { if (!text.trim()) return; const d = await call({ action: "text", body: text }, "text"); if (!d.error) { setText(""); router.refresh(); } }
   async function addNote() { if (!noteBody.trim()) return; const d = await call({ action: "note", body: noteBody }, "note"); if (!d.error) { setNoteBody(""); router.refresh(); } }
+  async function saveAuto() { const d = await call({ action: "autoreply", body: autoReply }, "auto"); if (!d.error) { setMsg(autoReply.trim() ? "Auto-reply armed ✓" : "Auto-reply cleared"); router.refresh(); } }
   async function uploadDoc(file: File) {
     setBusy("doc"); setMsg("");
     const fd = new FormData(); fd.append("file", file); fd.append("label", file.name);
@@ -50,6 +54,30 @@ export default function JvDeal({ lead, messages, notes, docs }: { lead: DealLead
     <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr] items-start">
       {/* LEFT — texting thread */}
       <div className="space-y-4">
+        {/* Instant auto-reply manager */}
+        <div className="card !p-0 overflow-hidden border-l-4 border-l-[var(--brand)]">
+          <button onClick={() => setAutoOpen((v) => !v)} className="w-full px-4 py-3 flex items-center justify-between text-left">
+            <span className="font-semibold">⚡ MANAGE REPLY INSTANTLY</span>
+            <span className="text-xs text-[var(--muted)]">
+              {lead.autoReply ? (lead.autoReplySent ? "fired · re-arm to reuse" : "armed ✓") : "off"} · {autoOpen ? "hide" : "set up"}
+            </span>
+          </button>
+          {autoOpen && (
+            <div className="px-4 pb-4 space-y-2">
+              <p className="text-xs text-[var(--muted)]">
+                The first time this contact texts back, we instantly auto-reply with this message from 1-800-MEDIGAP — then
+                email you a link so you can take over here. Saving re-arms it.
+              </p>
+              <textarea className={F} rows={3} value={autoReply} onChange={(e) => setAutoReply(e.target.value)}
+                placeholder="e.g. Thanks for reaching out about 1-800-MEDIGAP! This is Jeff's desk — I'll be right with you. What market are you interested in?" />
+              <div className="flex items-center gap-2">
+                <button onClick={saveAuto} disabled={busy === "auto"} className="btn btn-brand text-sm">{busy === "auto" ? "Saving…" : "Save & arm auto-reply"}</button>
+                {autoReply && <button onClick={() => { setAutoReply(""); }} className="btn btn-ghost text-xs">Clear</button>}
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="card !p-0 overflow-hidden">
           <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
             <div className="font-semibold">💬 Conversation <span className="text-xs text-[var(--muted)] font-normal">via 1-800-MEDIGAP</span></div>

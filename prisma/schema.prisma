@@ -176,6 +176,8 @@ model Lead {
   priority  String   @default("") // JV deal CRM: high|medium|low
   ltvMonthlyCents Int @default(0) // JV: estimated lifetime value per month — used to rank opportunities
   jvInterest String  @default("") // sponsor_zip|sponsor_city|sponsor_state|sponsor_national|lock_zip|brand_takeover|investor|book_call|exclusive
+  autoReply String   @default("") // JV: first-time auto-reply text sent when this contact first replies
+  autoReplySent Boolean @default(false) // whether the first-time auto-reply has fired
   siteId    String?
   site      Site?    @relation(fields: [siteId], references: [id])
   agentId   String?
