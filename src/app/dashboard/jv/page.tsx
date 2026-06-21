@@ -35,8 +35,14 @@ export default async function JvDashboard() {
   return (
     <>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">JV / PE / VC — Founder&apos;s Deal Room</h1>
-        <p className="text-sm text-[var(--muted)] max-w-3xl">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-bold">JV / PE / VC — Founder&apos;s Deal Room</h1>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/1-800-medigap" target="_blank" className="btn btn-ghost text-xs !py-1.5">🌐 1-800-MEDIGAP page ↗</Link>
+            <Link href="/1-800-medigap-opportunity" target="_blank" className="btn btn-ghost text-xs !py-1.5">📈 Opportunity page ↗</Link>
+          </div>
+        </div>
+        <p className="text-sm text-[var(--muted)] max-w-3xl mt-2">
           {FOUNDER.name}&apos;s personal CRM for the top of the business — investors, brand takeovers, ZIP/state/national
           sponsors, and strategic partners. Text them from <b>{TOLLFREE_DISPLAY}</b>; replies thread back here and ping
           your cell. Rank by priority and monthly value, keep notes, and store documents. Hand the day-to-day to an assistant.
