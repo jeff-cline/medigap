@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import JvForm from "@/components/jv/JvForm";
 import FounderCTA from "@/components/jv/FounderCTA";
+import TvAds from "@/components/jv/TvAds";
 import { TOLLFREE, TOLLFREE_TEL } from "@/lib/format";
 import { ACCOUNT_OPTIONS } from "@/lib/jv";
 
@@ -67,6 +68,9 @@ export default function Page() {
           <div id="interest"><JvForm cta="Express Interest — Check Availability" /></div>
         </div>
       </section>
+
+      {/* National TV advertising — embedded spots with a Check-Availability CTA on finish */}
+      <TvAds />
 
       {/* CTA cards — each to its own landing page */}
       <section className="mx-auto max-w-7xl px-6 py-12">
