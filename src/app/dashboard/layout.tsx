@@ -3,7 +3,7 @@ import { getSession } from "@/lib/auth";
 import { Sidebar, UnitTabs } from "@/components/dash/Nav";
 import ImpersonationBar from "@/components/ImpersonationBar";
 
-const STAFF = ["god", "marketing", "accounting"];
+const STAFF = ["god", "marketing", "accounting", "assistant"];
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
@@ -20,7 +20,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <Sidebar email={session.email} role={session.role} />
       <div className="flex-1 min-w-0">
         {session.impersonatorEmail && <ImpersonationBar email={session.email} impersonator={session.impersonatorEmail} />}
-        <UnitTabs />
+        <UnitTabs role={session.role} />
         <main className="p-6 max-w-[1400px]">{children}</main>
       </div>
     </div>

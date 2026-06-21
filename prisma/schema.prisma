@@ -173,12 +173,39 @@ model Lead {
   engagedAt DateTime? // first cold outreach (SMS/email) sent
   clickedAt DateTime? // clicked a CTA link from outreach
   optedInAt DateTime? // submitted a form / opted in → real lead
+  priority  String   @default("") // JV deal CRM: high|medium|low
+  ltvMonthlyCents Int @default(0) // JV: estimated lifetime value per month — used to rank opportunities
+  jvInterest String  @default("") // sponsor_zip|sponsor_city|sponsor_state|sponsor_national|lock_zip|brand_takeover|investor|book_call|exclusive
   siteId    String?
   site      Site?    @relation(fields: [siteId], references: [id])
   agentId   String?
   agent     User?    @relation(fields: [agentId], references: [id])
   answers   LeadAnswer[]
+  notes     LeadNote[]
+  docs      LeadDoc[]
   calls     Call[]
+  createdAt DateTime @default(now())
+}
+
+// Personal-CRM notes on a lead, attributed to whoever wrote them (founder or assistant).
+model LeadNote {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  authorId  String   @default("")
+  authorName String  @default("")
+  body      String
+  createdAt DateTime @default(now())
+}
+
+// Documents saved against a lead for bigger deals (uploaded to /uploads).
+model LeadDoc {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  url       String
+  label     String   @default("")
+  uploadedBy String  @default("")
   createdAt DateTime @default(now())
 }
 

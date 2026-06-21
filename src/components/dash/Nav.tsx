@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 
 export const LEFT_NAV: [string, string, string][] = [
   ["Overview", "/dashboard", "▦"],
+  ["JV / PE / VC", "/dashboard/jv", "💼"],
   ["Leads CRM", "/dashboard/leads", "👥"],
   ["Calls", "/dashboard/calls", "📞"],
   ["Missed Calls", "/dashboard/missed-calls", "📵"],
@@ -34,11 +35,13 @@ export const UNIT_TABS: [string, string][] = [
 
 export function Sidebar({ email, role }: { email: string; role: string }) {
   const path = usePathname();
+  // Assistants run the founder's JV space only — they don't see the rest of the dash.
+  const nav = role === "assistant" ? LEFT_NAV.filter(([, href]) => href === "/dashboard/jv") : LEFT_NAV;
   return (
     <aside className="w-60 shrink-0 border-r border-[var(--border)] bg-[var(--panel)] min-h-screen sticky top-0 hidden lg:flex flex-col">
-      <Link href="/dashboard" className="px-5 h-16 flex items-center text-xl font-bold text-gradient">medigap.plus</Link>
+      <Link href={role === "assistant" ? "/dashboard/jv" : "/dashboard"} className="px-5 h-16 flex items-center text-xl font-bold text-gradient">medigap.plus</Link>
       <nav className="flex-1 px-3 py-3 space-y-1">
-        {LEFT_NAV.map(([label, href, icon]) => {
+        {nav.map(([label, href, icon]) => {
           const active = path === href;
           return (
             <Link key={href} href={href} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm ${active ? "bg-[var(--brand)]/10 text-[var(--brand)]" : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--panel2)]"}`}>
@@ -61,8 +64,9 @@ export function Sidebar({ email, role }: { email: string; role: string }) {
   );
 }
 
-export function UnitTabs() {
+export function UnitTabs({ role }: { role?: string } = {}) {
   const path = usePathname();
+  if (role === "assistant") return null;
   return (
     <div className="flex gap-1 overflow-x-auto border-b border-[var(--border)] px-2">
       {UNIT_TABS.map(([label, href]) => {

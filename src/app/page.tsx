@@ -5,6 +5,7 @@ import AdSlot from "@/components/AdSlot";
 import { TOLLFREE, TOLLFREE_TEL, usd, num } from "@/lib/format";
 import { getMoneySnapshot } from "@/lib/queries";
 import { getCurrentSite } from "@/lib/site";
+import FounderCTA from "@/components/jv/FounderCTA";
 
 export default async function Home() {
   const [m, brand] = await Promise.all([getMoneySnapshot().catch(() => null), getCurrentSite()]);
@@ -110,6 +111,7 @@ export default async function Home() {
       </section>
 
       <SiteFooter ticker={ticker} brand={brand} />
+      {!brand && <FounderCTA />}
     </div>
   );
 }

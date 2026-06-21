@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import { normalizePhone } from "@/lib/sms";
+import { normalizePhone, sendSms } from "@/lib/sms";
+import { FOUNDER, JV_TAG } from "@/lib/jv";
+import { parseTags } from "@/lib/recapture";
 
 // Twilio inbound webhook (set this URL in Twilio → Messaging → your number/service).
 // Handles STOP/START opt-out compliance and logs inbound texts.
@@ -29,6 +31,19 @@ export async function POST(req: NextRequest) {
   if (["START", "UNSTOP", "YES"].includes(keyword)) {
     if (lead) await db.lead.update({ where: { id: lead.id }, data: { smsOptOut: false } });
     return twiml("You're opted back in. Reply STOP to opt out.");
+  }
+
+  // If a JV/PE/VC contact replies, push the reply to the founder's cell so he knows to
+  // log in and respond from the system. Guard against looping when the founder texts in.
+  const isJv = lead ? parseTags(lead.tags).includes(JV_TAG) : false;
+  const founderLast10 = FOUNDER.cell.replace(/\D/g, "").slice(-10);
+  if (isJv && lead && last10 !== founderLast10) {
+    const who = lead.name || e164;
+    sendSms({
+      to: FOUNDER.cell,
+      body: `↩️ JV reply from ${who}: "${body.slice(0, 240)}" — log in to respond: medigap.plus/dashboard/jv/${lead.id}`,
+      batch: "jv-reply-alert",
+    }).catch(() => {});
   }
   return twiml(); // no auto-reply for normal inbound
 }
