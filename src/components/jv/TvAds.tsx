@@ -72,7 +72,7 @@ export default function TvAds() {
         <p className="text-[var(--muted)] mt-2">These spots are running on national TV. Watch, then check availability in your market.</p>
       </div>
 
-      <div className="mt-8 grid gap-4 md:grid-cols-3">
+      <div className="mt-8 grid gap-6 md:grid-cols-2 max-w-5xl mx-auto">
         {VIDEOS.map((id, i) => (
           <div key={id} className="relative card !p-0 overflow-hidden">
             <div className="relative aspect-video bg-black">
