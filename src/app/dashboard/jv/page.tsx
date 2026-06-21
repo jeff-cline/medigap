@@ -63,11 +63,11 @@ export default async function JvDashboard() {
             </thead>
             <tbody>
               {ranked.map((l) => (
-                <tr key={l.id}>
-                  <td><Link href={`/dashboard/jv/${l.id}`} className={`text-xs font-semibold ${PRI_TONE[l.priority] || "text-[var(--muted)]"}`}>{PRI_DOT[l.priority] || "—"} {l.priority || "—"}</Link></td>
-                  <td className="font-medium"><Link href={`/dashboard/jv/${l.id}`} className="text-[var(--brand)] hover:underline">{l.name || "(no name)"}</Link><div className="text-[var(--muted)] text-xs font-normal">{l.email || "—"}</div></td>
-                  <td className="text-sm">{interestLabel(l.jvInterest)}</td>
-                  <td className="text-sm whitespace-nowrap">{l.phone || "—"}</td>
+                <tr key={l.id} className="hover:bg-[var(--panel2)] cursor-pointer">
+                  <td><Link href={`/dashboard/jv/${l.id}`} className={`block text-xs font-semibold ${PRI_TONE[l.priority] || "text-[var(--muted)]"}`}>{PRI_DOT[l.priority] || "—"} {l.priority || "—"}</Link></td>
+                  <td className="font-medium"><Link href={`/dashboard/jv/${l.id}`} className="block text-[var(--brand)] hover:underline">{l.name || "(no name)"} →</Link><div className="text-[var(--muted)] text-xs font-normal">{l.email || "—"}</div></td>
+                  <td className="text-sm"><Link href={`/dashboard/jv/${l.id}`} className="block">{interestLabel(l.jvInterest)}</Link></td>
+                  <td className="text-sm whitespace-nowrap"><Link href={`/dashboard/jv/${l.id}`} className="block">{l.phone || "—"}</Link></td>
                   <td className="text-right font-medium text-[var(--brand)]">{l.ltvMonthlyCents ? usd2(l.ltvMonthlyCents) : "—"}</td>
                   <td className="text-xs text-[var(--muted)]">{l.status}</td>
                   <td className="text-right text-[var(--muted)] text-sm">{l._count.notes || "—"}</td>

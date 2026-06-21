@@ -18,9 +18,14 @@ export async function POST(req: NextRequest) {
   const e164 = normalizePhone(from) || from;
   const keyword = body.toUpperCase();
 
-  // Match a lead by phone (best-effort across stored formats)
+  // Match a lead by phone (best-effort across stored formats). Prefer a JV deal so
+  // replies from a founder prospect always thread into the deal room, even if a
+  // duplicate consumer lead exists for the same number.
   const last10 = e164.replace(/\D/g, "").slice(-10);
-  const lead = last10 ? await db.lead.findFirst({ where: { phone: { contains: last10 } } }) : null;
+  const lead = last10
+    ? (await db.lead.findFirst({ where: { phone: { contains: last10 }, tags: { contains: JV_TAG } }, orderBy: { createdAt: "desc" } }))
+      || (await db.lead.findFirst({ where: { phone: { contains: last10 } }, orderBy: { createdAt: "desc" } }))
+    : null;
 
   await db.smsMessage.create({ data: { to: e164, body, direction: "inbound", status: "received", leadId: lead?.id } });
 

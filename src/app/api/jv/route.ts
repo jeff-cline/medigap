@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { upsertJvLead, FOUNDER, interestLabel } from "@/lib/jv";
 import { sendEmail } from "@/lib/email";
+import { normalizePhone } from "@/lib/sms";
 
 // Public intake for ALL 1-800-MEDIGAP partner/opportunity CTAs. Every lead lands in
 // the founder's personal JV CRM (tagged jv-pe-vc-op). "Book a call" also emails the
@@ -8,7 +9,8 @@ import { sendEmail } from "@/lib/email";
 export async function POST(req: NextRequest) {
   const b = await req.json().catch(() => ({}));
   const name = String(b.name || "").trim();
-  const phone = String(b.phone || "").trim();
+  const rawPhone = String(b.phone || "").trim();
+  const phone = normalizePhone(rawPhone) || rawPhone.replace(/\D/g, "").slice(0, 15); // never store garbage
   const email = String(b.email || "").trim();
   const interest = String(b.interest || b.jvInterest || "").trim();
   if (!name && !phone && !email) return NextResponse.json({ error: "Tell us how to reach you." }, { status: 400 });
