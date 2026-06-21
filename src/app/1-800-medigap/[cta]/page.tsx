@@ -9,7 +9,7 @@ type Cta = { interest: string; lockInterest: boolean; title: string; sub: string
 
 const CTAS: Record<string, Cta> = {
   sponsor: {
-    interest: "sponsor_national", lockInterest: false,
+    interest: "", lockInterest: false,
     title: "Sponsor a Market under 1-800-MEDIGAP",
     sub: "Own the inbound from a ZIP, a city, a state — or the whole country. Pick your level and the leads route to you under the most trusted vanity brand in Medicare.",
     bullets: ["Exclusive territory — your leads, not shared", "The vanity number does the trust-building for you", "Lower cost per acquisition than building your own brand", "Turn it on fast — we run the tech"],
@@ -23,7 +23,7 @@ const CTAS: Record<string, Cta> = {
     cta: "Lock in my ZIP",
   },
   "brand-takeover": {
-    interest: "brand_takeover", lockInterest: true,
+    interest: "nationwide_takeover", lockInterest: true,
     title: "National Provider — Brand Takeover",
     sub: "For national providers who want the whole experience: take over 1-800-MEDIGAP as your front door to the senior market.",
     bullets: ["The category vanity brand, working for you nationally", "Proprietary network + data behind every call", "Co-branded or fully white-labeled", "A genuine moat in a $1B market"],

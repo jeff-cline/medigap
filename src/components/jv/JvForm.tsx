@@ -1,18 +1,8 @@
 "use client";
 import { useState } from "react";
+import { JV_INTERESTS as INTERESTS } from "@/lib/jv-constants";
 
 const F = "mt-1 w-full rounded-lg bg-[var(--panel2)] border border-[var(--border)] px-3 py-2.5 text-sm outline-none focus:border-[var(--brand)]";
-
-const INTERESTS = [
-  { key: "sponsor_zip", label: "Sponsor a ZIP code" },
-  { key: "sponsor_city", label: "Sponsor a city" },
-  { key: "sponsor_state", label: "Sponsor a state" },
-  { key: "sponsor_national", label: "Sponsor nationwide" },
-  { key: "lock_zip", label: "Agent — lock in my ZIP" },
-  { key: "brand_takeover", label: "National provider — brand takeover" },
-  { key: "investor", label: "Investor — explore the opportunity" },
-  { key: "exclusive", label: "Exclusive strategic partner" },
-];
 
 export default function JvForm({
   interest = "", lockInterest = false, cta = "Request information", bookCall = false, compact = false,

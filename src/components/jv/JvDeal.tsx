@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { JV_INTERESTS } from "@/lib/jv";
+import { JV_INTERESTS } from "@/lib/jv-constants";
 
 type Msg = { dir: string; body: string; at: string };
 type Note = { author: string; body: string; at: string };
