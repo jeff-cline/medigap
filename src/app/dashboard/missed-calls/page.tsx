@@ -1,79 +1,95 @@
 import Link from "next/link";
-import { Card, Stat, Badge, Section } from "@/components/ui";
-import PhoneLink from "@/components/PhoneLink";
-import AppendButton from "@/components/AppendButton";
+import { Card, Stat, Section } from "@/components/ui";
+import FunnelBar from "@/components/FunnelBar";
+import RecaptureConsole, { type Row } from "@/components/RecaptureConsole";
 import { db } from "@/lib/db";
-import { num, cst, mmss, usd2 } from "@/lib/format";
+import { getSession } from "@/lib/auth";
+import { num, cst, usd2 } from "@/lib/format";
+import {
+  RECAPTURE_WHERE, recaptureFunnel, recaptureEconomics, parseTags, ACCESSIBLE_RECAPTURE_CENTS,
+} from "@/lib/recapture";
 
 export const dynamic = "force-dynamic";
 
-// Pull Twilio's actual per-call cost for our missed calls (by CallSid).
-async function twilioPrices(): Promise<Map<string, number>> {
-  const map = new Map<string, number>();
-  const row = await db.integration.findUnique({ where: { key: "twilio" } });
-  let c: Record<string, string> = {};
-  try { c = row ? JSON.parse(row.config) : {}; } catch {}
-  if (!c.accountSid || !c.authToken) return map;
-  try {
-    const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${c.accountSid}/Calls.json?PageSize=200`, {
-      headers: { Authorization: "Basic " + Buffer.from(`${c.accountSid}:${c.authToken}`).toString("base64") },
-      cache: "no-store", signal: AbortSignal.timeout(8000),
-    });
-    if (r.ok) { const d = await r.json(); for (const call of d.calls || []) if (call.price) map.set(call.sid, Math.abs(parseFloat(call.price))); }
-  } catch {}
-  return map;
-}
-
 export default async function MissedCallsPage() {
-  const calls = await db.call.findMany({
-    where: { OR: [{ status: { in: ["missed", "no-answer", "busy", "failed"] } }, { durationSec: { lt: 20 } }] },
-    orderBy: { createdAt: "desc" }, take: 100, include: { lead: true },
-  });
-  const prices = await twilioPrices();
+  const session = await getSession();
+  const isGod = session?.role === "god" || !!session?.impersonatorUid;
 
-  const total = calls.length;
-  const twilioCost = calls.reduce((s, c) => s + (prices.get(c.providerSid) || 0), 0);
-  const noLeadInfo = calls.filter((c) => !c.lead?.name || c.lead.name === "Inbound caller").length;
+  const [leads, funnel, econ] = await Promise.all([
+    db.lead.findMany({
+      where: RECAPTURE_WHERE,
+      orderBy: { createdAt: "desc" },
+      take: 500,
+      select: {
+        id: true, name: true, phone: true, email: true, zip: true, state: true,
+        tags: true, recaptureStage: true, valueCents: true, appended: true,
+        calls: { orderBy: { createdAt: "desc" }, take: 1, select: { createdAt: true, status: true, durationSec: true, costCents: true } },
+      },
+    }),
+    recaptureFunnel(),
+    recaptureEconomics(),
+  ]);
+
+  const rows: Row[] = leads.map((l) => {
+    const c = l.calls[0];
+    let appended = false;
+    try { appended = (JSON.parse(l.appended || "{}") as { appendStatus?: string }).appendStatus === "matched"; } catch {}
+    return {
+      id: l.id, leadName: l.name, phone: l.phone, email: l.email, zip: l.zip, state: l.state,
+      tags: parseTags(l.tags), stage: l.recaptureStage, valueCents: l.valueCents,
+      lastCallAt: c ? cst(c.createdAt) : null, lastStatus: c?.status || "", durationSec: c?.durationSec || 0, costCents: c?.costCents || 0,
+      appended,
+    };
+  });
 
   return (
     <>
       <div className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Missed Calls</h1>
-          <p className="text-sm text-[var(--muted)] max-w-3xl">Calls that hit Twilio but didn&apos;t connect to a buyer (no-answer, busy, dropped, or too short). Append the number to recover the lead, then reach out from the Communications portal.</p>
+          <h1 className="text-2xl font-bold">Missed-Call Recapture</h1>
+          <p className="text-sm text-[var(--muted)] max-w-3xl">
+            Every number that ever hit 1-800-MEDIGAP and didn&apos;t monetize — pulled from Twilio with its timestamp,
+            length and cost. This was expensive data to make. We work it with cold text + email to bubble these contacts
+            back into the funnel: <span className="text-[var(--text)]">missed → engaged → clicked → opted-in → revenue</span>.
+            Select, append, tag, and blast from here.
+          </p>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4 mb-6">
-        <Stat label="Missed Calls" value={num(total)} sub="last 100" tone="down" />
-        <Stat label="Twilio Cost (these)" value={`$${twilioCost.toFixed(2)}`} sub="what they cost you" tone="gold" />
-        <Stat label="Need Enrichment" value={num(noLeadInfo)} sub="no name yet → append" tone="default" />
-        <Stat label="Recoverable" value={num(total - noLeadInfo)} sub="have contact data" tone="up" />
+      {/* Top dashboard — value of the list + cost vs. revenue */}
+      <div className="grid gap-4 md:grid-cols-5 mb-6">
+        <Stat label="Recapture Leads" value={num(econ.leads)} sub="worked from old data" tone="up" />
+        <Stat label="Accessible Recapture" value={usd2(econ.accessibleRecaptureCents)} sub={`${usd2(ACCESSIBLE_RECAPTURE_CENTS)} × ${num(econ.leads)} leads`} tone="gold" />
+        <Stat label="Revenue Created" value={usd2(econ.revenueCents)} sub="real $ booked on these" tone="up" />
+        <Stat label="Cost To Work" value={usd2(econ.totalCostCents)} sub="Twilio + outreach" tone="down" />
+        <Stat label="Net / Recoup" value={usd2(econ.netCents)} sub={`${econ.recoupPct}% of cost recouped`} tone={econ.netCents >= 0 ? "up" : "down"} />
       </div>
 
-      <Section title="Missed Inbound" desc="Click a number to drill into the caller; Append to enrich via PredictiveData.">
-        <Card className="!p-0 overflow-hidden">
-          <table>
-            <thead><tr><th>Time (CT)</th><th>Number</th><th>Zip / State</th><th>Status</th><th className="text-right">Sec</th><th className="text-right">Twilio $</th><th>Caller</th><th className="text-right">Enrich</th></tr></thead>
-            <tbody>
-              {calls.map((c) => (
-                <tr key={c.id}>
-                  <td className="text-[var(--muted)] text-sm whitespace-nowrap">{cst(c.createdAt)}</td>
-                  <td><PhoneLink phone={c.fromNumber} /></td>
-                  <td className="text-[var(--muted)]">{[c.zip, c.state].filter(Boolean).join(" · ") || "—"}</td>
-                  <td><Badge tone={["missed", "no-answer", "busy", "failed"].includes(c.status) ? "down" : "default"}>{c.status}</Badge></td>
-                  <td className="text-right">{mmss(c.durationSec)}</td>
-                  <td className="text-right text-[var(--muted)]">{prices.get(c.providerSid) ? `$${prices.get(c.providerSid)!.toFixed(3)}` : "—"}</td>
-                  <td className="text-sm">{c.lead ? <Link href={`/dashboard/leads/${c.lead.id}`} className="text-[var(--brand)] hover:underline">{c.lead.name || "Unknown"}</Link> : "—"}</td>
-                  <td className="text-right">{c.lead ? <AppendButton leadId={c.lead.id} /> : "—"}</td>
-                </tr>
-              ))}
-              {calls.length === 0 && <tr><td colSpan={8} className="text-center text-[var(--muted)] py-8">No missed calls. 🎉</td></tr>}
-            </tbody>
-          </table>
-        </Card>
-      </Section>
-      <p className="text-xs text-[var(--muted)]">Reach these callers in bulk from <Link href="/dashboard/communications" className="text-[var(--brand)]">Communications</Link> — pick the &ldquo;Missed calls&rdquo; segment and send text, email, or both.</p>
+      <div className="grid gap-6 lg:grid-cols-[1fr_1.6fr] items-start mb-8">
+        <Section title="Recapture Funnel" desc="How far the old data has moved toward money.">
+          <FunnelBar
+            stages={[
+              { label: "Missed", value: funnel.missed, tone: "var(--danger)" },
+              { label: "Engaged", value: funnel.engaged, tone: "var(--gold)" },
+              { label: "Clicked", value: funnel.clicked, tone: "var(--brand2)" },
+              { label: "Opted in", value: funnel.optedIn, tone: "var(--brand)" },
+              { label: "Revenue", value: funnel.revenue, tone: "var(--brand)" },
+            ]}
+          />
+          <Card className="mt-4">
+            <p className="text-sm text-[var(--muted)]">
+              Goal: drive every missed call rightward. Contacts we don&apos;t convert stay tagged and keep getting
+              worked — percolating until they click a CTA, at which point they&apos;re processed as a fresh,
+              fully-appended lead. Reach them in bulk below or from{" "}
+              <Link href="/dashboard/communications" className="text-[var(--brand)]">Communications</Link>.
+            </p>
+          </Card>
+        </Section>
+
+        <Section title="The List" desc="Search, select all, then append / tag / text / email. Tag a batch (e.g. chapter-1) to blast it as one campaign.">
+          <RecaptureConsole rows={rows} isGod={isGod} />
+        </Section>
+      </div>
     </>
   );
 }

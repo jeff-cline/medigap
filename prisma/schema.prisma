@@ -168,6 +168,11 @@ model Lead {
   smsOptOut Boolean  @default(false) // honored STOP / do-not-text
   emailOptOut Boolean @default(false) // honored unsubscribe / do-not-email
   appended  String   @default("{}") // PredictiveData-appended data (JSON)
+  tags      String   @default("[]") // JSON array of campaign tags, e.g. ["chapter-1"]
+  recaptureStage String @default("") // ""|missed|engaged|clicked|opted_in|revenue — old-data recapture funnel
+  engagedAt DateTime? // first cold outreach (SMS/email) sent
+  clickedAt DateTime? // clicked a CTA link from outreach
+  optedInAt DateTime? // submitted a form / opted in → real lead
   siteId    String?
   site      Site?    @relation(fields: [siteId], references: [id])
   agentId   String?
@@ -199,6 +204,8 @@ model Call {
   zip         String   @default("")
   state       String   @default("")
   durationSec Int      @default(0)
+  costCents   Int      @default(0) // Twilio charge for this call (persisted from backfill)
+  direction   String   @default("inbound") // inbound|outbound
   status      String   @default("ringing") // ringing|connected|completed|missed
   source      String   @default("organic") // house|paid|organic
   disposition String   @default("sold") // sold|default|missed — default = house call, no agent bought it

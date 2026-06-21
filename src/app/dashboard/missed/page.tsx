@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Card, Stat, Badge, Section, AIButton } from "@/components/ui";
 import Gauge from "@/components/Gauge";
 import { db } from "@/lib/db";
@@ -85,6 +86,18 @@ export default async function MissedPage() {
         </div>
         <AIButton label="Recommend budgets" />
       </div>
+
+      <Link href="/dashboard/missed-calls" className="block mb-6">
+        <Card className="!p-4 border-l-4 border-l-[var(--brand)] hover:glow transition">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm">
+              <span className="font-semibold">Looking for actual missed calls?</span>{" "}
+              <span className="text-[var(--muted)]">Work every number that hit 1-800-MEDIGAP — append, tag, and bulk text/email the old data to recapture revenue.</span>
+            </p>
+            <span className="btn btn-brand text-xs !py-1.5 shrink-0">Open Missed-Call Recapture →</span>
+          </div>
+        </Card>
+      </Link>
 
       <div className="grid gap-4 md:grid-cols-4 mb-8">
         <Stat label="Est. Missed Revenue" value={usd(missedRev)} sub="today, budget-capped" tone="down" />

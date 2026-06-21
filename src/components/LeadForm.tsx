@@ -11,7 +11,10 @@ export default function LeadForm({ vertical = "medicare", compact = false }: { v
     e.preventDefault();
     setState("loading");
     try {
-      await fetch("/api/leads", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, vertical, source: "organic" }) });
+      // If the visitor arrived from a tracked recapture link (/r/<id> → ?lead=<id>),
+      // opt that existing contact in instead of creating a duplicate.
+      const leadId = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("lead") : null;
+      await fetch("/api/leads", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, vertical, source: "organic", ...(leadId ? { leadId } : {}) }) });
     } catch {}
     setState("done");
   }
