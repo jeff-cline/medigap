@@ -63,7 +63,7 @@ export default function TvAds() {
   }
 
   return (
-    <section className="mx-auto max-w-7xl px-6 py-12">
+    <section className="mx-auto max-w-[1800px] px-6 py-12">
       <div className="text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1 text-xs text-[var(--muted)]">
           <span className="live-dot text-[var(--brand)]">●</span> On air nationwide
@@ -72,7 +72,7 @@ export default function TvAds() {
         <p className="text-[var(--muted)] mt-2">These spots are running on national TV. Watch, then check availability in your market.</p>
       </div>
 
-      <div className="mt-8 grid gap-6 md:grid-cols-2 max-w-5xl mx-auto">
+      <div className="mt-8 grid gap-6 md:grid-cols-3">
         {VIDEOS.map((id, i) => (
           <div key={id} className="relative card !p-0 overflow-hidden">
             <div className="relative aspect-video bg-black">
