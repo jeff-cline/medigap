@@ -53,8 +53,10 @@ export default function Page() {
             <p className="mt-5 text-2xl md:text-3xl font-bold leading-snug">
               New opportunities this <span className="text-[var(--brand)]">AEP/OEP</span>. Lock in your position to be part of the disruption.
             </p>
-            <h1 className="mt-6 text-5xl md:text-7xl font-black leading-none">
-              <span className="throb text-gradient">1-800-MEDIGAP</span>
+            <h1 className="mt-6 mb-2 leading-none whitespace-nowrap">
+              <span className="inline-block origin-left" style={{ transform: "scaleY(1.38) scaleX(0.86)" }}>
+                <span className="throb text-gradient font-black tracking-tight text-5xl sm:text-6xl md:text-7xl">1-800-MEDIGAP</span>
+              </span>
             </h1>
             <p className="mt-6 text-lg text-[var(--muted)]">
               Sponsor a ZIP, city, state, or the whole country. Agents lock in their territory. National providers explore
