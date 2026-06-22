@@ -16,8 +16,9 @@ export type SiteBrand = {
 // the default branding is used.
 export async function getCurrentSite(): Promise<SiteBrand | null> {
   const h = await headers();
-  const raw = (h.get("x-forwarded-host") || h.get("host") || "").split(":")[0].toLowerCase().trim();
-  if (!raw || raw === "medigap.plus" || raw === "www.medigap.plus" || raw.startsWith("localhost") || /^\d+\.\d+\.\d+\.\d+$/.test(raw)) {
+  let raw = (h.get("x-forwarded-host") || h.get("host") || "").split(":")[0].toLowerCase().trim();
+  if (raw.startsWith("www.")) raw = raw.slice(4); // treat www.<domain> as the apex site
+  if (!raw || raw === "medigap.plus" || raw.startsWith("localhost") || /^\d+\.\d+\.\d+\.\d+$/.test(raw)) {
     return null;
   }
   const site = await db.site.findUnique({ where: { hostname: raw } }).catch(() => null);
