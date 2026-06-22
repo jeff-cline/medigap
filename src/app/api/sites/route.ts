@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { slugFromLabel, wordForCategory } from "@/lib/categories";
 
 // Theme variants for A/B testing — a site's look is chosen deterministically from
 // its hostname length so every new site renders differently out of the box.
@@ -67,9 +68,14 @@ export async function POST(req: NextRequest) {
 
   const hostname = String(body.hostname || "").trim().toLowerCase();
   const name = String(body.name || "").trim();
-  const vertical = String(body.vertical || "medicare").trim();
   const goal = String(body.goal || "").trim();
   const kind = body.kind === "management" ? "management" : "marketing";
+
+  // Category / vertical. "__add" + categoryLabel means the user is creating a NEW
+  // category on the fly — slugify it and remember its human label for the money word.
+  const categoryLabel = String(body.categoryLabel || "").trim();
+  let vertical = String(body.vertical || "medicare").trim();
+  if (vertical === "__add") vertical = slugFromLabel(categoryLabel) || "category";
 
   if (!hostname) return NextResponse.json({ error: "Hostname is required." }, { status: 400 });
   if (!name) return NextResponse.json({ error: "Site name is required." }, { status: 400 });
@@ -96,7 +102,20 @@ export async function POST(req: NextRequest) {
         moneyWords: String(body.moneyWords || "").trim(),
       },
     });
-    return NextResponse.json({ ok: true, id: site.id });
+
+    // Connect the category to the auction: ensure a biddable money word exists for it.
+    // e.g. launching a "Senior Services" site creates the "senior services" money word.
+    const word = wordForCategory(vertical, categoryLabel);
+    let createdWord = "";
+    if (word) {
+      const existing = await db.moneyWord.findUnique({ where: { word } }).catch(() => null);
+      if (!existing) {
+        await db.moneyWord.create({ data: { word, active: true, partner: name } }).catch(() => {});
+      }
+      createdWord = word;
+    }
+
+    return NextResponse.json({ ok: true, id: site.id, moneyWord: createdWord });
   } catch {
     // Most likely the unique hostname constraint.
     return NextResponse.json(

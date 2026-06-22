@@ -4,11 +4,15 @@ import { useRouter } from "next/navigation";
 
 const inputCls = "mt-1 w-full rounded-lg bg-[var(--panel2)] border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-[var(--brand)]";
 
-export default function LaunchSiteForm({ partners = [] }: { partners?: { id: string; name: string }[] }) {
+type Category = { value: string; label: string; word: string };
+
+export default function LaunchSiteForm({ partners = [], categories = [] }: { partners?: { id: string; name: string }[]; categories?: Category[] }) {
   const router = useRouter();
+  const cats = categories.length ? categories : [{ value: "medicare", label: "Medicare / Medigap", word: "medicare" }];
   const [hostname, setHostname] = useState("");
   const [name, setName] = useState("");
-  const [vertical, setVertical] = useState("medicare");
+  const [vertical, setVertical] = useState(cats[0]?.value || "medicare");
+  const [customCategory, setCustomCategory] = useState("");
   const [kind, setKind] = useState("marketing");
   const [goal, setGoal] = useState("");
   // advanced
@@ -26,28 +30,50 @@ export default function LaunchSiteForm({ partners = [] }: { partners?: { id: str
   const [note, setNote] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const addingCategory = vertical === "__add";
+
   async function launch() {
+    if (addingCategory && !customCategory.trim()) { setError("Type the new category name."); return; }
     setBusy(true); setError(null); setNote(null);
     try {
       const res = await fetch("/api/sites", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hostname, name, vertical, kind, goal, mode, ownerId: ownerId || undefined, territoryZips, affiliateRevSharePct: Number(revShare) || 0, audience, primaryCta, brandColor, moneyWords }),
+        body: JSON.stringify({ hostname, name, vertical, categoryLabel: addingCategory ? customCategory.trim() : undefined, kind, goal, mode, ownerId: ownerId || undefined, territoryZips, affiliateRevSharePct: Number(revShare) || 0, audience, primaryCta, brandColor, moneyWords }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setError(data.error || "Could not launch the site."); return; }
-      setNote(`Launched ${hostname}${mode === "standalone" ? " (standalone — owner keeps territory, overflow affiliated)" : ""}.`);
-      setHostname(""); setName(""); setGoal(""); setTerritoryZips(""); setAdv(false);
+      const wordMsg = data.moneyWord ? ` Money word “${data.moneyWord}” is now biddable.` : "";
+      setNote(`Launched ${hostname}${mode === "standalone" ? " (standalone — owner keeps territory, overflow affiliated)" : ""}.${wordMsg}`);
+      setHostname(""); setName(""); setGoal(""); setTerritoryZips(""); setCustomCategory(""); setAdv(false);
       router.refresh();
     } finally { setBusy(false); }
   }
+
+  const CategorySelect = ({ id }: { id?: string }) => (
+    <>
+      <select id={id} value={vertical} onChange={(e) => setVertical(e.target.value)} className={inputCls}>
+        {cats.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+        <option value="__add">+ Add category…</option>
+      </select>
+      {addingCategory && (
+        <input
+          value={customCategory}
+          onChange={(e) => setCustomCategory(e.target.value)}
+          placeholder="e.g. Senior Services — also creates a biddable money word"
+          className={inputCls}
+          autoFocus
+        />
+      )}
+    </>
+  );
 
   return (
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div><label className="text-xs uppercase tracking-wide text-[var(--muted)]">URL / Hostname</label><input value={hostname} onChange={(e) => setHostname(e.target.value)} placeholder="medigap-az.com (already pointed at the IP)" className={inputCls} /></div>
         <div><label className="text-xs uppercase tracking-wide text-[var(--muted)]">Site Name</label><input value={name} onChange={(e) => setName(e.target.value)} placeholder="Medigap Arizona" className={inputCls} /></div>
-        <div><label className="text-xs uppercase tracking-wide text-[var(--muted)]">Vertical</label>
-          <select value={vertical} onChange={(e) => setVertical(e.target.value)} className={inputCls}><option value="medicare">Medicare / Medigap</option><option value="housing">Senior Housing</option><option value="care">In-Home Care</option><option value="alzheimers">Alzheimer&apos;s / Memory Care</option></select></div>
+        <div><label className="text-xs uppercase tracking-wide text-[var(--muted)]">Category / Vertical</label>
+          <CategorySelect /></div>
         <div><label className="text-xs uppercase tracking-wide text-[var(--muted)]">Kind</label>
           <select value={kind} onChange={(e) => setKind(e.target.value)} className={inputCls}><option value="marketing">Marketing (lead/call funnel)</option><option value="management">Management (back-office portal)</option></select></div>
       </div>

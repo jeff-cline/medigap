@@ -6,6 +6,7 @@ import { TOLLFREE, TOLLFREE_TEL, usd, num } from "@/lib/format";
 import { getMoneySnapshot } from "@/lib/queries";
 import { getCurrentSite } from "@/lib/site";
 import FounderCTA from "@/components/jv/FounderCTA";
+import { SeniorHeroArt } from "@/components/SeniorArt";
 
 export default async function Home() {
   const [m, brand] = await Promise.all([getMoneySnapshot().catch(() => null), getCurrentSite()]);
@@ -21,11 +22,11 @@ export default async function Home() {
   ];
 
   return (
-    <div style={brandStyle}>
+    <div style={brandStyle} className={`${brand ? "theme-light min-h-screen bg-[var(--bg)]" : ""}`}>
       {/* Top bar */}
       <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur">
         <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-xl font-bold text-gradient">
+          <Link href="/" className="flex items-center gap-2 text-xl font-bold text-gradient whitespace-nowrap">
             {brand?.logoUrl ? <img src={brand.logoUrl} alt={brandName} className="h-8 w-auto" /> : brandName}
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm text-[var(--muted)]">
@@ -56,8 +57,9 @@ export default async function Home() {
               )}
             </h1>
             <p className="mt-5 text-lg text-[var(--muted)]">
-              Compare Medicare Advantage, Medigap supplements, senior housing, in-home care and Alzheimer&apos;s care — all in one place.
-              Talk to a licensed specialist in minutes.
+              {brand
+                ? "Medicare, supplements, senior housing, in-home care, memory care and more senior services — all in one trusted place. Talk to a caring specialist in minutes."
+                : "Compare Medicare Advantage, Medigap supplements, senior housing, in-home care and Alzheimer's care — all in one place. Talk to a licensed specialist in minutes."}
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <a href={`tel:${TOLLFREE_TEL}`} className="btn btn-brand text-base">📞 Call {TOLLFREE} — Free</a>
@@ -70,17 +72,18 @@ export default async function Home() {
             </div>
           </div>
           <div id="quote" className="space-y-4">
+            {brand && <SeniorHeroArt className="w-full max-w-md mx-auto" />}
             <LeadForm />
             {/* Live advertiser inventory — billed per click via /go/[adId] */}
-            <AdSlot placement="inline" />
+            {!brand && <AdSlot placement="inline" />}
           </div>
         </div>
       </section>
 
       {/* Verticals */}
       <section className="mx-auto max-w-7xl px-6 py-12">
-        <h2 className="text-2xl font-bold text-center">Everything the over-65 community needs</h2>
-        <p className="text-center text-[var(--muted)] mt-2">One network. Licensed specialists for every product.</p>
+        <h2 className="text-2xl font-bold text-center">{brand ? "Senior services, all in one place" : "Everything the over-65 community needs"}</h2>
+        <p className="text-center text-[var(--muted)] mt-2">{brand ? "Caring, licensed specialists for every senior need." : "One network. Licensed specialists for every product."}</p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             ["🩺", "Medicare Insurance", "Original Medicare guidance & enrollment", "/medicare"],
@@ -110,7 +113,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <SiteFooter ticker={ticker} brand={brand} />
+      <SiteFooter ticker={brand ? undefined : ticker} brand={brand} />
       {!brand && <FounderCTA />}
     </div>
   );

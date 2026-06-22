@@ -5,6 +5,7 @@ import LaunchSiteForm from "@/components/LaunchSiteForm";
 import PixelManager from "@/components/PixelManager";
 import { db } from "@/lib/db";
 import { num, usd } from "@/lib/format";
+import { mergeCategories } from "@/lib/categories";
 
 export default async function SitesPage() {
   const [sites, pixels, partners, affLeads] = await Promise.all([
@@ -17,6 +18,7 @@ export default async function SitesPage() {
   const affSoldTotal = affLeads.reduce((s, a) => s + a.soldForCents, 0);
   const siteName = new Map(sites.map((s) => [s.id, s.name]));
 
+  const categories = mergeCategories(sites.map((s) => s.vertical));
   const liveSites = sites.filter((s) => s.active).length;
   const management = sites.filter((s) => s.kind === "management").length;
   const marketing = sites.filter((s) => s.kind === "marketing").length;
@@ -110,7 +112,7 @@ export default async function SitesPage() {
 
       <Section title="Quick Start — launch a new site" desc="Add a URL + goal and launch in one click, or open Advanced for ownership model + deeper intent.">
         <Card glow>
-          <LaunchSiteForm partners={partners.map((p) => ({ id: p.id, name: p.name || p.email }))} />
+          <LaunchSiteForm partners={partners.map((p) => ({ id: p.id, name: p.name || p.email }))} categories={categories} />
         </Card>
       </Section>
 
