@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Card, Badge, Section, Stat } from "@/components/ui";
 import LeadActions from "@/components/LeadActions";
 import AppendButton from "@/components/AppendButton";
+import { AppendedBlock } from "@/components/AppendedData";
 import CallTranscriptTagger from "@/components/CallTranscriptTagger";
 import { db } from "@/lib/db";
 import { getSession, isRealGod } from "@/lib/auth";
@@ -68,9 +69,13 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
           <Card>
             <dl className="grid grid-cols-3 gap-y-3 text-sm">
               <dt className="text-[var(--muted)]">Phone</dt><dd className="col-span-2 font-medium"><a href={`tel:${lead.phone}`} className="text-[var(--brand)]">{fmtPhone(lead.phone)}</a></dd>
+              {!!appended?.phones && <><dt className="text-[var(--gold)] text-xs">Appended Phone</dt><dd className="col-span-2 font-medium text-xs">{String(appended.phones).split(",").map((p) => fmtPhone(p.trim())).join(", ")}</dd></>}
               <dt className="text-[var(--muted)]">Email</dt><dd className="col-span-2 font-medium">{lead.email || "—"}</dd>
+              {!!(appended?.email || appended?.emails) && <><dt className="text-[var(--gold)] text-xs">Appended Email</dt><dd className="col-span-2 font-medium text-xs">{[appended.email, appended.emails].filter(Boolean).join(", ")}</dd></>}
               <dt className="text-[var(--muted)]">DOB / Age</dt><dd className="col-span-2 font-medium">{lead.dob || "—"}{age ? ` · ${age} yrs` : ""}</dd>
+              {!!appended?.birthDate && <><dt className="text-[var(--gold)] text-xs">Appended DOB</dt><dd className="col-span-2 font-medium text-xs">{String(appended.birthDate)}{appended?.age ? ` · ${String(appended.age)} yrs` : ""}</dd></>}
               <dt className="text-[var(--muted)]">Location</dt><dd className="col-span-2 font-medium">{[lead.city, lead.state, lead.zip].filter(Boolean).join(", ") || "—"}</dd>
+              {!!(appended?.city || appended?.state || appended?.zip || appended?.street) && <><dt className="text-[var(--gold)] text-xs">Appended Location</dt><dd className="col-span-2 font-medium text-xs">{[appended.street, appended.city, appended.state, appended.zip].filter(Boolean).join(", ")}</dd></>}
               <dt className="text-[var(--muted)]">Looking for</dt><dd className="col-span-2 font-medium">{appended?.intent ? String(appended.intent) : "—"}</dd>
               <dt className="text-[var(--muted)]">Agent</dt><dd className="col-span-2 font-medium">{lead.agent?.name || "Unassigned"}</dd>
               <dt className="text-[var(--muted)]">Created</dt><dd className="col-span-2 font-medium">{cstFull(lead.createdAt)}</dd>
@@ -143,18 +148,9 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         </Card>
       </Section>
 
-      <Section title="Appended Data" desc="PredictiveData enrichment + captured intent." action={<AppendButton leadId={lead.id} />}>
+      <Section title="Appended Data" desc="PredictiveData enrichment + captured intent — shown alongside the original record, never overwriting it." action={<AppendButton leadId={lead.id} />}>
         <Card>
-          {appended ? (
-            <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-              {Object.entries(appended).map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-4 border-b border-[var(--border)]/50 py-1">
-                  <dt className="text-[var(--muted)] capitalize">{k.replace(/_/g, " ")}</dt>
-                  <dd className="font-medium text-right">{typeof v === "object" ? JSON.stringify(v) : String(v)}</dd>
-                </div>
-              ))}
-            </dl>
-          ) : <p className="text-sm text-[var(--muted)]">No append or intent captured yet.</p>}
+          <AppendedBlock raw={lead.appended} />
         </Card>
       </Section>
     </>

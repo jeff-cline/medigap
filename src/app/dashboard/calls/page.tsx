@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Fragment } from "react";
 import { Card, Stat, Badge, Section } from "@/components/ui";
+import { AppendedStrip, hasAppended } from "@/components/AppendedData";
 import Gauge from "@/components/Gauge";
 import CallSimulator from "@/components/CallSimulator";
 import TwilioPanel from "@/components/TwilioPanel";
@@ -109,8 +111,10 @@ export default async function CallsPage() {
                 const statusTone = c.status === "connected" || c.status === "completed" ? "up" : c.status === "missed" ? "down" : "default";
                 const isDefault = c.disposition === "default";
                 const routedTo = c.bidWinnerId ? (agentName.get(c.bidWinnerId) || "agent") : isDefault ? `House ${fmtPhone(c.forwardedTo)}` : "—";
+                const showAppend = hasAppended(c.lead?.appended);
                 return (
-                  <tr key={c.id}>
+                  <Fragment key={c.id}>
+                  <tr className={showAppend ? "[&>td]:border-b-0" : ""}>
                     <td className="text-[var(--muted)] text-sm">{c.createdAt.toISOString().slice(5, 16).replace("T", " ")}</td>
                     <td className="font-medium">
                       <Link href={`/dashboard/calls/${c.id}`} className="text-[var(--brand)] hover:underline">
@@ -128,6 +132,12 @@ export default async function CallsPage() {
                     <td className="text-right font-medium text-[var(--brand)]">{c.priceCents > 0 ? usd2(c.priceCents) : "—"}</td>
                     <td className="text-[var(--muted)] text-sm">{routedTo}</td>
                   </tr>
+                  {showAppend && (
+                    <tr>
+                      <td colSpan={9} className="!pt-0 !pb-2 pl-3"><AppendedStrip raw={c.lead?.appended} /></td>
+                    </tr>
+                  )}
+                  </Fragment>
                 );
               })}
               {calls.length === 0 && (

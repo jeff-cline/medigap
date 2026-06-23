@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Card, Badge, Section, Stars } from "@/components/ui";
+import { AppendedBlock } from "@/components/AppendedData";
 import { db } from "@/lib/db";
 import { usd, usd2, TOLLFREE } from "@/lib/format";
 
@@ -96,6 +97,10 @@ export default async function CallDetailPage({ params }: { params: Promise<{ id:
                   Open lead
                 </Link>
               </div>
+            </div>
+            <div className="mt-4 pt-4 border-t border-[var(--border)]/60">
+              <div className="text-[11px] font-bold uppercase tracking-wide text-[var(--gold)] mb-2">⊕ Appended Data</div>
+              <AppendedBlock raw={call.lead.appended} />
             </div>
           </Card>
         </Section>

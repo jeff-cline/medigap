@@ -45,10 +45,36 @@ export async function lookupByEmail(email: string) {
   return email ? lookup("GetDataByEmail", { email }) : null;
 }
 
+// Pull every email out of the upstream identity (it may be string[] or {email}[]).
+function extractEmails(emails: Identity["emails"]): string[] {
+  if (!Array.isArray(emails)) return [];
+  const seen = new Set<string>();
+  for (const e of emails) {
+    const v = (typeof e === "string" ? e : (e as { email?: string })?.email)?.trim();
+    if (v) seen.add(v);
+  }
+  return [...seen];
+}
+// Pull every phone number out of the upstream identity (string | number | {phone|number|value}).
+function extractPhones(phones: unknown): string[] {
+  if (!Array.isArray(phones)) return [];
+  const seen = new Set<string>();
+  for (const p of phones) {
+    let v = "";
+    if (typeof p === "string" || typeof p === "number") v = String(p);
+    else if (p && typeof p === "object") { const o = p as Record<string, unknown>; v = String(o.phone ?? o.number ?? o.value ?? ""); }
+    v = v.trim();
+    if (v) seen.add(v);
+  }
+  return [...seen];
+}
+
 // Flatten the upstream identity into a tidy append object for the CRM.
+// We keep ALL data we can (every email + every phone) — staff want maximum visibility.
 function curate(id: Identity): Record<string, string> {
   const addr = id.address || {};
-  const email = Array.isArray(id.emails) ? (typeof id.emails[0] === "string" ? id.emails[0] : (id.emails[0] as { email?: string })?.email) : undefined;
+  const emails = extractEmails(id.emails);
+  const phones = extractPhones(id.phones);
   const out: Record<string, string> = {};
   const put = (k: string, v: unknown) => { if (v !== undefined && v !== null && String(v).trim()) out[k] = String(v); };
   put("name", [id.firstName, id.lastName].filter(Boolean).join(" "));
@@ -56,14 +82,17 @@ function curate(id: Identity): Record<string, string> {
   put("birthDate", id.birthDate);
   put("gender", id.gender);
   put("maritalStatus", id.maritalStatus);
+  put("street", addr.street);
   put("city", addr.city || id.city);
   put("state", addr.state || id.state);
   put("zip", addr.zip || id.zip);
   put("householdIncome", id.householdIncome);
   put("creditRange", id.creditRange);
   put("investmentStatus", id.investmentStatus);
-  put("email", email);
-  if (id.phones) put("phonesOnFile", Array.isArray(id.phones) ? id.phones.length : id.phones);
+  put("email", emails[0]);                                   // primary appended email
+  if (emails.length > 1) put("emails", emails.join(", "));   // all other emails on file
+  if (phones.length) put("phones", phones.join(", "));       // every phone number on file
+  if (id.phones) put("phonesOnFile", Array.isArray(id.phones) ? String(id.phones.length) : String(id.phones));
   return out;
 }
 

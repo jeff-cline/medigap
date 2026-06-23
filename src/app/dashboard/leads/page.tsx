@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Fragment } from "react";
 import { Card, Stat, Badge, Section, AIButton } from "@/components/ui";
+import { AppendedStrip, hasAppended } from "@/components/AppendedData";
 import LeadFilters from "@/components/LeadFilters";
 import { db } from "@/lib/db";
 import { getSession, isRealGod } from "@/lib/auth";
@@ -91,8 +93,10 @@ export default async function LeadsPage({
               {leads.map((l) => {
                 const talk = l.calls.reduce((s, c) => s + c.durationSec, 0);
                 const age = ageFromSpeech(l.dob || "");
+                const showAppend = hasAppended(l.appended);
                 return (
-                  <tr key={l.id}>
+                  <Fragment key={l.id}>
+                  <tr className={showAppend ? "[&>td]:border-b-0" : ""}>
                     <td className="font-mono text-xs text-[var(--muted)]">{leadRef(l.refNum)}</td>
                     <td className="font-medium"><Link href={`/dashboard/leads/${l.id}`} className="text-[var(--brand)] hover:underline">{l.name || "Unnamed"}</Link></td>
                     <td><Link href={`/dashboard/leads/${l.id}`} className="text-[var(--brand)] hover:underline">{fmtPhone(l.phone)}</Link></td>
@@ -103,6 +107,12 @@ export default async function LeadsPage({
                     <td><Badge tone={statusTone[l.status] ?? "default"}>{l.status}</Badge></td>
                     <td className="text-[var(--muted)] text-sm">{cst(l.createdAt)}</td>
                   </tr>
+                  {showAppend && (
+                    <tr>
+                      <td colSpan={9} className="!pt-0 !pb-2 pl-3"><AppendedStrip raw={l.appended} /></td>
+                    </tr>
+                  )}
+                  </Fragment>
                 );
               })}
               {leads.length === 0 && (
