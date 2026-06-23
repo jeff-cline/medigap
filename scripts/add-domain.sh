@@ -23,7 +23,7 @@
 set -euo pipefail
 
 DOMAIN="${1:?Usage: add-domain.sh <domain> [upstream host:port] [letsencrypt email]}"
-UPSTREAM="${2:-127.0.0.1:3000}"   # where the Next.js app listens
+UPSTREAM="${2:-127.0.0.1:3020}"   # where the Next.js app (pm2 "medigap") listens on prod
 EMAIL="${3:-ops@medigap.plus}"    # Let's Encrypt account email
 DOMAIN="$(echo "$DOMAIN" | tr '[:upper:]' '[:lower:]' | sed 's#^https\?://##; s#/.*$##')"
 AVAIL="/etc/nginx/sites-available/${DOMAIN}.conf"
