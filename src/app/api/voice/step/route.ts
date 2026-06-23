@@ -114,9 +114,19 @@ export async function POST(req: NextRequest) {
   }
 
   // 2) AI converses; it emits [TRANSFER:...] when it decides to route.
-  const sys = `${agent.systemPrompt || ""}\n\nTone: ${agent.tone}`;
+  // Steer toward what we actually monetize: feed it the currently-armed money words.
+  const armedWords = await db.moneyWord.findMany({ where: { active: true }, select: { word: true, aliases: true } }).catch(() => []);
+  const armedList = armedWords.map((m) => m.word).filter(Boolean);
+  // Don't repeat ourselves: collect every line the agent has already said this call.
+  const priorAgentLines = dialogue.filter((d) => d.role === "assistant").map((d) => d.text);
+  const steer = [
+    armedList.length ? `These are the money words we actively help with — if the caller's need maps to any of them, warmly acknowledge and route there: ${armedList.join(", ")}.` : "",
+    `Do NOT repeat any wording you've already used. Lines you've already said this call (do not reuse them): ${priorAgentLines.map((l) => `"${l}"`).join(" | ") || "(none yet)"}.`,
+    `Reassure them this is a free service in a fresh way each turn; your aim is to get them to a money word or a licensed agent.`,
+  ].filter(Boolean).join("\n");
+  const sys = `${agent.systemPrompt || ""}\n\nTone: ${agent.tone}\n\n${steer}`;
   const messages: ChatMsg[] = [{ role: "system", content: sys }, ...dialogue.map((d) => ({ role: d.role, content: d.text } as ChatMsg))];
-  let reply = await aiReply(messages);
+  let reply = await aiReply(messages, { temperature: 0.8 });
   const lastTurn = turn + 1 >= agent.maxTurns;
   if (!reply) reply = "Thanks. Let me connect you with a licensed specialist who can help. One moment. [TRANSFER:insurance]";
 
