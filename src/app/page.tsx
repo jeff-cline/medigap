@@ -5,11 +5,28 @@ import AdSlot from "@/components/AdSlot";
 import { TOLLFREE, TOLLFREE_TEL, usd, num } from "@/lib/format";
 import { getMoneySnapshot } from "@/lib/queries";
 import { getCurrentSite } from "@/lib/site";
+import { loadPage, siteNav } from "@/lib/sitepages";
+import SiteShell from "@/components/site/SiteShell";
+import SitePageRenderer from "@/components/site/SitePageRenderer";
 import FounderCTA from "@/components/jv/FounderCTA";
 import { SeniorHeroArt } from "@/components/SeniorArt";
 
 export default async function Home() {
   const [m, brand] = await Promise.all([getMoneySnapshot().catch(() => null), getCurrentSite()]);
+
+  // AI-generated homepage: if this white-label site has a built home page, render it
+  // through the shared renderer (matches the site's own styling, slim marketing footer).
+  if (brand) {
+    const home = await loadPage(brand.id, "");
+    if (home && home.blocks.length > 0) {
+      const nav = await siteNav(brand.id);
+      return (
+        <SiteShell brand={{ name: brand.name, logoUrl: brand.logoUrl, brandColor: brand.brandColor }} nav={nav}>
+          <SitePageRenderer blocks={home.blocks} />
+        </SiteShell>
+      );
+    }
+  }
   const brandName = brand?.name || "medigap.plus";
   const brandStyle = brand?.brandColor ? ({ "--brand": brand.brandColor } as React.CSSProperties) : undefined;
   const headline = brand?.heroHeadline;

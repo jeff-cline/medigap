@@ -36,9 +36,36 @@ model Site {
   footerLinks String @default("[]") // JSON [{label, href}] — partner's custom footer
   heroHeadline String @default("")
   moneyWords String  @default("")
+  // --- AI site builder ---
+  buildStatus String @default("none") // none | engineering | brief_ready | building | complete | error
+  buildBrief String  @default("{}")   // engineered/approved brief JSON
+  buildProgress String @default("{}") // {done,total,current,error} for the progress UI
   createdAt DateTime @default(now())
   leads     Lead[]
   calls     Call[]
+  pages     SitePage[]
+}
+
+// AI-generated page belonging to a white-label Site. Content is stored as typed
+// JSON blocks so every page renders through one shared renderer that matches the
+// site's own homepage styling.
+model SitePage {
+  id        String   @id @default(cuid())
+  siteId    String
+  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  kind      String   @default("page") // home | page | faq | blog
+  slug      String                    // "" for home, e.g. "faq", "resources/taking-the-keys-away", "blog/<slug>"
+  title     String   @default("")
+  metaDescription String @default("")
+  heroHeadline String @default("")
+  blocks    String   @default("[]")   // JSON: ordered typed content blocks (the page body)
+  keywords  String   @default("[]")   // JSON: target keywords (+ optional cpc)
+  images    String   @default("[]")   // JSON: [{url, alt, photographer, photographerUrl}]
+  order     Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([siteId, slug])
 }
 
 // Partner onboarding: a business owner fills the deep-research intake (shareable link),

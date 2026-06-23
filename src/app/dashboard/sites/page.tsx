@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Card, Stat, Badge, Section } from "@/components/ui";
 import { ToggleActive } from "@/components/CrudForm";
+import EngineerSiteButton from "@/components/EngineerSiteButton";
 import LaunchSiteForm from "@/components/LaunchSiteForm";
 import PixelManager from "@/components/PixelManager";
 import { db } from "@/lib/db";
@@ -71,9 +72,17 @@ export default async function SitesPage() {
                   </td>
                   <td className="text-[var(--muted)]">{s.vertical}</td>
                   <td className="text-[var(--muted)] text-sm max-w-xs truncate">{s.goal || "—"}</td>
-                  <td>{s.active ? <Badge tone="up">live</Badge> : <Badge tone="down">paused</Badge>}</td>
+                  <td>
+                    {s.active ? <Badge tone="up">live</Badge> : <Badge tone="down">paused</Badge>}
+                    {s.buildStatus === "complete" && <span className="ml-1"><Badge tone="brand">built</Badge></span>}
+                    {s.buildStatus === "building" && <span className="ml-1"><Badge tone="gold">building…</Badge></span>}
+                    {s.buildStatus === "error" && <span className="ml-1"><Badge tone="down">build error</Badge></span>}
+                  </td>
                   <td className="text-right">
-                    <ToggleActive endpoint="/api/sites" id={s.id} active={s.active} />
+                    <div className="flex items-center justify-end gap-2">
+                      {s.kind === "marketing" && <EngineerSiteButton id={s.id} hostname={s.hostname} name={s.name} goal={s.goal} />}
+                      <ToggleActive endpoint="/api/sites" id={s.id} active={s.active} />
+                    </div>
                   </td>
                 </tr>
               ))}
