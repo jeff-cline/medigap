@@ -18,6 +18,9 @@ export async function isClaudeConnected(): Promise<boolean> {
 }
 
 // One-shot completion. Returns the text content, or null if Claude isn't connected / fails.
+// NOTE: `temperature` is intentionally NOT sent — the current Opus models reject it
+// ("temperature is deprecated for this model" → HTTP 400). The opts field is accepted
+// for caller compatibility but ignored.
 export async function claudeText(
   opts: { system?: string; prompt: string; maxTokens?: number; timeoutMs?: number; temperature?: number },
 ): Promise<string | null> {
@@ -30,7 +33,6 @@ export async function claudeText(
       body: JSON.stringify({
         model: cfg.model,
         max_tokens: opts.maxTokens ?? 2000,
-        temperature: opts.temperature ?? 0.7,
         ...(opts.system ? { system: opts.system } : {}),
         messages: [{ role: "user", content: opts.prompt }],
       }),

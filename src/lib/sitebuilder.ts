@@ -44,7 +44,7 @@ Expand this into a build brief as JSON with EXACTLY these keys:
 }
 Make pages and posts specific to the prompt's niche. Keywords should be real search phrases (3-5 per item).`;
 
-  const brief = await claudeJson<Partial<Brief>>({ system, prompt: ask, maxTokens: 3000, temperature: 0.6, timeoutMs: 90000 });
+  const brief = await claudeJson<Partial<Brief>>({ system, prompt: ask, maxTokens: 5000, timeoutMs: 120000 });
   if (!brief) return null;
 
   // Normalize / harden.
