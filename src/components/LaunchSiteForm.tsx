@@ -43,7 +43,8 @@ export default function LaunchSiteForm({ partners = [], categories = [] }: { par
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setError(data.error || "Could not launch the site."); return; }
       const wordMsg = data.moneyWord ? ` Money word “${data.moneyWord}” is now biddable.` : "";
-      setNote(`Launched ${hostname}${mode === "standalone" ? " (standalone — owner keeps territory, overflow affiliated)" : ""}.${wordMsg}`);
+      const goLive = ` To go LIVE: point ${hostname}'s DNS A-record at the platform server, then run scripts/add-domain.sh ${hostname} on the server to attach the domain + TLS cert. Until then it serves default branding.`;
+      setNote(`Created ${hostname}${mode === "standalone" ? " (standalone — owner keeps territory, overflow affiliated)" : ""}.${wordMsg}${goLive}`);
       setHostname(""); setName(""); setGoal(""); setTerritoryZips(""); setCustomCategory(""); setAdv(false);
       router.refresh();
     } finally { setBusy(false); }
