@@ -114,6 +114,14 @@ export async function sendFounderEmail(input: {
 
 // Pull inbound email over IMAP for each connected engine, match each message to a Lead
 // by from-address, persist it (deduped) as an inbound EmailMessage, and mark the most
+// Skip automated / system senders so the inbox stays real human replies only.
+function isSystemSender(email: string): boolean {
+  const [local = "", domain = ""] = email.split("@");
+  if (/(^|[._-])(no-?reply|do-?not-?reply|donotreply|mailer-daemon|postmaster|bounce[sd]?|notifications?|alerts?|support|news(letter)?)([._-]|$)/.test(local)) return true;
+  if (/(^|\.)(accounts\.google\.com|google\.com|mail\.google\.com|bounces\.|sendgrid\.|amazonses\.com)/.test(domain)) return true;
+  return false;
+}
+
 // recent outbound founder email to that person as replied. Best-effort; returns counts.
 export async function syncInbox(): Promise<{ ok: boolean; pulled: number; matched: number; replies: number; errors: string[] }> {
   const providers: { engine: string; imap: ImapProvider }[] = [
@@ -132,6 +140,7 @@ export async function syncInbox(): Promise<{ ok: boolean; pulled: number; matche
     for (const m of res.messages) {
       const fromEmail = (m.from || "").toLowerCase().trim();
       if (!fromEmail.includes("@")) continue;
+      if (isSystemSender(fromEmail)) continue; // skip automated / no-reply / system mail
       // Match to a known contact by email; if none, create one so every reply lands in
       // the CRM (unified by email) and gets auto-appended.
       let lead = await db.lead.findFirst({ where: { email: fromEmail } }).catch(() => null);
