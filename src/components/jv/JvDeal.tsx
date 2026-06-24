@@ -6,7 +6,7 @@ import { JV_INTERESTS } from "@/lib/jv-constants";
 type Msg = { dir: string; body: string; at: string };
 type Note = { author: string; body: string; at: string };
 type Doc = { url: string; label: string; by: string; at: string };
-type Email = { subject: string; engine: string; status: string; at: string; template: string };
+export type Activity = { kind: "email" | "sms" | "call" | "note"; dir: string; label: string; body: string; at: string; status?: string };
 export type DealLead = {
   id: string; name: string; phone: string; email: string; zip: string; state: string;
   priority: string; ltvMonthly: string; jvInterest: string; status: string; optOut: boolean;
@@ -15,7 +15,7 @@ export type DealLead = {
 
 const F = "w-full rounded-lg bg-[var(--panel2)] border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-[var(--brand)]";
 
-export default function JvDeal({ lead, messages, notes, docs, emails = [] }: { lead: DealLead; messages: Msg[]; notes: Note[]; docs: Doc[]; emails?: Email[] }) {
+export default function JvDeal({ lead, messages, notes, docs, activity = [] }: { lead: DealLead; messages: Msg[]; notes: Note[]; docs: Doc[]; activity?: Activity[] }) {
   const router = useRouter();
   const [f, setF] = useState(lead);
   const [busy, setBusy] = useState("");
@@ -122,20 +122,25 @@ export default function JvDeal({ lead, messages, notes, docs, emails = [] }: { l
           </div>
         </div>
 
-        {/* Founder emails (FOUNDER COMMUNICATION) */}
+        {/* Unified activity timeline — all channels, timestamped */}
         <div className="card !p-0 overflow-hidden">
-          <div className="px-4 py-3 border-b border-[var(--border)] font-semibold">✉️ Founder Emails <span className="text-xs text-[var(--muted)] font-normal">— sent from the console, timestamped</span></div>
-          <div className="p-4 space-y-3 max-h-[300px] overflow-y-auto">
-            {emails.length === 0 && <p className="text-sm text-[var(--muted)]">No founder emails yet. Send one from the JV → Founder Communication console.</p>}
-            {emails.map((e, i) => (
-              <div key={i} className="text-sm">
-                <div className="text-[11px] text-[var(--muted)]">
-                  <b className={e.status === "failed" ? "text-[var(--danger)]" : "text-[var(--brand)]"}>{e.engine}</b>
-                  {e.template ? ` · ${e.template}` : ""} · {e.at}{e.status === "failed" ? " · failed" : ""}
+          <div className="px-4 py-3 border-b border-[var(--border)] font-semibold">🗂 Activity <span className="text-xs text-[var(--muted)] font-normal">— email, text, calls & notes, newest first</span></div>
+          <div className="p-4 space-y-3 max-h-[360px] overflow-y-auto">
+            {activity.length === 0 && <p className="text-sm text-[var(--muted)]">No activity yet.</p>}
+            {activity.map((a, i) => {
+              const icon = a.kind === "email" ? "✉️" : a.kind === "sms" ? "💬" : a.kind === "call" ? "📞" : "📝";
+              const arrow = a.dir === "inbound" ? "↓ in" : a.dir === "outbound" ? "↑ out" : "";
+              const statusTone = a.status === "failed" ? "text-[var(--danger)]" : a.status === "replied" || a.status === "opened" ? "text-[var(--brand)]" : "text-[var(--muted)]";
+              return (
+                <div key={i} className="text-sm border-l-2 border-[var(--border)] pl-3">
+                  <div className="text-[11px] text-[var(--muted)]">
+                    {icon} <b className="text-[var(--text)]">{a.label}</b> {arrow ? `· ${arrow}` : ""} · {a.at}
+                    {a.status ? <> · <span className={statusTone}>{a.status}</span></> : null}
+                  </div>
+                  {a.body && <div>{a.body}</div>}
                 </div>
-                <div className="font-medium">{e.subject}</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

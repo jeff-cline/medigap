@@ -38,18 +38,18 @@ export default async function JvDashboard() {
   const commContacts = leads.filter((l) => l.email);
   const [founderEmails, templates, engineReadiness] = await Promise.all([
     db.emailMessage.findMany({
-      where: { founder: true, leadId: { in: commContacts.map((c) => c.id) } },
+      where: { founder: true, direction: "outbound", leadId: { in: commContacts.map((c) => c.id) } },
       orderBy: { createdAt: "desc" },
-      select: { leadId: true, templateId: true, templateName: true, engine: true, status: true },
+      select: { leadId: true, templateId: true, templateName: true, engine: true, status: true, openedAt: true, repliedAt: true },
     }),
     db.emailTemplate.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, subject: true, html: true, text: true } }),
     Promise.all(FOUNDER_ENGINES.map(async (e) => ({ key: e.key, label: e.label, oneToOne: e.oneToOne, ready: await engineReady(e.key) }))),
   ]);
-  const sentByLead = new Map<string, { templateId: string; templateName: string; engine: string; status: string }[]>();
+  const sentByLead = new Map<string, { templateId: string; templateName: string; engine: string; status: string; opened: boolean; replied: boolean }[]>();
   for (const m of founderEmails) {
     if (!m.leadId) continue;
     const arr = sentByLead.get(m.leadId) || [];
-    arr.push({ templateId: m.templateId || "", templateName: m.templateName, engine: m.engine, status: m.status });
+    arr.push({ templateId: m.templateId || "", templateName: m.templateName, engine: m.engine, status: m.status, opened: !!m.openedAt, replied: !!m.repliedAt });
     sentByLead.set(m.leadId, arr);
   }
   const contacts = commContacts.map((c) => ({ id: c.id, name: c.name, email: c.email, sent: sentByLead.get(c.id) || [] }));

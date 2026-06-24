@@ -1,7 +1,7 @@
 import { ImapFlow } from "imapflow";
 import { db } from "./db";
 
-export type Provider = "google_workspace" | "zapmail";
+export type Provider = "google_workspace" | "zapmail" | "smtp";
 export type InboundMsg = { from: string; subject: string; date: string; snippet: string };
 
 // Read the latest inbound emails for a provider's mailbox over IMAP.

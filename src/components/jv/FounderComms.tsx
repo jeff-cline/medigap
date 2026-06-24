@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { engineLabel } from "@/lib/jv-constants";
 
-type Sent = { templateId: string; templateName: string; engine: string; status: string };
+type Sent = { templateId: string; templateName: string; engine: string; status: string; opened: boolean; replied: boolean };
 type Contact = { id: string; name: string; email: string; sent: Sent[] };
 type Template = { id: string; name: string; subject: string; html: string; text: string };
 type Engine = { key: string; label: string; ready: boolean; oneToOne: boolean };
@@ -13,6 +13,17 @@ export default function FounderComms({ contacts, templates, engines }: { contact
   const [compose, setCompose] = useState<Contact | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
   const [search, setSearch] = useState("");
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState("");
+
+  async function syncInbox() {
+    setSyncing(true); setSyncMsg("");
+    const r = await fetch("/api/founder/sync-inbox", { method: "POST" });
+    const d = await r.json().catch(() => ({}));
+    setSyncing(false);
+    if (d.ok) { setSyncMsg(`Pulled ${d.matched} matched · ${d.replies} marked replied${d.errors?.length ? ` · ${d.errors.length} engine error(s)` : ""}`); router.refresh(); }
+    else setSyncMsg(d.error || "Sync failed");
+  }
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -23,8 +34,10 @@ export default function FounderComms({ contacts, templates, engines }: { contact
     <div>
       <div className="flex flex-wrap items-center gap-2 mb-3">
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search contacts…" className="!w-56" />
-        <button onClick={() => setShowTemplates((v) => !v)} className="btn btn-ghost text-xs !py-1.5 ml-auto">{showTemplates ? "Hide templates" : "✎ Manage templates"}</button>
+        <button onClick={syncInbox} disabled={syncing} className="btn btn-ghost text-xs !py-1.5 ml-auto">{syncing ? "Syncing…" : "↻ Sync inbox"}</button>
+        <button onClick={() => setShowTemplates((v) => !v)} className="btn btn-ghost text-xs !py-1.5">{showTemplates ? "Hide templates" : "✎ Manage templates"}</button>
       </div>
+      {syncMsg && <p className="text-xs text-[var(--muted)] mb-2">{syncMsg}</p>}
 
       {showTemplates && <TemplateManager templates={templates} onChange={() => router.refresh()} />}
 
@@ -39,12 +52,16 @@ export default function FounderComms({ contacts, templates, engines }: { contact
                 <td>
                   <div className="flex flex-wrap gap-1">
                     {c.sent.length === 0 && <span className="text-[11px] text-[var(--muted)]">none yet</span>}
-                    {c.sent.map((s, i) => (
-                      <span key={i} title={`${s.templateName || "ad-hoc"} via ${engineLabel(s.engine)} — ${s.status}`}
-                        className={`text-[10px] rounded-full px-2 py-0.5 border ${s.status === "failed" ? "border-[var(--danger)]/50 text-[var(--danger)]" : "border-[var(--brand)]/40 text-[var(--brand)]"}`}>
-                        {(s.templateName || "ad-hoc")} · {s.engine}
-                      </span>
-                    ))}
+                    {c.sent.map((s, i) => {
+                      const mark = s.status === "failed" ? "✕" : s.replied ? "↩ replied" : s.opened ? "✓ opened" : "• sent";
+                      const tone = s.status === "failed" ? "border-[var(--danger)]/50 text-[var(--danger)]" : s.replied || s.opened ? "border-[var(--brand)] text-[var(--brand)]" : "border-[var(--border)] text-[var(--muted)]";
+                      return (
+                        <span key={i} title={`${s.templateName || "ad-hoc"} via ${engineLabel(s.engine)} — ${s.status}${s.opened ? " · opened" : ""}${s.replied ? " · replied" : ""}`}
+                          className={`text-[10px] rounded-full px-2 py-0.5 border ${tone}`}>
+                          {(s.templateName || "ad-hoc")} · {s.engine} · {mark}
+                        </span>
+                      );
+                    })}
                   </div>
                 </td>
                 <td className="text-right">
