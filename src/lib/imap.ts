@@ -10,10 +10,16 @@ export async function readInbox(provider: Provider, limit = 20): Promise<{ ok: b
   let c: Record<string, string> = {};
   try { c = row ? JSON.parse(row.config) : {}; } catch {}
   const host = c.imapHost || (c.smtpHost?.includes("gmail") ? "imap.gmail.com" : "");
-  const user = c.smtpUser, pass = c.smtpPass;
+  return readInboxCreds({ host, port: parseInt(c.imapPort || "993", 10), user: c.smtpUser || "", pass: c.smtpPass || "" }, limit);
+}
+
+// Read a mailbox over IMAP from explicit credentials (used for the Zapmail mailbox pool,
+// where each rotating mailbox has its own login rather than a single integration config).
+export async function readInboxCreds(cr: { host: string; port: number; user: string; pass: string }, limit = 20): Promise<{ ok: boolean; messages: InboundMsg[]; error?: string }> {
+  const { host, port, user, pass } = cr;
   if (!host || !user || !pass) return { ok: false, messages: [], error: "IMAP not configured (host / user / password)" };
 
-  const client = new ImapFlow({ host, port: parseInt(c.imapPort || "993", 10), secure: true, auth: { user, pass }, logger: false });
+  const client = new ImapFlow({ host, port: port || 993, secure: true, auth: { user, pass }, logger: false });
   try {
     await client.connect();
     const lock = await client.getMailboxLock("INBOX");

@@ -1,7 +1,8 @@
 import { randomUUID } from "crypto";
 import { db } from "./db";
 import { sendEmail } from "./email";
-import { readInbox, type Provider as ImapProvider } from "./imap";
+import { readInbox, readInboxCreds, type Provider as ImapProvider } from "./imap";
+import { getZapConfig } from "./zapmail";
 import { appendLeadBackground } from "./predictivedata";
 import { parseTags } from "./recapture";
 import { FOUNDER, FOUNDER_COMM_TAG, FOUNDER_ENGINES, JV_TAG } from "./jv-constants";
@@ -145,10 +146,25 @@ export async function syncInbox(): Promise<{ ok: boolean; pulled: number; matche
 
   for (const p of providers) {
     if (!(await engineReady(p.engine))) continue;
-    const res = await readInbox(p.imap, 30).catch(() => ({ ok: false, messages: [] as { from: string; fromName: string; subject: string; date: string }[], error: "imap error" }));
-    if (!res.ok) { if (res.error) errors.push(`${p.engine}: ${res.error}`); continue; }
 
-    for (const m of res.messages) {
+    // Gather inbound messages for this engine. Zapmail sends from a ROTATING POOL, so we
+    // read each pool mailbox's own IMAP; personal/smtp read their single integration mailbox.
+    type Raw = { from: string; fromName: string; subject: string; date: string };
+    let messages: Raw[] = [];
+    if (p.engine === "zapmail") {
+      const cfg = await getZapConfig();
+      for (const mb of cfg?.mailboxes || []) {
+        const r = await readInboxCreds({ host: mb.imapHost || "imap.gmail.com", port: mb.imapPort || 993, user: mb.smtpUser, pass: mb.smtpPass }, 30)
+          .catch(() => ({ ok: false, messages: [] as Raw[], error: "imap error" }));
+        if (r.ok) messages.push(...r.messages); else if (r.error) errors.push(`zapmail/${mb.smtpUser}: ${r.error}`);
+      }
+    } else {
+      const res = await readInbox(p.imap, 30).catch(() => ({ ok: false, messages: [] as Raw[], error: "imap error" }));
+      if (!res.ok) { if (res.error) errors.push(`${p.engine}: ${res.error}`); continue; }
+      messages = res.messages;
+    }
+
+    for (const m of messages) {
       const fromEmail = (m.from || "").toLowerCase().trim();
       if (!fromEmail.includes("@")) continue;
       if (isSystemSender(fromEmail)) continue; // skip automated / no-reply / system mail
