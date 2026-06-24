@@ -4,7 +4,7 @@ import { sendEmail } from "./email";
 import { readInbox, type Provider as ImapProvider } from "./imap";
 import { appendLeadBackground } from "./predictivedata";
 import { parseTags } from "./recapture";
-import { FOUNDER_COMM_TAG, FOUNDER_ENGINES, JV_TAG } from "./jv-constants";
+import { FOUNDER, FOUNDER_COMM_TAG, FOUNDER_ENGINES, JV_TAG } from "./jv-constants";
 
 // Absolute base for tracking pixels in outbound email (emails can't use relative URLs).
 const TRACK_BASE = process.env.PUBLIC_BASE_URL || "https://medigap.plus";
@@ -62,10 +62,19 @@ export async function resendCheck(leadId: string, templateId: string, engine: st
   return { allowed: true }; // already sent, but via a different engine → allowed
 }
 
-// Light merge for the founder's personal touches.
-function merge(s: string, lead: { name: string }): string {
-  const first = (lead.name || "").trim().split(/\s+/)[0] || "there";
-  return (s || "").replace(/\{first\}/g, first).replace(/\{name\}/g, lead.name || "there");
+// Merge tokens available in subjects/bodies/texts: {first} {last} {name} {dob} {today} {calendar}.
+export function mergeFields(s: string, lead: { name?: string; dob?: string }): string {
+  const parts = (lead.name || "").trim().split(/\s+/).filter(Boolean);
+  const first = parts[0] || "there";
+  const last = parts.slice(1).join(" ");
+  const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  return (s || "")
+    .replace(/\{first\}/g, first)
+    .replace(/\{last\}/g, last)
+    .replace(/\{name\}/g, lead.name || "there")
+    .replace(/\{dob\}/g, lead.dob || "")
+    .replace(/\{today\}/g, today)
+    .replace(/\{calendar\}/g, FOUNDER.calendly);
 }
 
 export async function sendFounderEmail(input: {
@@ -83,12 +92,12 @@ export async function sendFounderEmail(input: {
   const guard = await resendCheck(input.leadId, input.templateId || "", input.engine);
   if (!guard.allowed) return { ok: false, error: guard.reason };
 
-  const subject = merge(input.subject, lead);
-  const text = input.text ? merge(input.text, lead) : undefined;
+  const subject = mergeFields(input.subject, lead);
+  const text = input.text ? mergeFields(input.text, lead) : undefined;
 
   // Open-tracking pixel: a unique token per send, embedded invisibly in the HTML.
   const openToken = randomUUID();
-  const html = merge(input.html, lead) +
+  const html = mergeFields(input.html, lead) +
     `<img src="${TRACK_BASE}/api/track/open?e=${openToken}" width="1" height="1" alt="" style="display:none" />`;
 
   const res = await sendEmail(lead.email, subject, html, provider, { text });
