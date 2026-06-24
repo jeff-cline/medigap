@@ -5,8 +5,8 @@ import { FOUNDER } from "@/lib/jv-constants";
 import "../agetech/agetech.css";
 
 export const metadata: Metadata = {
-  title: "Book a call with Jeff Cline — R)cketShip",
-  description: "Grab time directly with R)cketShip founder Jeff Cline to start the conversation.",
+  title: "Book a call with Jeff Cline — R0cketShip",
+  description: "Grab time directly with R0cketShip founder Jeff Cline to start the conversation.",
 };
 
 export const dynamic = "force-dynamic";
@@ -34,7 +34,7 @@ export default async function BookPage({ searchParams }: { searchParams: Promise
           <span className="ag-chip">Founder conversation</span>
           <h1 className="text-3xl md:text-4xl font-bold mt-4">Book time with <span className="ag-gradient">Jeff Cline</span></h1>
           <p className="text-[var(--ag-muted)] mt-3 max-w-xl mx-auto">
-            Pick a slot that works for you. We&apos;ll talk through the R)cketShip thesis, where you fit, and the path forward.
+            Pick a slot that works for you. We&apos;ll talk through the R0cketShip thesis, where you fit, and the path forward.
           </p>
         </div>
         <div className="ag-panel p-2 md:p-4">

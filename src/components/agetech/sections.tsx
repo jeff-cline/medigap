@@ -112,20 +112,31 @@ export function Roadmap() {
 }
 
 // ---- Download Center ----
-const DOCS = ["Executive Summary", "Investor One-Sheet", "Institutional Pitch Deck", "Acquisition Strategy", "Data Strategy", "Partnership Ecosystem"];
+const DOCS: [string, string | null][] = [
+  ["Executive Summary (one-sheet)", "/agetech/pdf"],
+  ["Investor One-Sheet", "/agetech/pdf"],
+  ["Institutional Pitch Deck", null],
+  ["Acquisition Strategy", null],
+  ["Data Strategy", null],
+  ["Partnership Ecosystem", null],
+];
 export function DownloadCenter() {
   return (
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-      {DOCS.map((d) => (
-        <button key={d} onClick={() => window.print()} className="ag-panel p-5 text-left hover:!border-[var(--ag-cyan)] transition group">
-          <div className="flex items-center justify-between">
-            <span className="font-semibold">{d}</span>
-            <span className="text-[var(--ag-cyan)] group-hover:translate-x-0.5 transition">↓</span>
-          </div>
-          <div className="text-[11px] text-[var(--ag-muted)] mt-1">Save as PDF</div>
-        </button>
-      ))}
-      <p className="sm:col-span-2 lg:col-span-3 text-xs text-[var(--ag-muted)]">Tailored institutional decks (data room, acquisition model) are available on request — contact the R)cketShip team.</p>
+      {DOCS.map(([d, href]) =>
+        href ? (
+          <a key={d} href={href} className="ag-panel p-5 text-left hover:!border-[var(--ag-cyan)] transition group block">
+            <div className="flex items-center justify-between"><span className="font-semibold">{d}</span><span className="text-[var(--ag-cyan)] group-hover:translate-x-0.5 transition">→</span></div>
+            <div className="text-[11px] text-[var(--ag-muted)] mt-1">Open the one-sheet · download PDF</div>
+          </a>
+        ) : (
+          <button key={d} onClick={() => window.print()} className="ag-panel p-5 text-left hover:!border-[var(--ag-cyan)] transition group">
+            <div className="flex items-center justify-between"><span className="font-semibold">{d}</span><span className="text-[var(--ag-cyan)] group-hover:translate-x-0.5 transition">↓</span></div>
+            <div className="text-[11px] text-[var(--ag-muted)] mt-1">Save as PDF</div>
+          </button>
+        ),
+      )}
+      <p className="sm:col-span-2 lg:col-span-3 text-xs text-[var(--ag-muted)]">Tailored institutional decks (data room, acquisition model) are available on request — contact the R0cketShip team.</p>
     </div>
   );
 }
@@ -168,7 +179,7 @@ export function FinalTakeaway() {
       <Reveal className="relative max-w-3xl mx-auto">
         <div className="flex justify-center mb-8"><Logo size="lg" /></div>
         <p className="text-2xl md:text-4xl font-bold leading-tight">
-          R)cketShip is not acquiring companies.<br />
+          R0cketShip is not acquiring companies.<br />
           <span className="ag-gradient ag-glow">It is building the trusted relationship infrastructure for the aging economy.</span>
         </p>
         <p className="mt-6 text-lg text-[var(--ag-muted)]">Every acquisition strengthens the ecosystem. A rising tide lifts all boats.</p>

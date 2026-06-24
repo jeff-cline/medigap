@@ -27,7 +27,7 @@ export default function Hero() {
 
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.5 }} className="mt-6 max-w-2xl text-lg md:text-xl text-[var(--ag-muted)] leading-relaxed">
           Most navigate Medicare, healthcare, housing, caregiving, financial planning and longevity
-          alone. <span className="text-[var(--ag-text)]">R)cketShip owns the trusted relationship layer</span> — capturing,
+          alone. <span className="text-[var(--ag-text)]">R0cketShip owns the trusted relationship layer</span> — capturing,
           nurturing and monetizing these relationships across an expanding ecosystem, for decades.
         </motion.p>
 

@@ -43,6 +43,17 @@
 .ag-root input[type=number], .ag-root input[type=text] { background: var(--ag-bg2); border:1px solid var(--ag-border); border-radius:10px; padding:.5rem .7rem; color: var(--ag-text); width:100%; }
 .ag-root input:focus { outline:none; border-color: var(--ag-cyan); }
 
+/* ---- One-sheet PDF (print) ---- */
+.ag-sheet { max-width: 8.5in; margin: 0 auto; }
+@media print {
+  @page { size: letter; margin: 0.45in; }
+  html, body { background: #05070d !important; }
+  .ag-no-print { display: none !important; }
+  .ag-root { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .ag-sheet { max-width: none; }
+  a { text-decoration: none; }
+}
+
 @keyframes ag-spin { to { transform: rotate(360deg); } }
 @keyframes ag-pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
 .ag-live-dot { width:8px;height:8px;border-radius:50%;background:var(--ag-green);box-shadow:0 0 10px var(--ag-green);animation:ag-pulse 1.8s infinite; }
