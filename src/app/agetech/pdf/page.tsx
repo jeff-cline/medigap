@@ -118,6 +118,47 @@ export default function AgeTechOneSheet() {
           </div>
         </section>
 
+        {/* year-by-year build — each driver's contribution sums to the headline EBITDA */}
+        <section className="mt-5 ag-panel p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-[11px] uppercase tracking-widest text-[var(--ag-muted)]">Year-by-year EBITDA build · per-driver contribution ($M)</div>
+            <div className="ag-mono text-[10px] text-[var(--ag-muted)]">acquired base $9M</div>
+          </div>
+          <table className="w-full ag-mono text-[12px]">
+            <thead>
+              <tr className="text-[var(--ag-muted)] text-[10px] uppercase tracking-wider">
+                <th className="text-left font-medium pb-1.5">Driver</th>
+                <th className="text-right font-medium pb-1.5">Yr 1</th>
+                <th className="text-right font-medium pb-1.5">Yr 2</th>
+                <th className="text-right font-medium pb-1.5">Yr 3</th>
+                <th className="text-right font-medium pb-1.5">Yr 4</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { d: "Technology efficiency ($9M→$12M)", y: [3, 0, 0, 0], tone: "gold" },
+                { d: "New proprietary data → platform", y: [1, 1, 1, 2], tone: "green" },
+                { d: "Multi-state / multi-channel expansion", y: [3, 3, 3, 6], tone: "cyan" },
+                { d: "AgeTech Capital Scale Engine", y: [0, 2, 4, 12], tone: "gold" },
+              ].map((r) => (
+                <tr key={r.d} className="border-t border-[var(--ag-border)]/60">
+                  <td className="py-1.5 text-[var(--ag-muted)] font-sans text-[12px]">{r.d}</td>
+                  {r.y.map((v, i) => (
+                    <td key={i} className={`text-right ${v ? (r.tone === "gold" ? "text-[var(--ag-gold)]" : r.tone === "green" ? "text-[var(--ag-green)]" : "text-[var(--ag-cyan)]") : "text-[var(--ag-muted)]/40"}`}>{v ? `+${v}` : "—"}</td>
+                  ))}
+                </tr>
+              ))}
+              <tr className="border-t-2 border-[var(--ag-border)]">
+                <td className="py-2 font-sans font-semibold text-[var(--ag-text)] text-[12px]">Cumulative EBITDA</td>
+                {[16, 22, 30, 50].map((v, i) => (
+                  <td key={i} className={`text-right font-bold ${i === 3 ? "text-[var(--ag-gold)] text-base" : "text-[var(--ag-cyan)] text-sm"}`}>${v}M</td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+          <p className="text-[10px] text-[var(--ag-muted)] mt-2">Each driver repeats annually; the Scale Engine compounds as technology, data and brand layer deeper across the business — the accretive value of all the pieces.</p>
+        </section>
+
         {/* why rocketship */}
         <section className="mt-5 grid grid-cols-3 gap-3">
           {[
