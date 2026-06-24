@@ -4,7 +4,7 @@ import { Section, Reveal, Counter } from "@/components/agetech/primitives";
 import InterestForm from "@/components/agetech/InterestForm";
 import DownloadPdfButton from "@/components/agetech/DownloadPdfButton";
 import MortgageProforma from "@/components/mortgage/MortgageProforma";
-import FullProforma from "@/components/mortgage/FullProforma";
+import AddProforma from "@/components/mortgage/AddProforma";
 import { FOUNDER } from "@/lib/jv-constants";
 import "../agetech/agetech.css";
 
@@ -64,9 +64,9 @@ export default function MortgageProformaPage() {
         <MortgageProforma />
       </Section>
 
-      {/* full proforma + pivots */}
-      <Section id="full" n="02" eyebrow="Full Proforma" title={<>The full <span className="ag-gradient">P&amp;L.</span></>} sub="Five-year proforma across three product lines — Reverse / HECM, Refinance and Purchase. Pivot by product, or export to a spreadsheet.">
-        <FullProforma />
+      {/* AD&D mortgage insurance — monthly model, annual pivot, 10-yr */}
+      <Section id="add" n="02" eyebrow="AD&D Mortgage Proforma" title={<>The insurance <span className="ag-gradient">engine.</span></>} sub="Accident Life Insurance for Mortgages (AD&D): ramp to 1,000 policies/month, $250 marketing fee per policy + a recurring 35% commission. Monthly model, pivoted to a 10-year annual projection.">
+        <AddProforma />
       </Section>
 
       {/* the advantage */}
