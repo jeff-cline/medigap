@@ -11,8 +11,10 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function BookPage({ searchParams }: { searchParams: Promise<{ name?: string; email?: string }> }) {
+export default async function BookPage({ searchParams }: { searchParams: Promise<{ name?: string; email?: string; thanks?: string }> }) {
   const sp = await searchParams;
+  const fromForm = sp.thanks === "1";
+  const firstName = (sp.name || "").trim().split(/\s+/)[0];
   return (
     <div className="ag-root min-h-screen">
       <header className="border-b border-[var(--ag-border)]">
@@ -23,6 +25,11 @@ export default async function BookPage({ searchParams }: { searchParams: Promise
       </header>
 
       <main className="mx-auto max-w-4xl px-6 py-12">
+        {fromForm && (
+          <div className="ag-panel !border-[var(--ag-cyan)]/40 p-4 mb-8 text-center max-w-2xl mx-auto">
+            <span className="text-lg">🚀 Thanks for your interest{firstName ? `, ${firstName}` : ""}! You&apos;re in the system — now grab time with Jeff below.</span>
+          </div>
+        )}
         <div className="text-center mb-8">
           <span className="ag-chip">Founder conversation</span>
           <h1 className="text-3xl md:text-4xl font-bold mt-4">Book time with <span className="ag-gradient">Jeff Cline</span></h1>
