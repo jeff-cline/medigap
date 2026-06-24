@@ -96,7 +96,7 @@ export default async function JvDashboard() {
         <FounderComms contacts={contacts} templates={templates} engines={engineReadiness} />
       </Section>
 
-      <Section title="Founder Inbox" desc="Every reply, consolidated — All accounts or one engine at a time. Click a sender to open their CRM record (unified by email/phone, auto-appended, with the full timeline + notes). Hit Sync inbox to pull new mail.">
+      <Section title="Founder Inbox" desc="Every reply, consolidated — All accounts or one engine at a time. Click a sender to open their CRM record (unified by email/phone, auto-appended, with the full timeline + notes). Hit Sync inbox to pull new mail." action={<Link href="/dashboard/jv/dumpster" className="btn btn-ghost text-xs !py-1.5 text-[var(--gold)]">🗑 Dumpster</Link>}>
         <FounderInbox items={inboxItems} />
       </Section>
 

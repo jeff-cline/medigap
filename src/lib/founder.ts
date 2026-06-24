@@ -70,7 +70,7 @@ function merge(s: string, lead: { name: string }): string {
 
 export async function sendFounderEmail(input: {
   leadId: string; engine: string; subject: string; html: string; text?: string;
-  templateId?: string; templateName?: string;
+  templateId?: string; templateName?: string; applyTags?: string[];
 }): Promise<{ ok: boolean; error?: string }> {
   const lead = await db.lead.findUnique({ where: { id: input.leadId } });
   if (!lead) return { ok: false, error: "Contact not found" };
@@ -103,10 +103,10 @@ export async function sendFounderEmail(input: {
     },
   }).catch(() => {});
 
-  // Tag the lead FOUNDER COMMUNICATION (and keep it in the deal room).
+  // Tag the lead (default: FOUNDER COMMUNICATION + deal room; bulk sends pass their own tags).
   const tags = parseTags(lead.tags);
   let changed = false;
-  for (const t of [FOUNDER_COMM_TAG, JV_TAG]) if (!tags.includes(t)) { tags.push(t); changed = true; }
+  for (const t of (input.applyTags || [FOUNDER_COMM_TAG, JV_TAG])) if (!tags.includes(t)) { tags.push(t); changed = true; }
   if (changed) await db.lead.update({ where: { id: lead.id }, data: { tags: JSON.stringify(tags) } }).catch(() => {});
 
   return res.ok ? { ok: true } : { ok: false, error: res.error || "send failed" };

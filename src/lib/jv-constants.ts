@@ -3,6 +3,7 @@
 
 export const JV_TAG = "jv-pe-vc-op";
 export const FOUNDER_COMM_TAG = "founder-communication";
+export const BULK_TAG = "bulk"; // dumpster-imported contacts
 
 // Send-from engines for the Founder Communication console. `integrationKey` is the
 // integration row that powers each (klaviyo is the opted-in BLAST path, not one-at-a-time).
