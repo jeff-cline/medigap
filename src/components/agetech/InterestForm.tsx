@@ -13,7 +13,7 @@ const INTERESTS = [
 
 // CTA form → creates a JV CRM lead (tagged jv-pe-vc-op) + appends data via /api/jv,
 // then shows a thank-you and routes to the /book founder-calendar page (prefilled).
-export default function InterestForm() {
+export default function InterestForm({ source = "R0cketShip AgeTech" }: { source?: string }) {
   const router = useRouter();
   const [f, setF] = useState({ name: "", email: "", phone: "", org: "", interest: "investor", notes: "" });
   const [busy, setBusy] = useState(false);
@@ -26,7 +26,7 @@ export default function InterestForm() {
     setBusy(true); setErr("");
     const r = await fetch("/api/jv", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: f.name, email: f.email, phone: f.phone, interest: f.interest, source: "R0cketShip AgeTech", notes: `${f.org ? "Org: " + f.org + ". " : ""}${f.notes}` }),
+      body: JSON.stringify({ name: f.name, email: f.email, phone: f.phone, interest: f.interest, source, notes: `${f.org ? "Org: " + f.org + ". " : ""}${f.notes}` }),
     });
     const d = await r.json().catch(() => ({}));
     if (d.ok) {
