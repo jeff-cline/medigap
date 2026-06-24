@@ -34,7 +34,8 @@ export default function FullProforma() {
         </div>
         <div className="flex items-center gap-2">
           <IllustrativeBadge />
-          <button onClick={exportCsv} className="ag-btn text-xs !py-1.5 !px-3">⬇ Export CSV</button>
+          <a href="/api/mortgage/xlsx" className="ag-btn ag-btn-primary text-xs !py-1.5 !px-3">⬇ Excel (.xlsx)</a>
+          <button onClick={exportCsv} className="ag-btn text-xs !py-1.5 !px-3">CSV</button>
         </div>
       </div>
 
