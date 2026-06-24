@@ -2,6 +2,7 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Reveal } from "./primitives";
+import Logo from "./Logo";
 import { ROADMAP } from "@/lib/agetech";
 
 // ---- Section 3: Trust Engine ----
@@ -149,11 +150,11 @@ export function ProgressNav() {
       </div>
       <header className="fixed top-0 left-0 right-0 z-40 backdrop-blur bg-[var(--ag-bg)]/70 border-b border-[var(--ag-border)]">
         <div className="mx-auto max-w-7xl px-6 h-14 flex items-center justify-between">
-          <a href="#top" className="ag-mono text-sm tracking-[0.25em] text-[var(--ag-cyan)]">ROCKETSHIP</a>
+          <a href="#top"><Logo size="sm" /></a>
           <nav className="hidden lg:flex items-center gap-4 text-[11px] text-[var(--ag-muted)]">
             {NAV.map(([id, label]) => <a key={id} href={`#${id}`} className="hover:text-[var(--ag-text)] transition">{label}</a>)}
           </nav>
-          <a href="#invest" className="ag-btn ag-btn-primary text-xs !py-1.5 !px-4">Invest</a>
+          <a href="#start" className="ag-btn ag-btn-primary text-xs !py-1.5 !px-4">Start the conversation</a>
         </div>
       </header>
     </>
@@ -170,7 +171,7 @@ export function FinalTakeaway() {
           <span className="ag-gradient ag-glow">It is building the trusted relationship infrastructure for the aging economy.</span>
         </p>
         <p className="mt-6 text-lg text-[var(--ag-muted)]">Every acquisition strengthens the ecosystem. A rising tide lifts all boats.</p>
-        <a href="mailto:invest@r0cketship.com" className="ag-btn ag-btn-primary mt-8 inline-flex">Start the conversation →</a>
+        <a href="#start" className="ag-btn ag-btn-primary mt-8 inline-flex">Start the conversation →</a>
       </Reveal>
     </section>
   );

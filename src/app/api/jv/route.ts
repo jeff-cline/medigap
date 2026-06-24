@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { upsertJvLead, FOUNDER, interestLabel } from "@/lib/jv";
 import { sendEmail } from "@/lib/email";
 import { normalizePhone } from "@/lib/sms";
+import { appendLeadBackground } from "@/lib/predictivedata";
 
 // Public intake for ALL 1-800-MEDIGAP partner/opportunity CTAs. Every lead lands in
 // the founder's personal JV CRM (tagged jv-pe-vc-op). "Book a call" also emails the
@@ -18,8 +19,11 @@ export async function POST(req: NextRequest) {
   const lead = await upsertJvLead({
     name, phone, email,
     zip: String(b.zip || "").trim(), state: String(b.state || "").trim(),
-    jvInterest: interest, source: "1-800-MEDIGAP", notes: String(b.notes || "").trim(),
+    jvInterest: interest, source: String(b.source || "1-800-MEDIGAP"), notes: String(b.notes || "").trim(),
   });
+
+  // Enrich the new lead in the background (PredictiveData append) — best-effort.
+  appendLeadBackground(lead.id);
 
   const isBooking = interest === "book_call" || b.bookCall === true;
 

@@ -2,6 +2,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { Counter } from "./primitives";
+import Logo from "./Logo";
 import { COHORTS, TURNING_65_PER_DAY } from "@/lib/agetech";
 
 export default function Hero() {
@@ -15,7 +16,7 @@ export default function Hero() {
       <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 h-[520px] w-[520px] rounded-full" style={{ background: "radial-gradient(circle, rgba(56,225,255,.18), transparent 65%)" }} />
       <div className="mx-auto max-w-6xl w-full relative">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="flex items-center gap-3 mb-6">
-          <span className="ag-mono text-sm tracking-[0.3em] text-[var(--ag-cyan)]">ROCKETSHIP</span>
+          <Logo />
           <span className="ag-chip">AgeTech Capital Platform</span>
         </motion.div>
 

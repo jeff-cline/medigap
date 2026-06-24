@@ -6,6 +6,7 @@ import PortfolioSimulator from "@/components/agetech/PortfolioSimulator";
 import WhatIfSimulator from "@/components/agetech/WhatIfSimulator";
 import Flywheel from "@/components/agetech/Flywheel";
 import { Section } from "@/components/agetech/primitives";
+import InterestForm from "@/components/agetech/InterestForm";
 import { TrustEngine, DemandEngine, DataMoat, AcquisitionEngine, Roadmap, DownloadCenter, ProgressNav, FinalTakeaway } from "@/components/agetech/sections";
 
 export default function AgeTechPage() {
@@ -74,11 +75,15 @@ export default function AgeTechPage() {
         <DownloadCenter />
       </Section>
 
+      <Section id="start" n="→" eyebrow="Start the Conversation" title={<>Become part of the <span className="ag-gradient">rising tide.</span></>} sub="Family offices, private equity, strategic & private-credit partners, and acquisition targets — let's talk." center>
+        <InterestForm />
+      </Section>
+
       <FinalTakeaway />
 
       <footer className="ag-hairline">
         <div className="mx-auto max-w-7xl px-6 py-8 flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--ag-muted)]">
-          <span>© 2026 Rocketship — AgeTech Capital Platform.</span>
+          <span>© 2026 R0cketShip — AgeTech Capital Platform.</span>
           <span className="ag-mono">Illustrative assumptions only · not an offer to sell securities · not investment advice.</span>
         </div>
       </footer>
