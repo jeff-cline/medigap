@@ -33,6 +33,8 @@ export async function engineReady(engine: string): Promise<boolean> {
   try {
     const c = JSON.parse(row.config || "{}");
     if (engine === "klaviyo") return !!(c.privateKey || c.apiKey);
+    // Zapmail sends via its rotating mailbox pool (or a single SMTP mailbox fallback).
+    if (engine === "zapmail" && Array.isArray(c.mailboxes) && c.mailboxes.length) return true;
     return !!(c.smtpHost && c.smtpUser && c.smtpPass);
   } catch { return false; }
 }

@@ -102,7 +102,19 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ key: strin
       break;
     }
     case "zapmail": {
-      if (need("smtpHost", "smtpUser", "smtpPass").length) { message = "Add the mailbox SMTP host, email & app password."; break; }
+      // Preferred: API-managed. If an API key is present, verify it and auto-pull the
+      // mailbox pool (SMTP app passwords) so cold sending rotates across all mailboxes.
+      if (cfg.apiKey) {
+        const { verifyZapmailApi, refreshMailboxes } = await import("@/lib/zapmail");
+        const v = await verifyZapmailApi();
+        if (!v.ok) { ok = false; message = v.error || "Zapmail API key rejected."; break; }
+        const r = await refreshMailboxes();
+        ok = r.ok;
+        message = ok ? `Zapmail connected — ${r.stored} mailbox(es) pulled & ready to rotate for cold sending.` : `API key OK (${v.mailboxes} mailboxes) but credential export failed: ${r.error}`;
+        break;
+      }
+      // Fallback: a single manually-entered SMTP mailbox.
+      if (need("smtpHost", "smtpUser", "smtpPass").length) { message = "Add your Zapmail API key (recommended) or a mailbox's SMTP host, email & app password."; break; }
       const v = await verifyEmail("zapmail");
       ok = v.ok; message = ok ? "Zapmail mailbox verified — cold email ready." : `SMTP login failed: ${v.error}`;
       break;

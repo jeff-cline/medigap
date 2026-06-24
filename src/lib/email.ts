@@ -16,6 +16,13 @@ async function smtpConfig(key: Provider) {
 }
 
 async function getTransport(key: Provider) {
+  // Zapmail (cold): rotate across the API-provisioned mailboxes for deliverability.
+  if (key === "zapmail") {
+    const { nextMailbox } = await import("./zapmail");
+    const mb = await nextMailbox();
+    if (mb) return { from: mb.smtpUser, transport: nodemailer.createTransport({ host: mb.smtpHost, port: mb.smtpPort, secure: mb.smtpPort === 465, auth: { user: mb.smtpUser, pass: mb.smtpPass } }) };
+    // fall through to single-mailbox config if no rotation pool is stored yet
+  }
   const c = await smtpConfig(key);
   if (!c.smtpHost || !c.smtpUser || !c.smtpPass) return null;
   const port = parseInt(c.smtpPort || "587", 10);
