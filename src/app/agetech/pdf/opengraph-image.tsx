@@ -24,7 +24,7 @@ export default function OgImage() {
 
         <div style={{ display: "flex", marginTop: 14, fontSize: 30, letterSpacing: 12, color: "#d8b46a", fontWeight: 700 }}>AGETECH GROWTH FUND</div>
 
-        <div style={{ display: "flex", marginTop: 30, fontSize: 30, color: "#8595b4" }}>$100M → $9M EBITDA, compounding to $12M+</div>
+        <div style={{ display: "flex", marginTop: 30, fontSize: 30, color: "#8595b4" }}>$100M in · $9M EBITDA → ~$50M in four years</div>
 
         <div style={{ display: "flex", position: "absolute", bottom: 46, fontSize: 24, color: "#8595b4" }}>
           Jeff Cline · Founder &amp; CEO · R0cketShip.com
