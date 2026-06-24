@@ -79,61 +79,94 @@ export const PRODUCTS: Product[] = [
   { key: "purchase", name: "Purchase", avgLoan: 410000, revPerLoan: 9000, fulfillPerLoan: 3900, units: [600, 940, 1500, 2380, 3560] },
 ];
 export const YEARS = ["Year 1", "Year 2", "Year 3", "Year 4", "Year 5"];
-export const LEADS_BY_YEAR = [48000, 72000, 108000, 156000, 216000]; // annual qualified leads
+export const LEADS_BY_YEAR = [48000, 72000, 108000, 156000, 216000]; // annual qualified mortgage leads
 export const CAC_PER_LEAD = 12;
-export const FIXED_OPEX = [7000000, 8000000, 9000000, 10000000, 11000000];
 
-export type PnlRow = { label: string; kind: "rev" | "cost" | "total" | "metric"; values: number[]; indent?: boolean };
+// Accidental Mortgage Protection (AMP) — insurance sold 1:1 with each mortgage.
+export const AMP_ATTACH = 0.6;            // share of mortgages that also buy AMP
+export const AMP_ANNUAL_PREMIUM = 600;    // $ premium / yr (illustrative — price TBD by carrier)
+export const AMP_COMMISSION = 0.35;       // founder's commission share
+export const AMP_LIFE_YEARS = 7;          // policy stays in force ~5–10 yrs → recurring commission
+export const STIPEND_PER_LOAN = 250;      // $ marketing stipend earned per funded mortgage (1:1)
 
-// Build the full 5-year P&L (years as columns).
-export function fullProforma(): { rows: PnlRow[]; byProduct: { name: string; units: number; volume: number; revenue: number; ebitdaContribution: number }[] } {
+// SaaS operating-expense rates (% of revenue), declining as the platform scales.
+export const SM_RATE = [0.20, 0.18, 0.16, 0.14, 0.12];   // Sales & Marketing (traditional rate)
+export const RND_RATE = [0.14, 0.12, 0.11, 0.10, 0.09];  // Research & Development
+export const GA_RATE = [0.12, 0.11, 0.10, 0.09, 0.08];   // General & Administrative
+
+export type PnlRow = { label: string; kind: "rev" | "subtotal" | "cost" | "total" | "metric" | "section"; values: number[]; indent?: boolean };
+export type Series = { years: string[]; mortgageIncome: number[]; insuranceIncome: number[]; totalRevenue: number[]; ebitda: number[]; mortgageUnits: number[]; insuranceUnits: number[] };
+
+// Build the full 5-year SaaS-style P&L (years as columns) + chart series + product pivot.
+export function fullProforma(): { rows: PnlRow[]; byProduct: { name: string; units: number; volume: number; revenue: number; ebitdaContribution: number }[]; series: Series } {
   const yrs = YEARS.length;
   const z = () => new Array(yrs).fill(0);
 
-  const rows: PnlRow[] = [];
-  // revenue by product
-  const totalRev = z();
-  for (const p of PRODUCTS) {
-    const rev = p.units.map((u) => u * p.revPerLoan);
-    rev.forEach((v, i) => (totalRev[i] += v));
-    rows.push({ label: `${p.name} revenue`, kind: "rev", indent: true, values: rev });
-  }
-  rows.push({ label: "Total revenue", kind: "total", values: totalRev });
+  // --- units ---
+  const fundedLoans = z(), originationVol = z(), fulfill = z();
+  for (const p of PRODUCTS) p.units.forEach((u, i) => { fundedLoans[i] += u; originationVol[i] += u * p.avgLoan; fulfill[i] += u * p.fulfillPerLoan; });
+  const ampNew = fundedLoans.map((f) => Math.round(f * AMP_ATTACH));
+  let inForce = 0; const ampActive = ampNew.map((n) => { inForce += n; return inForce; }); // 7-yr life > 5-yr window → accumulates
 
-  // cost lines
+  // --- revenue lines ---
+  const stipend = fundedLoans.map((f) => f * STIPEND_PER_LOAN);
+  const ampRev = ampActive.map((a) => a * AMP_ANNUAL_PREMIUM * AMP_COMMISSION);
+  const prodRev = PRODUCTS.map((p) => p.units.map((u) => u * p.revPerLoan));
+  const mortgageIncome = z().map((_, i) => prodRev.reduce((a, r) => a + r[i], 0) + stipend[i]);
+  const insuranceIncome = ampRev.slice();
+  const totalRev = z().map((_, i) => mortgageIncome[i] + insuranceIncome[i]);
+
+  // --- expenses (SaaS) ---
   const cac = LEADS_BY_YEAR.map((l) => l * CAC_PER_LEAD);
-  const fulfill = z();
-  for (const p of PRODUCTS) p.units.forEach((u, i) => (fulfill[i] += u * p.fulfillPerLoan));
-  rows.push({ label: "Borrower acquisition (CAC)", kind: "cost", indent: true, values: cac });
-  rows.push({ label: "Loan fulfillment", kind: "cost", indent: true, values: fulfill });
-  rows.push({ label: "Fixed operating expense", kind: "cost", indent: true, values: FIXED_OPEX.slice(0, yrs) });
-  const totalCost = z().map((_, i) => cac[i] + fulfill[i] + FIXED_OPEX[i]);
-  rows.push({ label: "Total cost", kind: "total", values: totalCost });
+  const sm = totalRev.map((r, i) => r * SM_RATE[i] + cac[i]); // marketing + borrower acquisition
+  const rnd = totalRev.map((r, i) => r * RND_RATE[i]);
+  const ga = totalRev.map((r, i) => r * GA_RATE[i]);
+  const grossProfit = totalRev.map((r, i) => r - fulfill[i]);
+  const totalOpex = z().map((_, i) => sm[i] + rnd[i] + ga[i]);
+  const ebitda = grossProfit.map((g, i) => g - totalOpex[i]);
 
-  // EBITDA + metrics
-  const ebitda = totalRev.map((r, i) => r - totalCost[i]);
-  rows.push({ label: "EBITDA", kind: "total", values: ebitda });
-  rows.push({ label: "EBITDA margin", kind: "metric", values: totalRev.map((r, i) => (r > 0 ? ebitda[i] / r : 0)) });
+  const rows: PnlRow[] = [
+    { label: "INCOME", kind: "section", values: z() },
+    ...PRODUCTS.map((p, idx) => ({ label: `${p.name} revenue`, kind: "rev" as const, indent: true, values: prodRev[idx] })),
+    { label: `Marketing stipend ($${STIPEND_PER_LOAN} × loans)`, kind: "rev", indent: true, values: stipend },
+    { label: "Mortgage income", kind: "subtotal", values: mortgageIncome },
+    { label: `Accidental Mortgage Protection (${Math.round(AMP_COMMISSION * 100)}% comm.)`, kind: "rev", indent: true, values: ampRev },
+    { label: "Insurance income", kind: "subtotal", values: insuranceIncome },
+    { label: "Total revenue", kind: "total", values: totalRev },
 
-  const totalUnits = z();
-  const totalVol = z();
-  for (const p of PRODUCTS) p.units.forEach((u, i) => { totalUnits[i] += u; totalVol[i] += u * p.avgLoan; });
-  rows.push({ label: "Funded loans", kind: "metric", values: totalUnits });
-  rows.push({ label: "Origination volume", kind: "metric", values: totalVol });
+    { label: "COST OF REVENUE", kind: "section", values: z() },
+    { label: "Loan fulfillment", kind: "cost", indent: true, values: fulfill },
+    { label: "Gross profit", kind: "total", values: grossProfit },
+    { label: "Gross margin", kind: "metric", values: totalRev.map((r, i) => (r ? grossProfit[i] / r : 0)) },
 
-  // pivot: by product (5-yr totals)
-  const totalEbitda = ebitda.reduce((a, b) => a + b, 0);
+    { label: "OPERATING EXPENSES", kind: "section", values: z() },
+    { label: "Sales & Marketing (incl. CAC)", kind: "cost", indent: true, values: sm },
+    { label: "Research & Development", kind: "cost", indent: true, values: rnd },
+    { label: "General & Administrative", kind: "cost", indent: true, values: ga },
+    { label: "Total operating expense", kind: "total", values: totalOpex },
+
+    { label: "EBITDA", kind: "total", values: ebitda },
+    { label: "EBITDA margin", kind: "metric", values: totalRev.map((r, i) => (r ? ebitda[i] / r : 0)) },
+
+    { label: "UNITS", kind: "section", values: z() },
+    { label: "Mortgage units (funded loans)", kind: "metric", values: fundedLoans },
+    { label: "Insurance units — AMP sold", kind: "metric", values: ampNew },
+    { label: "Insurance units — AMP in force", kind: "metric", values: ampActive },
+    { label: "Origination volume", kind: "metric", values: originationVol },
+  ];
+
+  // pivot by line: 3 mortgage products + the stipend + AMP insurance (5-yr totals)
   const grossRevAll = totalRev.reduce((a, b) => a + b, 0);
-  const byProduct = PRODUCTS.map((p) => {
-    const units = p.units.reduce((a, b) => a + b, 0);
-    const revenue = p.units.reduce((a, u) => a + u * p.revPerLoan, 0);
-    const volume = p.units.reduce((a, u) => a + u * p.avgLoan, 0);
-    // contribution = product gross margin share of total EBITDA (illustrative attribution)
-    const ebitdaContribution = grossRevAll > 0 ? (revenue / grossRevAll) * totalEbitda : 0;
-    return { name: p.name, units, volume, revenue, ebitdaContribution };
-  });
+  const totalEbitda = ebitda.reduce((a, b) => a + b, 0);
+  const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
+  const byProduct = [
+    ...PRODUCTS.map((p, idx) => ({ name: p.name, units: sum(p.units), volume: sum(p.units.map((u) => u * p.avgLoan)), revenue: sum(prodRev[idx]), ebitdaContribution: (sum(prodRev[idx]) / grossRevAll) * totalEbitda })),
+    { name: "Marketing stipend", units: sum(fundedLoans), volume: 0, revenue: sum(stipend), ebitdaContribution: (sum(stipend) / grossRevAll) * totalEbitda },
+    { name: "Insurance — AMP", units: ampActive[yrs - 1], volume: 0, revenue: sum(ampRev), ebitdaContribution: (sum(ampRev) / grossRevAll) * totalEbitda },
+  ];
 
-  return { rows, byProduct };
+  const series: Series = { years: YEARS, mortgageIncome, insuranceIncome, totalRevenue: totalRev, ebitda, mortgageUnits: fundedLoans, insuranceUnits: ampActive };
+  return { rows, byProduct, series };
 }
 
 export const fmtUsd = (n: number) => {
