@@ -462,7 +462,30 @@ model EmailMessage {
   error     String   @default("")
   batch     String   @default("")
   leadId    String?
+  // --- Founder Communication / engine routing ---
+  direction String   @default("outbound") // outbound|inbound
+  engine    String   @default("")         // personal|zapmail|smtp|klaviyo
+  fromEmail String   @default("")
+  founder   Boolean  @default(false)       // sent from the Founder Communication console
+  templateId   String?
+  templateName String @default("")
+  // --- Slice-2 tracking columns (added now to avoid a second prod migration) ---
+  openToken String   @default("")          // pixel token for open tracking
+  openedAt  DateTime?
+  repliedAt DateTime?
+  messageId String   @default("")          // SMTP Message-ID for reply matching
   createdAt DateTime @default(now())
+}
+
+// Reusable founder email templates (HTML + plain text), selectable in the console.
+model EmailTemplate {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  subject   String   @default("")
+  html      String   @default("")
+  text      String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model CommCampaign {

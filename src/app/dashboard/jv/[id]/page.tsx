@@ -30,9 +30,17 @@ export default async function JvDealPage({ params }: { params: Promise<{ id: str
     jvInterest: lead.jvInterest, status: lead.status, optOut: lead.smsOptOut,
     autoReply: lead.autoReply, autoReplySent: lead.autoReplySent,
   };
+  const founderEmails = await db.emailMessage.findMany({
+    where: { leadId: id, founder: true },
+    orderBy: { createdAt: "desc" },
+    take: 100,
+    select: { subject: true, engine: true, status: true, templateName: true, createdAt: true },
+  });
+
   const messages = sms.map((m) => ({ dir: m.direction, body: m.body, at: cstFull(m.createdAt) }));
   const notes = lead.notes.map((n) => ({ author: n.authorName || "team", body: n.body, at: cstFull(n.createdAt) }));
   const docs = lead.docs.map((d) => ({ url: d.url, label: d.label, by: d.uploadedBy || "—", at: cstFull(d.createdAt) }));
+  const emails = founderEmails.map((e) => ({ subject: e.subject, engine: e.engine, status: e.status, template: e.templateName, at: cstFull(e.createdAt) }));
 
   return (
     <>
@@ -41,7 +49,7 @@ export default async function JvDealPage({ params }: { params: Promise<{ id: str
         <h1 className="text-2xl font-bold mt-1">{lead.name || "(no name)"}</h1>
         <p className="text-sm text-[var(--muted)]">{lead.email || "no email"} · {lead.phone || "no phone"}{lead.zip ? ` · ${lead.zip}` : ""}</p>
       </div>
-      <JvDeal lead={dealLead} messages={messages} notes={notes} docs={docs} />
+      <JvDeal lead={dealLead} messages={messages} notes={notes} docs={docs} emails={emails} />
     </>
   );
 }

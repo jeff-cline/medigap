@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { Card, Stat, Section } from "@/components/ui";
 import JvControls from "@/components/jv/JvControls";
+import FounderComms from "@/components/jv/FounderComms";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { num, usd2, cst } from "@/lib/format";
-import { JV_TAG, interestLabel, priorityRank, FOUNDER, TOLLFREE_DISPLAY } from "@/lib/jv";
+import { JV_TAG, FOUNDER_COMM_TAG, FOUNDER_ENGINES, interestLabel, priorityRank, FOUNDER, TOLLFREE_DISPLAY } from "@/lib/jv";
+import { engineReady } from "@/lib/founder";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +34,26 @@ export default async function JvDashboard() {
   const pipelineMonthly = leads.reduce((s, l) => s + l.ltvMonthlyCents, 0);
   const highCount = leads.filter((l) => l.priority === "high").length;
 
+  // --- Founder Communication console data ---
+  const commContacts = leads.filter((l) => l.email);
+  const [founderEmails, templates, engineReadiness] = await Promise.all([
+    db.emailMessage.findMany({
+      where: { founder: true, leadId: { in: commContacts.map((c) => c.id) } },
+      orderBy: { createdAt: "desc" },
+      select: { leadId: true, templateId: true, templateName: true, engine: true, status: true },
+    }),
+    db.emailTemplate.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, subject: true, html: true, text: true } }),
+    Promise.all(FOUNDER_ENGINES.map(async (e) => ({ key: e.key, label: e.label, oneToOne: e.oneToOne, ready: await engineReady(e.key) }))),
+  ]);
+  const sentByLead = new Map<string, { templateId: string; templateName: string; engine: string; status: string }[]>();
+  for (const m of founderEmails) {
+    if (!m.leadId) continue;
+    const arr = sentByLead.get(m.leadId) || [];
+    arr.push({ templateId: m.templateId || "", templateName: m.templateName, engine: m.engine, status: m.status });
+    sentByLead.set(m.leadId, arr);
+  }
+  const contacts = commContacts.map((c) => ({ id: c.id, name: c.name, email: c.email, sent: sentByLead.get(c.id) || [] }));
+
   return (
     <>
       <div className="mb-6">
@@ -57,6 +79,10 @@ export default async function JvDashboard() {
       </div>
 
       <div className="mb-6"><JvControls isGod={isGod} /></div>
+
+      <Section title="Founder Communication" desc="Email in your voice — pick which engine to send from each time. Every send is logged to the CRM tagged FOUNDER COMMUNICATION; templates already sent to a person show next to their name, and the same template can't go twice via the same engine.">
+        <FounderComms contacts={contacts} templates={templates} engines={engineReadiness} />
+      </Section>
 
       <Section title="Deal Room" desc="Ranked by priority, then monthly value. Click a deal to text, take notes, and attach documents.">
         <Card className="!p-0 overflow-hidden overflow-x-auto">

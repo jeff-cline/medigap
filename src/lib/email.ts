@@ -1,11 +1,12 @@
 import nodemailer from "nodemailer";
 import { db } from "./db";
 
-// Three separate email systems, each its own integration:
-//   google_workspace = business / transactional (alerts to staff)
+// Separate SMTP-based email systems, each its own integration:
+//   google_workspace = business / personal (founder's support@1800medigap.com)
 //   zapmail          = cold / non-opted-in outreach (seasoned mailboxes)
-//   klaviyo          = opted-in marketing (API, handled elsewhere)
-type Provider = "google_workspace" | "zapmail";
+//   smtp             = generic SMTP (any provider the founder configures)
+//   klaviyo          = opted-in marketing (API, handled elsewhere — not SMTP)
+type Provider = "google_workspace" | "zapmail" | "smtp";
 
 async function smtpConfig(key: Provider) {
   const row = await db.integration.findUnique({ where: { key } });
@@ -21,11 +22,18 @@ async function getTransport(key: Provider) {
   return { from: c.fromEmail || c.smtpUser, transport: nodemailer.createTransport({ host: c.smtpHost, port, secure: port === 465, auth: { user: c.smtpUser, pass: c.smtpPass } }) };
 }
 
-export async function sendEmail(to: string, subject: string, html: string, provider: Provider = "google_workspace"): Promise<{ ok: boolean; error?: string }> {
+// Returns extra fields (fromEmail, messageId) for callers that need them; existing
+// callers that only read {ok,error} keep working unchanged.
+export async function sendEmail(
+  to: string, subject: string, html: string, provider: Provider = "google_workspace",
+  opts: { text?: string; headers?: Record<string, string> } = {},
+): Promise<{ ok: boolean; error?: string; fromEmail?: string; messageId?: string }> {
   const t = await getTransport(provider);
   if (!t) return { ok: false, error: `${provider} SMTP not configured` };
-  try { await t.transport.sendMail({ from: t.from, to, subject, html }); return { ok: true }; }
-  catch (e) { return { ok: false, error: e instanceof Error ? e.message : "send failed" }; }
+  try {
+    const info = await t.transport.sendMail({ from: t.from, to, subject, html, text: opts.text, headers: opts.headers });
+    return { ok: true, fromEmail: t.from, messageId: info?.messageId || "" };
+  } catch (e) { return { ok: false, error: e instanceof Error ? e.message : "send failed" }; }
 }
 
 export async function verifyEmail(provider: Provider): Promise<{ ok: boolean; error?: string }> {

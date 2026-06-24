@@ -113,6 +113,12 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ key: strin
       ok = v.ok; message = ok ? "Google Workspace verified — business email & alerts ready." : `SMTP login failed: ${v.error}`;
       break;
     }
+    case "smtp": {
+      if (need("smtpHost", "smtpUser", "smtpPass").length) { message = "Add the SMTP host, email & password."; break; }
+      const v = await verifyEmail("smtp");
+      ok = v.ok; message = ok ? "Generic SMTP verified — selectable as a Founder Comm engine." : `SMTP login failed: ${v.error}`;
+      break;
+    }
     case "predictivedata": {
       const miss = need("apiKey", "website");
       if (miss.length) { message = `Missing: ${miss.join(", ")}`; break; }

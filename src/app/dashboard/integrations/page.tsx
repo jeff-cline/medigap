@@ -57,6 +57,13 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
     fields: [{ name: "fromEmail", label: "From Address (the mailbox)", placeholder: "outreach@yoursend.com" }, { name: "smtpHost", label: "SMTP Host", placeholder: "smtp.gmail.com" }, { name: "smtpPort", label: "SMTP Port", placeholder: "587" }, { name: "imapHost", label: "IMAP Host (read replies)", placeholder: "imap.gmail.com" }, { name: "smtpUser", label: "Mailbox Email", placeholder: "outreach@yoursend.com" }, { name: "smtpPass", label: "App Password", type: "password" }, { name: "apiKey", label: "Zapmail API Key (optional)", type: "password" }],
   },
   {
+    phase: "Remarketing", key: "smtp", label: "Generic SMTP — Founder Comm engine",
+    blurb: "A generic SMTP mailbox selectable as a 'send from' engine in the Founder Communication console (in addition to Personal/Google and Cold/Zapmail).",
+    dataFlow: "one-at-a-time founder emails → CRM (tagged FOUNDER COMMUNICATION)",
+    steps: ["From any provider, get SMTP host/port + the mailbox email + an App Password (or SMTP password).", "Paste below + your From address, then Test connection (we verify the SMTP login).", "Selectable as the 'SMTP' engine when composing in JV → Founder Communication."],
+    fields: [{ name: "fromEmail", label: "From Address", placeholder: "you@yourdomain.com" }, { name: "smtpHost", label: "SMTP Host", placeholder: "smtp.yourhost.com" }, { name: "smtpPort", label: "SMTP Port", placeholder: "587" }, { name: "imapHost", label: "IMAP Host (read replies, optional)", placeholder: "imap.yourhost.com" }, { name: "smtpUser", label: "Mailbox Email", placeholder: "you@yourdomain.com" }, { name: "smtpPass", label: "Password / App Password", type: "password" }],
+  },
+  {
     phase: "Remarketing", key: "predictivedata", label: "PredictiveData — Data Append",
     blurb: "Enrich every lead in real time (name, age/DOB, address, income, credit range, interests) by phone or email.",
     dataFlow: "auto-appends new callers & form leads → each lead's record + Appended Data",

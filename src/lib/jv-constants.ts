@@ -2,6 +2,18 @@
 // without pulling Prisma into the browser bundle.
 
 export const JV_TAG = "jv-pe-vc-op";
+export const FOUNDER_COMM_TAG = "founder-communication";
+
+// Send-from engines for the Founder Communication console. `integrationKey` is the
+// integration row that powers each (klaviyo is the opted-in BLAST path, not one-at-a-time).
+export type FounderEngine = { key: string; label: string; integrationKey: string; oneToOne: boolean };
+export const FOUNDER_ENGINES: FounderEngine[] = [
+  { key: "personal", label: "Personal (Google) — support@1800medigap.com", integrationKey: "google_workspace", oneToOne: true },
+  { key: "zapmail", label: "Cold (Zapmail)", integrationKey: "zapmail", oneToOne: true },
+  { key: "smtp", label: "SMTP (generic)", integrationKey: "smtp", oneToOne: true },
+  { key: "klaviyo", label: "Opted-in (Klaviyo) — blasts", integrationKey: "klaviyo", oneToOne: false },
+];
+export const engineLabel = (key: string) => FOUNDER_ENGINES.find((e) => e.key === key)?.label || key;
 
 export const FOUNDER = {
   name: "Jeff Cline",
