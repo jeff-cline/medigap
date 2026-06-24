@@ -125,7 +125,7 @@ export function DownloadCenter() {
           <div className="text-[11px] text-[var(--ag-muted)] mt-1">Save as PDF</div>
         </button>
       ))}
-      <p className="sm:col-span-2 lg:col-span-3 text-xs text-[var(--ag-muted)]">Tailored institutional decks (data room, acquisition model) are available on request — contact the Rocketship team.</p>
+      <p className="sm:col-span-2 lg:col-span-3 text-xs text-[var(--ag-muted)]">Tailored institutional decks (data room, acquisition model) are available on request — contact the R)cketShip team.</p>
     </div>
   );
 }
@@ -166,8 +166,9 @@ export function FinalTakeaway() {
     <section className="relative py-32 px-6 text-center overflow-hidden">
       <div className="pointer-events-none absolute inset-0 ag-grid-bg opacity-50" />
       <Reveal className="relative max-w-3xl mx-auto">
+        <div className="flex justify-center mb-8"><Logo size="lg" /></div>
         <p className="text-2xl md:text-4xl font-bold leading-tight">
-          Rocketship is not acquiring companies.<br />
+          R)cketShip is not acquiring companies.<br />
           <span className="ag-gradient ag-glow">It is building the trusted relationship infrastructure for the aging economy.</span>
         </p>
         <p className="mt-6 text-lg text-[var(--ag-muted)]">Every acquisition strengthens the ecosystem. A rising tide lifts all boats.</p>

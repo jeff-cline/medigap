@@ -59,7 +59,7 @@ export default function EcosystemMap() {
         ctx.fillStyle = "#0a0e18"; ctx.fill(); ctx.lineWidth = isActive ? 2.5 : 1.5; ctx.strokeStyle = col; ctx.stroke();
         ctx.fillStyle = isCenter ? "#eaf6ff" : "#aebbd6"; ctx.font = `${isCenter ? 600 : 500} ${isCenter ? 13 : 10}px ui-sans-serif`;
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.fillText(isCenter ? "ROCKETSHIP" : nd.node.label, nd.x, nd.y + (isCenter ? 0 : 0));
+        ctx.fillText(isCenter ? "R)CKETSHIP" : nd.node.label, nd.x, nd.y + (isCenter ? 0 : 0));
       });
       t++; raf = requestAnimationFrame(draw);
     }
@@ -94,7 +94,7 @@ export default function EcosystemMap() {
           ) : (
             <>
               <h3 className="text-2xl font-bold">One relationship. <span className="ag-gradient">Many pathways.</span></h3>
-              <p className="mt-3 text-[var(--ag-muted)] leading-relaxed">Hover any node to see its revenue pathway. Every connection routes back through the Rocketship trust layer — and each new node makes every other node more valuable.</p>
+              <p className="mt-3 text-[var(--ag-muted)] leading-relaxed">Hover any node to see its revenue pathway. Every connection routes back through the R)cketShip trust layer — and each new node makes every other node more valuable.</p>
             </>
           )}
         </div>

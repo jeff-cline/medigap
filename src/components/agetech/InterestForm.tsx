@@ -64,8 +64,6 @@ export default function InterestForm() {
             ))}
           </div>
         </div>
-        <textarea placeholder="What would you like to explore? (optional)" rows={3} value={f.notes}
-          onChange={set("notes")} className="ag-root w-full" style={{ background: "var(--ag-bg2)", border: "1px solid var(--ag-border)", borderRadius: 10, padding: ".6rem .7rem", color: "var(--ag-text)" }} />
         {err && <p className="text-sm text-[var(--ag-red)]">{err}</p>}
         <button type="submit" disabled={busy} className="ag-btn ag-btn-primary w-full justify-center !py-3 text-base disabled:opacity-50">
           {busy ? "Saving & opening calendar…" : "Continue to booking →"}

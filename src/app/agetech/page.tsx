@@ -21,13 +21,13 @@ export default function AgeTechPage() {
         <div className="mx-auto max-w-5xl px-6 py-20 text-center">
           <p className="text-2xl md:text-3xl font-medium leading-snug">
             Traditional companies monetize a customer <span className="text-[var(--ag-red)]">once.</span><br />
-            Rocketship monetizes the same customer <span className="ag-gradient font-bold">repeatedly, across decades</span> — through products, services, partnerships and acquisitions.
+            R)cketShip monetizes the same customer <span className="ag-gradient font-bold">repeatedly, across decades</span> — through products, services, partnerships and acquisitions.
           </p>
           <p className="mt-6 ag-mono text-sm text-[var(--ag-muted)]">Every customer becomes a growing economic asset. Every acquisition increases the value of every customer.</p>
         </div>
       </section>
 
-      <Section id="ecosystem" n="02" eyebrow="The Ecosystem" title={<>One trusted layer, <span className="ag-gradient">an expanding universe.</span></>} sub="Rocketship sits at the center of every aging-related decision — each node a revenue pathway, each connection routed through the trust layer.">
+      <Section id="ecosystem" n="02" eyebrow="The Ecosystem" title={<>One trusted layer, <span className="ag-gradient">an expanding universe.</span></>} sub="R)cketShip sits at the center of every aging-related decision — each node a revenue pathway, each connection routed through the trust layer.">
         <EcosystemMap />
       </Section>
 
@@ -43,7 +43,7 @@ export default function AgeTechPage() {
         <ValueCalculator />
       </Section>
 
-      <Section id="demand" n="06" eyebrow="The Demand Engine" title={<>Owned acquisition, <span className="ag-gradient">end to end.</span></>} sub="From traffic to revenue activation — a closed loop Rocketship controls and re-monetizes.">
+      <Section id="demand" n="06" eyebrow="The Demand Engine" title={<>Owned acquisition, <span className="ag-gradient">end to end.</span></>} sub="From traffic to revenue activation — a closed loop R)cketShip controls and re-monetizes.">
         <DemandEngine />
       </Section>
 
@@ -83,7 +83,7 @@ export default function AgeTechPage() {
 
       <footer className="ag-hairline">
         <div className="mx-auto max-w-7xl px-6 py-8 flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--ag-muted)]">
-          <span>© 2026 R0cketShip — AgeTech Capital Platform.</span>
+          <span>© 2026 R)cketShip — AgeTech Capital Platform.</span>
           <span className="ag-mono">Illustrative assumptions only · not an offer to sell securities · not investment advice.</span>
         </div>
       </footer>

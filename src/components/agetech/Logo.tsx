@@ -1,4 +1,4 @@
-// R0cketShip wordmark — rocket glyph + "R0cketShip" with the signature orange "0".
+// R)cketShip wordmark — rocket glyph + "R)cketShip" with the signature orange ")".
 export default function Logo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   const text = size === "lg" ? "text-3xl" : size === "sm" ? "text-base" : "text-xl";
   const ico = size === "lg" ? 34 : size === "sm" ? 18 : 24;
@@ -22,7 +22,7 @@ export default function Logo({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
         <path d="M23 21 L27 25 L23 25 Z" fill="#ff7a18" />
       </svg>
       <span className={text}>
-        R<span style={{ color: "#ff7a18" }}>0</span>cketShip
+        R<span style={{ color: "#ff7a18" }}>)</span>cketShip
       </span>
     </span>
   );
