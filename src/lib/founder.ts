@@ -129,17 +129,20 @@ export async function sendFounderEmail(input: {
 // Skip automated / system senders so the inbox stays real human replies only.
 function isSystemSender(email: string): boolean {
   const [local = "", domain = ""] = email.split("@");
-  if (/(^|[._-])(no-?reply|do-?not-?reply|donotreply|mailer-daemon|postmaster|bounce[sd]?|notifications?|alerts?|support|news(letter)?)([._-]|$)/.test(local)) return true;
-  if (/(^|\.)(accounts\.google\.com|google\.com|mail\.google\.com|bounces\.|sendgrid\.|amazonses\.com)/.test(domain)) return true;
+  if (/(^|[._-])(no-?reply|do-?not-?reply|donotreply|mailer-daemon|postmaster|bounce[sd]?|notifications?|alerts?|support|news(letter)?|dmarc(report)?|abuse|feedback-id)([._-]|$)/.test(local)) return true;
+  if (/(^|\.)(accounts\.google\.com|google\.com|mail\.google\.com|microsoft\.com|outlook\.com|bounces\.|sendgrid\.|amazonses\.com|dmarc)/.test(domain)) return true;
   return false;
 }
 
 // recent outbound founder email to that person as replied. Best-effort; returns counts.
 export async function syncInbox(): Promise<{ ok: boolean; pulled: number; matched: number; replies: number; errors: string[] }> {
-  const providers: { engine: string; imap: ImapProvider }[] = [
-    { engine: "personal", imap: "google_workspace" },
-    { engine: "zapmail", imap: "zapmail" },
-    { engine: "smtp", imap: "smtp" },
+  // repliesOnly: cold/SMTP mailboxes are sending infra (warmup + spam + DMARC noise), so we
+  // ONLY ingest messages that reply to something we actually sent. The founder's personal
+  // mailbox is a real inbox, so any human sender there becomes a contact.
+  const providers: { engine: string; imap: ImapProvider; repliesOnly: boolean }[] = [
+    { engine: "personal", imap: "google_workspace", repliesOnly: false },
+    { engine: "zapmail", imap: "zapmail", repliesOnly: true },
+    { engine: "smtp", imap: "smtp", repliesOnly: true },
   ];
   let pulled = 0, matched = 0, replies = 0;
   const errors: string[] = [];
@@ -168,8 +171,12 @@ export async function syncInbox(): Promise<{ ok: boolean; pulled: number; matche
       const fromEmail = (m.from || "").toLowerCase().trim();
       if (!fromEmail.includes("@")) continue;
       if (isSystemSender(fromEmail)) continue; // skip automated / no-reply / system mail
-      // Match to a known contact by email; if none, create one so every reply lands in
-      // the CRM (unified by email) and gets auto-appended.
+
+      // Did we ever email this person from the founder console? (a genuine reply to us)
+      const weEmailed = await db.emailMessage.findFirst({ where: { founder: true, direction: "outbound", to: fromEmail } }).catch(() => null);
+      if (p.repliesOnly && !weEmailed) continue; // cold/smtp infra: ignore non-replies (warmup/spam)
+
+      // Match to a known contact by email; if none, create one (personal inbox only).
       let lead = await db.lead.findFirst({ where: { email: fromEmail } }).catch(() => null);
       if (!lead) {
         lead = await db.lead.create({
