@@ -68,6 +68,74 @@ export function rampProjection(base: ProformaInputs = PROFORMA_DEFAULTS) {
   });
 }
 
+// ---------------------------------------------------------------------------
+// FULL PROFORMA — 3 product lines × 5 years, for the detailed P&L + pivot tables.
+// Illustrative; product mix & economics are editable assumptions.
+// ---------------------------------------------------------------------------
+export type Product = { key: string; name: string; avgLoan: number; revPerLoan: number; fulfillPerLoan: number; units: number[] };
+export const PRODUCTS: Product[] = [
+  { key: "reverse", name: "Reverse / HECM", avgLoan: 200000, revPerLoan: 12000, fulfillPerLoan: 4200, units: [600, 1100, 2000, 3300, 5200] },
+  { key: "refi", name: "Refinance", avgLoan: 320000, revPerLoan: 8000, fulfillPerLoan: 3600, units: [720, 1200, 1900, 2900, 4200] },
+  { key: "purchase", name: "Purchase", avgLoan: 410000, revPerLoan: 9000, fulfillPerLoan: 3900, units: [600, 940, 1500, 2380, 3560] },
+];
+export const YEARS = ["Year 1", "Year 2", "Year 3", "Year 4", "Year 5"];
+export const LEADS_BY_YEAR = [48000, 72000, 108000, 156000, 216000]; // annual qualified leads
+export const CAC_PER_LEAD = 12;
+export const FIXED_OPEX = [7000000, 8000000, 9000000, 10000000, 11000000];
+
+export type PnlRow = { label: string; kind: "rev" | "cost" | "total" | "metric"; values: number[]; indent?: boolean };
+
+// Build the full 5-year P&L (years as columns).
+export function fullProforma(): { rows: PnlRow[]; byProduct: { name: string; units: number; volume: number; revenue: number; ebitdaContribution: number }[] } {
+  const yrs = YEARS.length;
+  const z = () => new Array(yrs).fill(0);
+
+  const rows: PnlRow[] = [];
+  // revenue by product
+  const totalRev = z();
+  for (const p of PRODUCTS) {
+    const rev = p.units.map((u) => u * p.revPerLoan);
+    rev.forEach((v, i) => (totalRev[i] += v));
+    rows.push({ label: `${p.name} revenue`, kind: "rev", indent: true, values: rev });
+  }
+  rows.push({ label: "Total revenue", kind: "total", values: totalRev });
+
+  // cost lines
+  const cac = LEADS_BY_YEAR.map((l) => l * CAC_PER_LEAD);
+  const fulfill = z();
+  for (const p of PRODUCTS) p.units.forEach((u, i) => (fulfill[i] += u * p.fulfillPerLoan));
+  rows.push({ label: "Borrower acquisition (CAC)", kind: "cost", indent: true, values: cac });
+  rows.push({ label: "Loan fulfillment", kind: "cost", indent: true, values: fulfill });
+  rows.push({ label: "Fixed operating expense", kind: "cost", indent: true, values: FIXED_OPEX.slice(0, yrs) });
+  const totalCost = z().map((_, i) => cac[i] + fulfill[i] + FIXED_OPEX[i]);
+  rows.push({ label: "Total cost", kind: "total", values: totalCost });
+
+  // EBITDA + metrics
+  const ebitda = totalRev.map((r, i) => r - totalCost[i]);
+  rows.push({ label: "EBITDA", kind: "total", values: ebitda });
+  rows.push({ label: "EBITDA margin", kind: "metric", values: totalRev.map((r, i) => (r > 0 ? ebitda[i] / r : 0)) });
+
+  const totalUnits = z();
+  const totalVol = z();
+  for (const p of PRODUCTS) p.units.forEach((u, i) => { totalUnits[i] += u; totalVol[i] += u * p.avgLoan; });
+  rows.push({ label: "Funded loans", kind: "metric", values: totalUnits });
+  rows.push({ label: "Origination volume", kind: "metric", values: totalVol });
+
+  // pivot: by product (5-yr totals)
+  const totalEbitda = ebitda.reduce((a, b) => a + b, 0);
+  const grossRevAll = totalRev.reduce((a, b) => a + b, 0);
+  const byProduct = PRODUCTS.map((p) => {
+    const units = p.units.reduce((a, b) => a + b, 0);
+    const revenue = p.units.reduce((a, u) => a + u * p.revPerLoan, 0);
+    const volume = p.units.reduce((a, u) => a + u * p.avgLoan, 0);
+    // contribution = product gross margin share of total EBITDA (illustrative attribution)
+    const ebitdaContribution = grossRevAll > 0 ? (revenue / grossRevAll) * totalEbitda : 0;
+    return { name: p.name, units, volume, revenue, ebitdaContribution };
+  });
+
+  return { rows, byProduct };
+}
+
 export const fmtUsd = (n: number) => {
   if (Math.abs(n) >= 1e9) return `$${(n / 1e9).toFixed(2)}B`;
   if (Math.abs(n) >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;

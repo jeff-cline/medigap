@@ -4,6 +4,7 @@ import { Section, Reveal, Counter } from "@/components/agetech/primitives";
 import InterestForm from "@/components/agetech/InterestForm";
 import DownloadPdfButton from "@/components/agetech/DownloadPdfButton";
 import MortgageProforma from "@/components/mortgage/MortgageProforma";
+import FullProforma from "@/components/mortgage/FullProforma";
 import { FOUNDER } from "@/lib/jv-constants";
 import "../agetech/agetech.css";
 
@@ -63,8 +64,13 @@ export default function MortgageProformaPage() {
         <MortgageProforma />
       </Section>
 
+      {/* full proforma + pivots */}
+      <Section id="full" n="02" eyebrow="Full Proforma" title={<>The full <span className="ag-gradient">P&amp;L.</span></>} sub="Five-year proforma across three product lines — Reverse / HECM, Refinance and Purchase. Pivot by product, or export to a spreadsheet.">
+        <FullProforma />
+      </Section>
+
       {/* the advantage */}
-      <Section id="edge" n="02" eyebrow="The R0cketShip Edge" title={<>Why this <span className="ag-gradient">compounds.</span></>} center>
+      <Section id="edge" n="03" eyebrow="The R0cketShip Edge" title={<>Why this <span className="ag-gradient">compounds.</span></>} center>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[
             ["Owned Audience", "10,000 turning 65 daily — a built-in, recurring borrower pipeline at near-zero CAC."],
