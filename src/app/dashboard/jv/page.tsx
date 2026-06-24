@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Card, Stat, Section } from "@/components/ui";
 import JvControls from "@/components/jv/JvControls";
 import FounderComms from "@/components/jv/FounderComms";
+import FounderInbox from "@/components/jv/FounderInbox";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { num, usd2, cst } from "@/lib/format";
@@ -54,6 +55,17 @@ export default async function JvDashboard() {
   }
   const contacts = commContacts.map((c) => ({ id: c.id, name: c.name, email: c.email, sent: sentByLead.get(c.id) || [] }));
 
+  // --- Founder Inbox (consolidated inbound mail, all + per-engine) ---
+  const inbound = await db.emailMessage.findMany({
+    where: { founder: true, direction: "inbound" },
+    orderBy: { createdAt: "desc" }, take: 200,
+    select: { id: true, leadId: true, fromEmail: true, subject: true, engine: true, createdAt: true },
+  });
+  const inboundLeadIds = [...new Set(inbound.map((i) => i.leadId).filter((x): x is string => !!x))];
+  const inboundLeads = inboundLeadIds.length ? await db.lead.findMany({ where: { id: { in: inboundLeadIds } }, select: { id: true, name: true } }) : [];
+  const inLeadName = new Map(inboundLeads.map((l) => [l.id, l.name]));
+  const inboxItems = inbound.map((i) => ({ id: i.id, leadId: i.leadId || "", leadName: i.leadId ? inLeadName.get(i.leadId) || "" : "", fromEmail: i.fromEmail || "", subject: i.subject, engine: i.engine, at: cst(i.createdAt) }));
+
   return (
     <>
       <div className="mb-6">
@@ -82,6 +94,10 @@ export default async function JvDashboard() {
 
       <Section title="Founder Communication" desc="Email in your voice — pick which engine to send from each time. Every send is logged to the CRM tagged FOUNDER COMMUNICATION; templates already sent to a person show next to their name, and the same template can't go twice via the same engine.">
         <FounderComms contacts={contacts} templates={templates} engines={engineReadiness} />
+      </Section>
+
+      <Section title="Founder Inbox" desc="Every reply, consolidated — All accounts or one engine at a time. Click a sender to open their CRM record (unified by email/phone, auto-appended, with the full timeline + notes). Hit Sync inbox to pull new mail.">
+        <FounderInbox items={inboxItems} />
       </Section>
 
       <Section title="Deal Room" desc="Ranked by priority, then monthly value. Click a deal to text, take notes, and attach documents.">

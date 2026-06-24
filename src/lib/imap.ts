@@ -2,7 +2,7 @@ import { ImapFlow } from "imapflow";
 import { db } from "./db";
 
 export type Provider = "google_workspace" | "zapmail" | "smtp";
-export type InboundMsg = { from: string; subject: string; date: string; snippet: string };
+export type InboundMsg = { from: string; fromName: string; subject: string; date: string; snippet: string };
 
 // Read the latest inbound emails for a provider's mailbox over IMAP.
 export async function readInbox(provider: Provider, limit = 20): Promise<{ ok: boolean; messages: InboundMsg[]; error?: string }> {
@@ -27,7 +27,8 @@ export async function readInbox(provider: Provider, limit = 20): Promise<{ ok: b
           const env = msg.envelope;
           const fromAddr = env?.from?.[0];
           out.push({
-            from: fromAddr?.address || fromAddr?.name || "—",
+            from: (fromAddr?.address || "").toLowerCase(),
+            fromName: fromAddr?.name || "",
             subject: env?.subject || "(no subject)",
             date: env?.date ? new Date(env.date).toISOString() : "",
             snippet: "",

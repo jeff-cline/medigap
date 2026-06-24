@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import JvDeal, { type DealLead, type Activity } from "@/components/jv/JvDeal";
+import { AppendedBlock } from "@/components/AppendedData";
+import AppendButton from "@/components/AppendButton";
+import { Card, Section } from "@/components/ui";
 import { db } from "@/lib/db";
 import { cstFull } from "@/lib/format";
 
@@ -62,6 +65,12 @@ export default async function JvDealPage({ params }: { params: Promise<{ id: str
         <p className="text-sm text-[var(--muted)]">{lead.email || "no email"} · {lead.phone || "no phone"}{lead.zip ? ` · ${lead.zip}` : ""}</p>
       </div>
       <JvDeal lead={dealLead} messages={messages} notes={notes} docs={docs} activity={activity} />
+
+      <div className="mt-6">
+        <Section title="Appended Data" desc="Enriched contact data shown in gold beside the original record — never overwritten." action={<AppendButton leadId={lead.id} />}>
+          <Card><AppendedBlock raw={lead.appended} /></Card>
+        </Section>
+      </div>
     </>
   );
 }

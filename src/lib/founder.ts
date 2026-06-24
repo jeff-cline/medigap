@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { db } from "./db";
 import { sendEmail } from "./email";
 import { readInbox, type Provider as ImapProvider } from "./imap";
+import { appendLeadBackground } from "./predictivedata";
 import { parseTags } from "./recapture";
 import { FOUNDER_COMM_TAG, FOUNDER_ENGINES, JV_TAG } from "./jv-constants";
 
@@ -125,15 +126,22 @@ export async function syncInbox(): Promise<{ ok: boolean; pulled: number; matche
 
   for (const p of providers) {
     if (!(await engineReady(p.engine))) continue;
-    const res = await readInbox(p.imap, 30).catch(() => ({ ok: false, messages: [] as { from: string; subject: string; date: string }[], error: "imap error" }));
+    const res = await readInbox(p.imap, 30).catch(() => ({ ok: false, messages: [] as { from: string; fromName: string; subject: string; date: string }[], error: "imap error" }));
     if (!res.ok) { if (res.error) errors.push(`${p.engine}: ${res.error}`); continue; }
 
     for (const m of res.messages) {
       const fromEmail = (m.from || "").toLowerCase().trim();
       if (!fromEmail.includes("@")) continue;
-      // Match to a known contact by email (or phone-in-address is N/A for email).
-      const lead = await db.lead.findFirst({ where: { email: fromEmail } }).catch(() => null);
-      if (!lead) continue; // only consolidate mail from people we track
+      // Match to a known contact by email; if none, create one so every reply lands in
+      // the CRM (unified by email) and gets auto-appended.
+      let lead = await db.lead.findFirst({ where: { email: fromEmail } }).catch(() => null);
+      if (!lead) {
+        lead = await db.lead.create({
+          data: { name: m.fromName || "", email: fromEmail, vertical: "partner", source: "founder-inbound", tags: JSON.stringify([FOUNDER_COMM_TAG, JV_TAG]) },
+        }).catch(() => null);
+        if (lead) appendLeadBackground(lead.id); // enrich the new contact in the background
+      }
+      if (!lead) continue;
 
       const messageId = `in:${p.engine}:${fromEmail}:${m.subject}:${m.date}`.slice(0, 480);
       const exists = await db.emailMessage.findFirst({ where: { messageId, direction: "inbound" } }).catch(() => null);

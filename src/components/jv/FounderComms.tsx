@@ -13,17 +13,6 @@ export default function FounderComms({ contacts, templates, engines }: { contact
   const [compose, setCompose] = useState<Contact | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
   const [search, setSearch] = useState("");
-  const [syncing, setSyncing] = useState(false);
-  const [syncMsg, setSyncMsg] = useState("");
-
-  async function syncInbox() {
-    setSyncing(true); setSyncMsg("");
-    const r = await fetch("/api/founder/sync-inbox", { method: "POST" });
-    const d = await r.json().catch(() => ({}));
-    setSyncing(false);
-    if (d.ok) { setSyncMsg(`Pulled ${d.matched} matched · ${d.replies} marked replied${d.errors?.length ? ` · ${d.errors.length} engine error(s)` : ""}`); router.refresh(); }
-    else setSyncMsg(d.error || "Sync failed");
-  }
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -34,10 +23,8 @@ export default function FounderComms({ contacts, templates, engines }: { contact
     <div>
       <div className="flex flex-wrap items-center gap-2 mb-3">
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search contacts…" className="!w-56" />
-        <button onClick={syncInbox} disabled={syncing} className="btn btn-ghost text-xs !py-1.5 ml-auto">{syncing ? "Syncing…" : "↻ Sync inbox"}</button>
-        <button onClick={() => setShowTemplates((v) => !v)} className="btn btn-ghost text-xs !py-1.5">{showTemplates ? "Hide templates" : "✎ Manage templates"}</button>
+        <button onClick={() => setShowTemplates((v) => !v)} className="btn btn-ghost text-xs !py-1.5 ml-auto">{showTemplates ? "Hide templates" : "✎ Manage templates"}</button>
       </div>
-      {syncMsg && <p className="text-xs text-[var(--muted)] mb-2">{syncMsg}</p>}
 
       {showTemplates && <TemplateManager templates={templates} onChange={() => router.refresh()} />}
 
