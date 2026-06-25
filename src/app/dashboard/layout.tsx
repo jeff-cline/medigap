@@ -11,7 +11,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (session.mustChangePassword) redirect("/change-password");
   // Agents/advertisers/investors/partners have their own portals; staff + god use the management dash.
   if (!STAFF.includes(session.role)) {
-    const portal: Record<string, string> = { agent: "/agent", moneywords: "/agent", risk: "/agent", advertiser: "/advertiser", investor: "/investor" };
+    const portal: Record<string, string> = { agent: "/agent", moneywords: "/agent", risk: "/agent", advertiser: "/advertiser", investor: "/investor", creator: "/creator" };
     redirect(portal[session.role] || "/agent"); // default any other role into the partner portal, never /login
   }
 

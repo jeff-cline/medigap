@@ -143,6 +143,8 @@ model User {
   available         Boolean  @default(false) // taking calls right now (on/off)
   source            String   @default("") // attribution: where the account came in from
   features          String   @default("") // JSON: partner portal features the God account enabled
+  refCode           String   @default("") // Doublewide creator tracking code (their /c/<refCode> link)
+  payoutMode        String   @default("activation") // creator payout: activation ($5) | revshare (1%)
   createdAt         DateTime @default(now())
 
   agentBids   AgentBid[]

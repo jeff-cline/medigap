@@ -3,6 +3,7 @@ import { Card, Stat, Section, Badge } from "@/components/ui";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { num, usd, cst } from "@/lib/format";
+import AddCreator from "@/components/AddCreator";
 
 export const dynamic = "force-dynamic";
 
@@ -61,7 +62,7 @@ export default async function SocialCreatorsPage() {
         <Stat label="Modeled Payout" value={usd(totalPayout)} sub="best of activation / rev-share" tone="gold" />
       </div>
 
-      <Section title="Creators" desc="Ranked by leads driven. Payout shows whichever model pays the creator more.">
+      <Section title="Creators" desc="Ranked by leads driven. Payout shows whichever model pays the creator more." action={isGod ? <AddCreator /> : undefined}>
         <Card className="!p-0 overflow-hidden">
           <table>
             <thead>

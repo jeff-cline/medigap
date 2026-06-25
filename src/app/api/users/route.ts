@@ -22,12 +22,19 @@ export async function POST(req: NextRequest) {
     const role = String(body.role || "agent").trim();
     if (!email) return NextResponse.json({ error: "Email is required." }, { status: 400 });
     const passwordHash = await bcrypt.hash(TEMP_PASSWORD, 10);
+    // Creators get a unique tracking code for their /c/<refCode> link.
+    let refCode = "";
+    if (role === "creator") {
+      const base = (name || email.split("@")[0]).toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 16) || "creator";
+      refCode = base;
+      for (let i = 2; await db.user.findFirst({ where: { refCode } }); i++) refCode = `${base}${i}`;
+    }
     try {
       const user = await db.user.create({
-        data: { email, name, role, passwordHash, mustChangePassword: true, status: "active", source: "Admin (created in dashboard)" },
+        data: { email, name, role, passwordHash, mustChangePassword: true, status: "active", source: "Admin (created in dashboard)", refCode },
       });
       notifyNewAccount({ name: user.name, email: user.email, role: user.role, phone: user.phone, source: user.source, id: user.id }).catch(() => {});
-      return NextResponse.json({ ok: true, id: user.id, tempPassword: TEMP_PASSWORD });
+      return NextResponse.json({ ok: true, id: user.id, tempPassword: TEMP_PASSWORD, refCode });
     } catch {
       return NextResponse.json({ error: `A user with ${email} already exists.` }, { status: 409 });
     }
