@@ -18,12 +18,15 @@ export default function DwIntake() {
     e.preventDefault();
     if (!f.name.trim() || (!f.email.trim() && !f.phone.trim())) { setErr("Add your name and an email or phone."); return; }
     setBusy(true); setErr("");
+    // Creator attribution: ?ref= on the URL, else the dw_ref cookie (sent automatically).
+    const ref = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("ref") || "" : "";
     const r = await fetch("/api/jv", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: f.name, email: f.email, phone: f.phone,
         interest: mode === "brand" ? "advertising" : "creator_partner",
         source: mode === "brand" ? "Doublewide.ai — Brand" : "Doublewide.ai — Creator",
+        creatorRef: ref,
         notes: `${mode === "brand" ? "BRAND" : "CREATOR"}. ${f.handle ? "Social: " + f.handle + ". " : ""}${f.detail}`,
       }),
     });

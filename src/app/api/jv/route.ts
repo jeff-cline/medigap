@@ -16,10 +16,14 @@ export async function POST(req: NextRequest) {
   const interest = String(b.interest || b.jvInterest || "").trim();
   if (!name && !phone && !email) return NextResponse.json({ error: "Tell us how to reach you." }, { status: 400 });
 
+  // Creator attribution: explicit body ref, else the dw_ref cookie from a /c/<code> click.
+  const creatorRef = String(b.creatorRef || "").trim() || req.cookies.get("dw_ref")?.value || "";
+
   const lead = await upsertJvLead({
     name, phone, email,
     zip: String(b.zip || "").trim(), state: String(b.state || "").trim(),
     jvInterest: interest, source: String(b.source || "1-800-MEDIGAP"), notes: String(b.notes || "").trim(),
+    creatorRef,
   });
 
   // Enrich the new lead in the background (PredictiveData append) — best-effort.

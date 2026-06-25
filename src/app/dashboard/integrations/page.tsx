@@ -85,6 +85,27 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
     fields: [{ name: "appId", label: "App ID" }, { name: "appSecret", label: "App Secret", type: "password" }, { name: "adAccountId", label: "Ad Account ID", placeholder: "act_xxx" }, { name: "pixelId", label: "Pixel ID" }],
   },
   {
+    phase: "Social media", key: "fb_social", label: "Facebook / Meta — Social Accounts (Doublewide)", oauth: true,
+    blurb: "Connect a business portfolio of Facebook Pages (and Instagram via Meta Graph) to pull impressions, engagement and trending posts into the Core — and run lead forms that attribute back to the creator.",
+    dataFlow: "social metrics + lead-form submissions → Core dashboard & CRM (creator-attributed)",
+    steps: ["Meta for Developers → create an app with the Pages + Instagram Graph permissions.", "Add this app's callback as an OAuth redirect URI.", "Save the App ID/Secret.", "Connect to authorize the business portfolio (Krystalore can connect her own).", "Test connection."],
+    fields: [{ name: "appId", label: "Meta App ID" }, { name: "appSecret", label: "Meta App Secret", type: "password" }, { name: "accessToken", label: "Page/User Access Token (optional)", type: "password" }],
+  },
+  {
+    phase: "Social media", key: "ig_social", label: "Instagram — Social Accounts (Doublewide)", oauth: true,
+    blurb: "Instagram business/creator accounts via the Meta Graph API — followers, reach, engagement and top posts into the Core.",
+    dataFlow: "IG metrics + form submissions → Core dashboard & CRM",
+    steps: ["Use the same Meta app with Instagram Graph permissions.", "Link the IG business accounts to the connected Pages.", "Connect & Test."],
+    fields: [{ name: "accessToken", label: "Access Token", type: "password" }, { name: "igBusinessId", label: "IG Business Account ID (optional)" }],
+  },
+  {
+    phase: "Social media", key: "x_social", label: "X / Twitter — Social Accounts (Doublewide)", oauth: true,
+    blurb: "Connect X accounts to pull post impressions and engagement into the Core social dashboard.",
+    dataFlow: "X metrics + form submissions → Core dashboard & CRM",
+    steps: ["X Developer Portal → create a project/app; enable the v2 API.", "Copy the API Key/Secret + Bearer Token.", "Save, Connect & Test."],
+    fields: [{ name: "apiKey", label: "API Key" }, { name: "apiSecret", label: "API Secret", type: "password" }, { name: "bearerToken", label: "Bearer Token", type: "password" }],
+  },
+  {
     phase: "Scale & arbitrage", key: "affiliate", label: "Affiliate / Exit-Traffic Networks",
     blurb: "Drop affiliate codes + APIs; we show their text/banner ads and read back click value for arbitrage.",
     dataFlow: "exit-click revenue → ledger 'revenue'",

@@ -196,6 +196,7 @@ model Lead {
   emailOptOut Boolean @default(false) // honored unsubscribe / do-not-email
   appended  String   @default("{}") // PredictiveData-appended data (JSON)
   tags      String   @default("[]") // JSON array of campaign tags, e.g. ["chapter-1"]
+  creatorRef String  @default("") // Doublewide: the creator/social code that drove this lead (attribution)
   recaptureStage String @default("") // ""|missed|engaged|clicked|opted_in|revenue — old-data recapture funnel
   engagedAt DateTime? // first cold outreach (SMS/email) sent
   clickedAt DateTime? // clicked a CTA link from outreach

@@ -13,8 +13,9 @@ import { JV_TAG } from "./jv-constants";
 // Find an existing lead by phone/email or create one, then ensure it carries the JV tag.
 export async function upsertJvLead(input: {
   name?: string; phone?: string; email?: string; zip?: string; state?: string;
-  jvInterest?: string; source?: string; notes?: string;
+  jvInterest?: string; source?: string; notes?: string; creatorRef?: string;
 }) {
+  const creatorRef = (input.creatorRef || "").trim().slice(0, 60);
   const phone = (input.phone || "").trim();
   const email = (input.email || "").trim().toLowerCase();
   const last10 = phone.replace(/\D/g, "").slice(-10);
@@ -29,7 +30,7 @@ export async function upsertJvLead(input: {
       data: {
         name: input.name || "", phone, email, zip: input.zip || "", state: input.state || "",
         vertical: "partner", source: input.source || "1-800-MEDIGAP",
-        jvInterest: input.jvInterest || "", tags: JSON.stringify([JV_TAG]),
+        jvInterest: input.jvInterest || "", tags: JSON.stringify([JV_TAG]), creatorRef,
       },
     });
   } else {
@@ -42,6 +43,7 @@ export async function upsertJvLead(input: {
     if (input.zip && !lead.zip) data.zip = input.zip;
     if (input.state && !lead.state) data.state = input.state;
     if (input.jvInterest) data.jvInterest = input.jvInterest;
+    if (creatorRef && !lead.creatorRef) data.creatorRef = creatorRef; // first-touch attribution
     lead = await db.lead.update({ where: { id: lead.id }, data });
   }
   if (input.notes && input.notes.trim()) {
