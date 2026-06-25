@@ -100,6 +100,13 @@ export default async function PlaybookPage() {
         <PlaybookForm />
       </section>
 
+      {/* secret weapon link */}
+      <section className="mx-auto max-w-3xl px-6 pb-16 text-center">
+        <Link href="/playbook/secret-weapon" className="inline-flex items-center gap-2 text-sm text-[var(--muted)] hover:text-[var(--brand)] border-b border-dashed border-[var(--border)] pb-0.5">
+          🗝️ Founders &amp; executives: discover the Secret Weapon →
+        </Link>
+      </section>
+
       <footer className="border-t border-[var(--border)] bg-[var(--panel)]">
         <div className="mx-auto max-w-7xl px-6 py-8 flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--muted)]">
           <span>© 2026 {brandName} · powered by the R0cketShip Core.</span>
