@@ -5,6 +5,8 @@
 
 export const RAMP_MONTHS = 24;
 export const PEAK_PER_MONTH = 1000;
+// Bootstrapped Q1/Q2: low early volume (months 1–6), then profits fund systematic scaling to peak.
+export const EARLY_RAMP = [2, 15, 30, 50, 70, 100];
 export const ANNUAL_PREMIUM = 100;
 export const COMMISSION_RATE = 0.35;          // → $35 / yr per active policy
 export const POLICY_LIFE_MONTHS = 72;         // 6 years
@@ -13,11 +15,16 @@ export const PROJECTION_MONTHS = 120;         // 10 years
 
 export const monthlyCommissionPerPolicy = (ANNUAL_PREMIUM * COMMISSION_RATE) / 12; // ~$2.917
 
-// New policies sold in a given 1-based month: linear ramp to PEAK over RAMP_MONTHS, then flat.
+// New policies sold in a 1-based month. Months 1–6 are the explicit bootstrapped ramp
+// (funded from cash); from month 7 we scale systematically from 100 → 1,000 by month 24
+// (using business profits), then hold steady at the peak.
 export function newPoliciesInMonth(m: number): number {
   if (m <= 0) return 0;
+  if (m <= EARLY_RAMP.length) return EARLY_RAMP[m - 1];
   if (m >= RAMP_MONTHS) return PEAK_PER_MONTH;
-  return Math.round((PEAK_PER_MONTH * m) / RAMP_MONTHS);
+  const last = EARLY_RAMP[EARLY_RAMP.length - 1]; // 100 at month 6
+  const step = (PEAK_PER_MONTH - last) / (RAMP_MONTHS - EARLY_RAMP.length); // (1000-100)/18 = 50
+  return Math.min(PEAK_PER_MONTH, Math.round(last + step * (m - EARLY_RAMP.length)));
 }
 
 export type MonthRow = {
