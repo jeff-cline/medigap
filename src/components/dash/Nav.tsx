@@ -18,6 +18,7 @@ export const LEFT_NAV: [string, string, string][] = [
   ["Partner Payouts", "/dashboard/payouts", "💸"],
   ["Marketing / Ads", "/dashboard/marketing", "📣"],
   ["Integrations", "/dashboard/integrations", "🔌"],
+  ["CORE API & SDK", "/core-api", "🧩"],
   ["User Management", "/dashboard/users", "🔐"],
   ["Autonomous Logic", "/dashboard/autonomous", "✦"],
   ["Missed Opportunity", "/dashboard/missed", "⚠️"],

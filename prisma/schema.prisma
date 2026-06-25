@@ -518,6 +518,22 @@ model Offer {
   createdAt   DateTime @default(now())
 }
 
+// CORE API keys — issued by God so external partners build on the Core. The secret is
+// stored hashed (shown in plaintext only once at issuance). keyId is the public identifier.
+model ApiKey {
+  id         String   @id @default(cuid())
+  ownerId    String   @default("") // user/partner the key is issued to (optional)
+  name       String   @default("") // label, e.g. "Acme Partner"
+  keyId      String   @unique      // public: core_pk_xxxxx
+  secretHash String                // bcrypt of core_sk_xxxxx
+  scopes     String   @default("lead:create") // csv: lead:create, lead:read, ...
+  active     Boolean  @default(true)
+  lastUsedAt DateTime?
+  callCount  Int      @default(0)
+  createdAt  DateTime @default(now())
+  revokedAt  DateTime?
+}
+
 // ---------------------------------------------------------------------------
 // COUPONS — deposit credit (flat) or matching-deposit % up to a cap
 // ---------------------------------------------------------------------------
