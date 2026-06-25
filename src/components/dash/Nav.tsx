@@ -9,6 +9,7 @@ export const LEFT_NAV: [string, string, string][] = [
   ["Calls", "/dashboard/calls", "📞"],
   ["Arm Cloud", "/dashboard/arm-cloud", "☁"],
   ["Social & Creators", "/dashboard/social", "📣"],
+  ["Playbook Funnel", "/dashboard/playbook", "🎯"],
   ["Missed Calls", "/dashboard/missed-calls", "📵"],
   ["Train Agent", "/dashboard/voice-agent", "🎙️"],
   ["Communications", "/dashboard/communications", "✉️"],
@@ -39,7 +40,7 @@ export const UNIT_TABS: [string, string][] = [
 export function Sidebar({ email, role }: { email: string; role: string }) {
   const path = usePathname();
   // Assistants run the founder's JV space only — they don't see the rest of the dash.
-  const nav = role === "assistant" ? LEFT_NAV.filter(([, href]) => href === "/dashboard/jv") : LEFT_NAV;
+  const nav = role === "assistant" ? LEFT_NAV.filter(([, href]) => href === "/dashboard/jv" || href === "/dashboard/playbook") : LEFT_NAV;
   return (
     <aside className="w-60 shrink-0 border-r border-[var(--border)] bg-[var(--panel)] min-h-screen sticky top-0 hidden lg:flex flex-col">
       <Link href={role === "assistant" ? "/dashboard/jv" : "/dashboard"} className="px-5 h-16 flex items-center text-xl font-bold text-gradient">medigap.plus</Link>
