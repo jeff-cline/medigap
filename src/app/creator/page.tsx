@@ -25,6 +25,9 @@ export default async function CreatorPortal() {
   const revSharePayout = Math.round(revenue * REV_SHARE_PCT);
   const payout = me?.payoutMode === "revshare" ? revSharePayout : activationPayout;
 
+  // Network offers the creator can promote (with their tracked link → the offer URL).
+  const networkOffers = refCode ? await db.offer.findMany({ where: { scope: "network", active: true }, orderBy: { createdAt: "desc" }, take: 30, select: { id: true, name: true, description: true, url: true, payoutCents: true, category: true } }) : [];
+
   return (
     <>
       <div className="mb-6">
@@ -49,6 +52,23 @@ export default async function CreatorPortal() {
             <Stat label="Revenue driven" value={usd(revenue)} sub="from your leads" tone="up" />
             <Stat label="Your earnings" value={usd(payout)} sub={me?.payoutMode === "revshare" ? "1% revenue share" : "$5 / activation"} tone="gold" />
           </div>
+
+          <Section title="Offers to promote" desc="Drop your tracked link to any of these in a post — leads are credited to you.">
+            <div className="grid gap-3 sm:grid-cols-2">
+              {networkOffers.map((o) => (
+                <Card key={o.id}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="font-semibold">{o.name}</div>
+                    {o.payoutCents > 0 && <span className="text-xs text-[var(--gold)] whitespace-nowrap">${(o.payoutCents / 100).toFixed(0)} / activation</span>}
+                  </div>
+                  {o.category && <div className="text-[11px] uppercase tracking-wide text-[var(--muted)] mt-0.5">{o.category}</div>}
+                  {o.description && <p className="text-sm text-[var(--muted)] mt-1">{o.description}</p>}
+                  <div className="mt-2"><CopyLink url={`${link}${o.url ? `?to=${encodeURIComponent(o.url)}` : ""}`} /></div>
+                </Card>
+              ))}
+              {networkOffers.length === 0 && <Card><p className="text-sm text-[var(--muted)]">No network offers yet — your manager will publish offers here for you to promote.</p></Card>}
+            </div>
+          </Section>
 
           <Section title="Your leads" desc="Everyone you've sent into the network.">
             <Card className="!p-0 overflow-hidden">

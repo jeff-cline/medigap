@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { num, usd, cst } from "@/lib/format";
 import AddCreator from "@/components/AddCreator";
+import OfferManager, { type OfferRow } from "@/components/OfferManager";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,9 @@ export default async function SocialCreatorsPage() {
     revSharePayout: Math.round(c.revenueCents * REV_SHARE_PCT),
   })).sort((a, b) => b.leads - a.leads);
 
+  const offers = isGod ? await db.offer.findMany({ orderBy: { createdAt: "desc" } }) : [];
+  const offerRows: OfferRow[] = offers.map((o) => ({ id: o.id, name: o.name, description: o.description, url: o.url, payoutCents: o.payoutCents, category: o.category, scope: o.scope, active: o.active }));
+
   const totalLeads = leads.length;
   const totalActivated = creators.reduce((s, c) => s + c.activated, 0);
   const totalRevenue = creators.reduce((s, c) => s + c.revenueCents, 0);
@@ -61,6 +65,12 @@ export default async function SocialCreatorsPage() {
         <Stat label="Revenue Driven" value={usd(totalRevenue)} sub="from creator leads" tone="up" />
         <Stat label="Modeled Payout" value={usd(totalPayout)} sub="best of activation / rev-share" tone="gold" />
       </div>
+
+      {isGod && (
+        <Section title="Offers" desc="Brand offers in the network. Publish one network-wide (JV backfill) so every creator can promote it." action={<AddCreator role="brand" />}>
+          <OfferManager offers={offerRows} canNetwork />
+        </Section>
+      )}
 
       <Section title="Creators" desc="Ranked by leads driven. Payout shows whichever model pays the creator more." action={isGod ? <AddCreator /> : undefined}>
         <Card className="!p-0 overflow-hidden">

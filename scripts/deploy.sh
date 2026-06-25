@@ -21,7 +21,8 @@ ssh -i "$SSH_KEY" "$SERVER" "set -e; cd $APP; \
   npx prisma generate; \
   npx prisma db push --skip-generate --accept-data-loss; \
   npm run build; \
-  pm2 reload medigap"
+  pm2 reload medigap; \
+  npx tsx scripts/ensure-god.ts"
 
 echo "✓ Deployed. https://medigap.plus"
 echo "  (DB schema changes are applied with 'prisma db push'; seeding is NOT re-run.)"

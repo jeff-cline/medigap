@@ -503,6 +503,21 @@ model CommCampaign {
   createdAt DateTime @default(now())
 }
 
+// Doublewide: an offer a brand (or the network) runs. Creators promote network offers with
+// their tracked link; brands manage their own. scope "network" = JV backfill across the platform.
+model Offer {
+  id          String   @id @default(cuid())
+  ownerId     String   @default("") // the brand (User) who owns it; "" = house/network offer
+  name        String
+  description String   @default("")
+  url         String   @default("") // destination the creator's /c/<code>?to= points at
+  payoutCents Int      @default(0)  // what the network pays out per activation (illustrative)
+  category    String   @default("") // e.g. insurance, finance, wellness
+  scope       String   @default("account") // account | network (network = promotable by all creators)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
 // ---------------------------------------------------------------------------
 // COUPONS — deposit credit (flat) or matching-deposit % up to a cap
 // ---------------------------------------------------------------------------
