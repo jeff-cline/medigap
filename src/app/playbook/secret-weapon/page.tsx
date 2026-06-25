@@ -8,7 +8,14 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getCurrentSite();
   const name = site?.name || "R0cketShip";
-  return { title: `The Secret Weapon — ${name}`, description: "The little black book behind the empire: private executive advisory + proprietary growth technology, as one package. Built to double your revenue, then double it again. By application only." };
+  const desc = "The little black book behind the empire: private executive advisory + proprietary growth technology, as one package. Built to double your revenue, then double it again. By application only.";
+  return {
+    title: `The Secret Weapon — ${name}`,
+    description: desc,
+    // Social share title is just "Secret Weapon".
+    openGraph: { title: "Secret Weapon", description: desc },
+    twitter: { card: "summary_large_image", title: "Secret Weapon", description: desc },
+  };
 }
 
 export default async function SecretWeaponPage() {
