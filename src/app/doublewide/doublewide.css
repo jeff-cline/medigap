@@ -1,0 +1,26 @@
+/* Doublewide.ai — premium light media-company theme (krystalore palette:
+   white / navy-charcoal / warm gold / soft green, photography-driven). */
+.dw-root {
+  --dw-bg: #ffffff; --dw-bg2: #f6f8fb; --dw-panel: #ffffff;
+  --dw-ink: #141a24; --dw-navy: #1b2740; --dw-muted: #5d6778; --dw-border: #e6eaf1;
+  --dw-gold: #c69a3e; --dw-gold-2: #e0b454; --dw-green: #3f9d77; --dw-green-2: #4fb98c;
+  background: var(--dw-bg); color: var(--dw-ink);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.011em; min-height: 100vh;
+}
+.dw-root ::selection { background: var(--dw-gold); color: #fff; }
+.dw-serif { font-family: Georgia, "Times New Roman", serif; }
+.dw-gold { color: var(--dw-gold); }
+.dw-grad { background: linear-gradient(110deg, var(--dw-gold) 0%, var(--dw-green) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.dw-card { background: var(--dw-panel); border: 1px solid var(--dw-border); border-radius: 18px; box-shadow: 0 1px 3px rgba(20,26,36,.05), 0 12px 40px -24px rgba(20,26,36,.18); }
+.dw-soft { background: var(--dw-bg2); border: 1px solid var(--dw-border); border-radius: 16px; }
+.dw-btn { display: inline-flex; align-items: center; gap: .5rem; border-radius: 999px; padding: .85rem 1.5rem; font-weight: 600; cursor: pointer; transition: .18s; border: 1px solid var(--dw-border); color: var(--dw-ink); background: #fff; }
+.dw-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px -12px rgba(20,26,36,.3); }
+.dw-btn-gold { background: linear-gradient(110deg, var(--dw-gold), var(--dw-gold-2)); color: #1a1206; border: none; }
+.dw-btn-navy { background: var(--dw-navy); color: #fff; border: none; }
+.dw-btn-green { background: linear-gradient(110deg, var(--dw-green), var(--dw-green-2)); color: #04130c; border: none; }
+.dw-chip { display: inline-flex; align-items: center; gap: .4rem; border: 1px solid var(--dw-border); border-radius: 999px; padding: .3rem .85rem; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--dw-muted); background: #fff; }
+.dw-root input, .dw-root textarea, .dw-root select { width: 100%; background: #fff; border: 1px solid var(--dw-border); border-radius: 12px; padding: .7rem .9rem; color: var(--dw-ink); font-size: .95rem; }
+.dw-root input:focus, .dw-root textarea:focus { outline: none; border-color: var(--dw-gold); box-shadow: 0 0 0 3px rgba(198,154,62,.12); }
+@keyframes dw-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.dw-float { animation: dw-float 7s ease-in-out infinite; }

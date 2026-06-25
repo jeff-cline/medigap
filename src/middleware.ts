@@ -13,6 +13,15 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(url, 308);
   }
 
+  // doublewide.ai is a separate brand on the same Core: serve its landing at the root,
+  // while /login, /dashboard, /api, etc. still pass through to the shared Core.
+  const host = (req.headers.get("host") || "").split(":")[0].toLowerCase();
+  if ((host === "doublewide.ai" || host === "www.doublewide.ai") && path === "/") {
+    const url = req.nextUrl.clone();
+    url.pathname = "/doublewide";
+    return NextResponse.rewrite(url);
+  }
+
   const headers = new Headers(req.headers);
   headers.set("x-pathname", path);
   return NextResponse.next({ request: { headers } });
