@@ -21,11 +21,11 @@ ssh -i "$SSH_KEY" "$SERVER" 'bash -s' <<'REMOTE'
 set -e
 cd /var/www/medigap
 sed -i 's/provider = "sqlite"/provider = "postgresql"/' prisma/schema.prisma
-set -a; . ./.env; set +a
-CLEAN="${DATABASE_URL%%\?*}"
 
 echo "  • backing up the database…"
-pg_dump "$CLEAN" -Fc -f "/root/medigap-db-backup-$(date +%Y%m%d-%H%M%S).dump" && echo "    backup ok"
+# Source .env in a SUBSHELL only — do NOT leak NODE_ENV=production into the build
+# (that would make npm ci skip devDependencies and break the build).
+( set -a; . ./.env; set +a; pg_dump "${DATABASE_URL%%\?*}" -Fc -f "/root/medigap-db-backup-$(date +%Y%m%d-%H%M%S).dump" ) && echo "    backup ok"
 # keep the 20 most recent backups
 ls -t /root/medigap-db-backup-*.dump 2>/dev/null | tail -n +21 | xargs -r rm -f
 
