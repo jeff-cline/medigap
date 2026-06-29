@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { routeCall, getSettings } from "@/lib/logic";
 import { normalizePhone } from "@/lib/sms";
-import { getVoiceAgent, aiReply, esc, getIntake, firstName, ageFromSpeech, detectMoneyWord, normalizeDob, normalizeDobAI, ChatMsg } from "@/lib/voice";
+import { getVoiceAgent, aiReply, esc, getIntake, firstName, ageFromSpeech, detectMoneyWord, normalizeDob, normalizeDobAI, cleanPersonName, ChatMsg } from "@/lib/voice";
 
 const BASE = "https://medigap.plus";
 function xml(body: string) {
@@ -80,7 +80,9 @@ export async function POST(req: NextRequest) {
   if (phase === "intake") {
     const step = intake[idx];
     const leadData: Record<string, unknown> = {};
-    if (step?.field === "name" && speech) leadData.name = speech;
+    // Only store a name that actually looks like a name — never garbage transcription
+    // (e.g. "Do the new federal."). If it's junk we leave name empty rather than poison the lead.
+    if (step?.field === "name" && speech) { const nm = cleanPersonName(speech); if (nm) leadData.name = nm; }
     if (step?.field === "zip") { const z = speech.replace(/\D/g, "").slice(0, 5); if (z) { leadData.zip = z; } }
     if (step?.field === "dob") {
       // Normalize the spoken DOB to ISO (YYYY-MM-DD) so it's valid for downstream pings. Fast parse

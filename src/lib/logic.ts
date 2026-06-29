@@ -2,6 +2,7 @@
 import { db } from "./db";
 import { notifyPartnerNewLead } from "./notify";
 import { affiliateCallStep } from "./affiliate";
+import { cleanPersonName, splitName } from "./voice";
 
 // ---- Agent call auction: highest bid wins; ties broken by star rating ----
 export type BidLike = { agentId: string; amountCents: number; stars: number; active: boolean; dailyCap: number; scope: string; scopeValue: string };
@@ -73,17 +74,21 @@ export async function routeCall(input: { zip: string; state: string; leadId?: st
   let affiliateWon = false;
   try {
     const leadRow = input.leadId ? await db.lead.findUnique({ where: { id: input.leadId } }) : null;
-    const [first, ...rest] = (leadRow?.name || "").trim().split(/\s+/);
+    // Sanitize the name: a clean real name if we have one, else a neutral fallback so we never
+    // ping a buyer with garbage transcription (which gets the lead rejected).
+    const clean = cleanPersonName(leadRow?.name || "");
+    const { firstName: qFirst, lastName: qLast } = clean ? splitName(clean) : { firstName: "Medicare", lastName: "Caller" };
     const step = await affiliateCallStep({
       moneyWord: input.affiliateWord ?? input.moneyWord,
       callId: call.id,
       leadId: input.leadId,
       agentBidCents: winner ? winner.amountCents : 0,
       lead: {
-        firstName: first || undefined, lastName: rest.join(" ") || undefined,
+        firstName: qFirst, lastName: qLast || "Caller",
         email: leadRow?.email || undefined,
         phone: ((leadRow?.phone || input.fromNumber || "").replace(/\D/g, "").slice(-10)) || undefined,
         zip: input.zip || leadRow?.zip || undefined, state: input.state || leadRow?.state || undefined,
+        city: leadRow?.city || undefined,
         birthDate: leadRow?.dob || undefined,
       },
     });

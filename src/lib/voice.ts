@@ -65,6 +65,40 @@ export function firstName(full: string) {
   return (full || "").trim().split(/\s+/)[0]?.replace(/[^a-zA-Z'-]/g, "") || "";
 }
 
+// Words that are NEVER a person's name — used to detect garbage voice-transcribed "names"
+// (e.g. "Do the new federal.") so we don't store or ping junk that buyers reject.
+const NAME_STOP = new Set(
+  ("the a an and or but do does did is are was were be been being new federal government " +
+    "what whats how why when where who whom which yes yeah no nope please hello hi hey um uh i me my mine we us you your " +
+    "it its this that these those for to of on in at with from by about want wanted need needed help call calling called " +
+    "phone number talk talking speak speaking someone somebody anyone anybody agent representative rep person people " +
+    "medicare medicaid medigap supplement supplements insurance plan plans coverage social security benefits here there " +
+    "okay ok thanks thank sir maam have has had get got give can could would should will just like know think see " +
+    "go going come came trying try looking only over still back again now today").split(/\s+/)
+);
+
+// Turn raw voice-transcribed speech into a clean person name, or "" if it's garbage (a sentence/fragment).
+export function cleanPersonName(raw: string): string {
+  if (!raw) return "";
+  let s = raw.toLowerCase().replace(/[^a-z'’\-\s]/g, " ");
+  s = s.replace(/\b(my name is|the name is|name is|i am|i'?m|this is|it'?s|call me)\b/g, " ");
+  const words = s.trim().split(/\s+/).filter(Boolean);
+  const namey: string[] = [];
+  for (const w of words) {
+    if (NAME_STOP.has(w)) { if (namey.length) break; else continue; }
+    if (/^[a-z][a-z'’\-]{1,18}$/.test(w)) namey.push(w);
+    if (namey.length >= 3) break;
+  }
+  if (!namey.length) return "";
+  return namey.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+}
+
+// Split a (cleaned) full name into first + last for partner APIs.
+export function splitName(full: string): { firstName: string; lastName: string } {
+  const parts = (full || "").trim().split(/\s+/).filter(Boolean);
+  return { firstName: parts[0] || "", lastName: parts.slice(1).join(" ") };
+}
+
 // Best-effort age from a spoken DOB ("January 5th 1950", "5/5/50", "1950"). Returns null if unsure.
 export function ageFromSpeech(text: string): number | null {
   const now = new Date().getFullYear();
