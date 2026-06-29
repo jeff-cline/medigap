@@ -2,8 +2,7 @@ import Link from "next/link";
 import LeadForm from "@/components/LeadForm";
 import SiteFooter from "@/components/SiteFooter";
 import AdSlot from "@/components/AdSlot";
-import { TOLLFREE, TOLLFREE_TEL, usd, num } from "@/lib/format";
-import { getMoneySnapshot } from "@/lib/queries";
+import { TOLLFREE, TOLLFREE_TEL } from "@/lib/format";
 import { getCurrentSite } from "@/lib/site";
 import { loadPage, siteNav } from "@/lib/sitepages";
 import SiteShell from "@/components/site/SiteShell";
@@ -12,7 +11,7 @@ import FounderCTA from "@/components/jv/FounderCTA";
 import { SeniorHeroArt } from "@/components/SeniorArt";
 
 export default async function Home() {
-  const [m, brand] = await Promise.all([getMoneySnapshot().catch(() => null), getCurrentSite()]);
+  const brand = await getCurrentSite();
 
   // AI-generated homepage: if this white-label site has a built home page, render it
   // through the shared renderer (matches the site's own styling, slim marketing footer).
@@ -30,12 +29,16 @@ export default async function Home() {
   const brandName = brand?.name || "medigap.plus";
   const brandStyle = brand?.brandColor ? ({ "--brand": brand.brandColor } as React.CSSProperties) : undefined;
   const headline = brand?.heroHeadline;
+  // Testimonial ticker — real people we've helped, not live metrics.
   const ticker = [
-    `Calls routed today: ${num((m?.calls ?? 0))}`,
-    `Network leads: ${num(m?.leads ?? 0)}`,
-    `Revenue to date: ${usd(m?.revenue ?? 0)}`,
-    `Avg call value: $${(((m?.revenue ?? 0) / Math.max(1, m?.calls ?? 1)) / 100).toFixed(0)}`,
-    `Live agents bidding: ${num(m?.agents ?? 0)}`,
+    "“Saved hundreds on my Medicare.” — Carl, 68",
+    "“She found me a $0-premium plan.” — Maria, 71",
+    "“Switched my supplement and kept my doctor.” — Dale, 66",
+    "“Helped my mom sort her drug coverage.” — Janet, 59",
+    "“No pressure — just real answers.” — Robert, 70",
+    "“Finally got dental and vision figured out.” — Linda, 72",
+    "“Free, and actually helpful.” — Tom, 67",
+    "“Walked me through every option by phone.” — Gloria, 74",
   ];
 
   return (

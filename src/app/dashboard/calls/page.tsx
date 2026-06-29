@@ -22,7 +22,7 @@ function fmtPhone(p: string) {
 }
 
 export default async function CallsPage() {
-  const [calls, agents, totalCount, defaultCount, soldCount, unrealizedAgg, realizedAgg, s] = await Promise.all([
+  const [calls, agents, totalCount, defaultCount, soldCount, unrealizedAgg, realizedAgg, s, qsSoldAgg] = await Promise.all([
     db.call.findMany({ orderBy: { createdAt: "desc" }, take: 50, include: { lead: true } }),
     db.user.findMany({ where: { role: "agent" }, select: { id: true, name: true } }),
     db.call.count(),
@@ -31,8 +31,16 @@ export default async function CallsPage() {
     db.ledgerEntry.aggregate({ where: { type: "revenue", realized: false }, _sum: { amountCents: true } }),
     db.ledgerEntry.aggregate({ where: { type: "revenue", realized: true, OR: [{ category: "call" }, { category: "default_call" }] }, _sum: { amountCents: true } }),
     getSettings(),
+    db.affiliatePing.aggregate({ where: { status: "sold", isTest: false, callId: { not: null } }, _sum: { soldCents: true }, _count: true }),
   ]);
   const agentName = new Map(agents.map((a) => [a.id, a.name]));
+
+  // QuinStreet outcome per call (from the ping ledger) — newest ping per call wins.
+  const pingRows = await db.affiliatePing.findMany({ where: { callId: { in: calls.map((c) => c.id) } }, orderBy: { createdAt: "desc" } });
+  const qsByCall = new Map<string, (typeof pingRows)[number]>();
+  for (const p of pingRows) if (p.callId && !qsByCall.has(p.callId)) qsByCall.set(p.callId, p);
+  const qsSoldCount = qsSoldAgg._count;
+  const qsSoldCents = qsSoldAgg._sum.soldCents ?? 0;
 
   const total = totalCount;
   const realizedCall = realizedAgg._sum.amountCents ?? 0;
@@ -51,8 +59,9 @@ export default async function CallsPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4 mb-6">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 mb-6">
         <Stat label="Total Calls" value={num(total)} sub={`${num(soldCount)} sold · ${num(defaultCount)} default`} tone="default" />
+        <Link href="/dashboard/affiliates#rawflow"><Stat label="Sold to QuinStreet" value={usd2(qsSoldCents)} sub={`${num(qsSoldCount)} calls → QS`} tone="up" /></Link>
         <Stat label="Avg Call Value" value={usd2(avgValue)} sub="across all calls" tone="gold" />
         <Stat label="Default (House) Calls" value={num(defaultCount)} sub={`→ ${fmtPhone(s.defaultForwardNumber)} @ ${usd2(s.defaultCallPriceCents)}`} tone="up" />
         <Stat label="Unrealized (House) $" value={usd(unrealized)} sub={s.showUnrealized ? "included in totals" : "EXCLUDED (toggle off)"} tone={s.showUnrealized ? "gold" : "down"} />
@@ -104,13 +113,16 @@ export default async function CallsPage() {
                 <th>Money Word</th>
                 <th className="text-right">Price</th>
                 <th>Routed To</th>
+                <th>QuinStreet</th>
               </tr>
             </thead>
             <tbody>
               {calls.map((c) => {
                 const statusTone = c.status === "connected" || c.status === "completed" ? "up" : c.status === "missed" ? "down" : "default";
-                const isDefault = c.disposition === "default";
-                const routedTo = c.bidWinnerId ? (agentName.get(c.bidWinnerId) || "agent") : isDefault ? `House ${fmtPhone(c.forwardedTo)}` : "—";
+                const qs = qsByCall.get(c.id);
+                const qsSold = qs?.status === "sold" || c.source === "affiliate";
+                const isDefault = c.disposition === "default" && !qsSold;
+                const routedTo = qsSold ? "QuinStreet" : c.bidWinnerId ? (agentName.get(c.bidWinnerId) || "agent") : isDefault ? `House ${fmtPhone(c.forwardedTo)}` : "—";
                 const showAppend = hasAppended(c.lead?.appended);
                 return (
                   <Fragment key={c.id}>
@@ -125,16 +137,27 @@ export default async function CallsPage() {
                     <td className="text-right">{mmss(c.durationSec)}</td>
                     <td><Badge tone={statusTone}>{c.status}</Badge></td>
                     <td>
-                      <Badge tone={isDefault ? "gold" : "up"}>{isDefault ? "default" : "sold"}</Badge>
-                      {!c.realized && <span className="ml-1 text-[10px] font-bold text-[var(--gold)]">UNREALIZED</span>}
+                      <Badge tone={qsSold ? "brand" : isDefault ? "gold" : "up"}>{qsSold ? "sold → QS" : isDefault ? "default" : "sold"}</Badge>
+                      {!c.realized && !qsSold && <span className="ml-1 text-[10px] font-bold text-[var(--gold)]">UNREALIZED</span>}
                     </td>
                     <td>{c.moneyWord ? <span className="text-[var(--gold)] text-sm font-medium">{c.moneyWord}</span> : <span className="text-[var(--muted)]">—</span>}</td>
                     <td className="text-right font-medium text-[var(--brand)]">{c.priceCents > 0 ? usd2(c.priceCents) : "—"}</td>
                     <td className="text-[var(--muted)] text-sm">{routedTo}</td>
+                    <td className="text-xs">
+                      {qs ? (
+                        <Link href="/dashboard/affiliates#rawflow" title={qs.note} className="block hover:underline">
+                          <Badge tone={qs.status === "sold" ? "brand" : qs.status === "rejected" ? "down" : "default"}>
+                            {qs.status === "sold" ? `sold ${usd2(qs.soldCents || qs.offerCents)}` : qs.status === "no_bid" ? "no bid" : qs.status}
+                          </Badge>
+                          {qs.offerCents > 0 && qs.status !== "sold" && <span className="ml-1 text-[10px] text-[var(--muted)]">bid {usd2(qs.offerCents)}</span>}
+                          <div className="text-[10px] text-[var(--muted)] mt-0.5 max-w-[230px] truncate">{qs.vertical.replace(/_/g, " ")} · {qs.note}</div>
+                        </Link>
+                      ) : <span className="text-[var(--muted)]">—</span>}
+                    </td>
                   </tr>
                   {showAppend && (
                     <tr>
-                      <td colSpan={9} className="!pt-0 !pb-2 pl-3"><AppendedStrip raw={c.lead?.appended} /></td>
+                      <td colSpan={10} className="!pt-0 !pb-2 pl-3"><AppendedStrip raw={c.lead?.appended} /></td>
                     </tr>
                   )}
                   </Fragment>
@@ -142,7 +165,7 @@ export default async function CallsPage() {
               })}
               {calls.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="text-center text-[var(--muted)] py-8">
+                  <td colSpan={10} className="text-center text-[var(--muted)] py-8">
                     No calls yet. Live calls to {TOLLFREE} appear here the moment Twilio is connected — or fire a simulated inbound above.
                   </td>
                 </tr>

@@ -30,15 +30,17 @@ export default function IntegrationCard({
   initialStatus: Status;
   initialError: string;
 }) {
+  // Tolerate any legacy/unknown status value (e.g. "connected") so one bad row never crashes the page.
+  const normStatus = (s: string): Status => (DOT[s as Status] ? (s as Status) : s === "connected" ? "verified" : "unconfigured");
   const [values, setValues] = useState<Record<string, string>>(initial || {});
-  const [status, setStatus] = useState<Status>(initialStatus);
+  const [status, setStatus] = useState<Status>(normStatus(initialStatus));
   const [error, setError] = useState(initialError || "");
   const [message, setMessage] = useState("");
-  const [open, setOpen] = useState(initialStatus === "failed" || initialStatus === "unconfigured" ? false : false);
+  const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
 
-  const dot = DOT[status];
+  const dot = DOT[status] || DOT.unconfigured;
 
   async function save() {
     setSaving(true); setMessage("");

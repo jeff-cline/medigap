@@ -1,0 +1,51 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><style>
+@page { size: letter; margin: 0.7in 0.75in; }
+*{box-sizing:border-box} body{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;color:#0b2348;font-size:12.5px;line-height:1.5;margin:0}
+.grad{background:linear-gradient(90deg,#1457e6,#c69a3e);-webkit-background-clip:text;background-clip:text;color:transparent}
+header{border-bottom:3px solid #c69a3e;padding-bottom:12px;margin-bottom:18px}
+h1{font-size:24px;margin:0 0 3px} .sub{color:#5b6b86;font-size:12.5px;margin:0}
+h2{font-size:15px;margin:22px 0 8px;color:#0b2348;border-left:4px solid #1457e6;padding-left:9px}
+.done{background:#eafaf1;border:1px solid #bfe8d2;border-radius:8px;padding:11px 13px;margin:6px 0}
+.chk{display:flex;gap:9px;padding:8px 0;border-bottom:1px solid #eef0f3;align-items:flex-start}
+.chk:last-child{border-bottom:none}
+.box{width:16px;height:16px;border:2px solid #1457e6;border-radius:4px;flex-shrink:0;margin-top:1px}
+.boxd{width:16px;height:16px;border-radius:4px;flex-shrink:0;margin-top:1px;background:#1aa06a;color:#fff;text-align:center;line-height:16px;font-size:11px;font-weight:700}
+code{font-family:"SF Mono",Menlo,monospace;background:#eef1f6;padding:1.5px 5px;border-radius:4px;font-size:11px;color:#0b2348;word-break:break-all}
+.note{background:#fff8f0;border:1px solid #f0dcc0;border-radius:8px;padding:10px 12px;margin:10px 0;font-size:11.5px}
+b.hl{color:#0b2348} .foot{margin-top:22px;padding-top:10px;border-top:1px solid #e7eaef;color:#8a94a6;font-size:10.5px}
+.step{font-weight:700;color:#1457e6;margin-right:5px}
+</style></head><body>
+<header>
+  <h1>Getting <span class="grad">1-800-MEDIGAP.com</span> indexed everywhere</h1>
+  <p class="sub">America's Trusted Toll-Free Number · 815-page silo site · Go-live indexing checklist</p>
+</header>
+
+<div class="done"><b>✅ Already done for you (automated):</b>
+<div style="margin-top:6px">
+<div class="chk"><span class="boxd">✓</span><div><b class="hl">IndexNow → Bing &amp; Yandex</b> — all 818 URLs submitted (HTTP 200). Bing/Yandex indexing is already kicking off.</div></div>
+<div class="chk"><span class="boxd">✓</span><div><b class="hl">XML sitemap</b> live with all pages: <code>https://1-800-medigap.com/sitemap.xml</code></div></div>
+<div class="chk"><span class="boxd">✓</span><div><b class="hl">HTML sitemap</b> <code>/sitemap</code> · <b class="hl">Answer-engine map</b> <code>/answers</code> · <b class="hl">llms.txt</b> <code>/llms.txt</code> (for ChatGPT/Perplexity/Claude)</div></div>
+<div class="chk"><span class="boxd">✓</span><div><b class="hl">robots.txt</b> references the sitemap; every page has Article + FAQPage + Breadcrumb schema.</div></div>
+</div></div>
+
+<h2>1 · Google Search Console (do this — Google has no auto-submit)</h2>
+<div class="chk"><span class="box"></span><div><span class="step">1.1</span>Go to <code>search.google.com/search-console</code> (tab is open) and sign in with the Google account you want to own the data.</div></div>
+<div class="chk"><span class="box"></span><div><span class="step">1.2</span>Click <b class="hl">Add property</b> → choose <b class="hl">URL prefix</b> → enter <code>https://1-800-medigap.com</code> → Continue.</div></div>
+<div class="chk"><span class="box"></span><div><span class="step">1.3</span><b class="hl">Verify ownership.</b> Pick the <b>HTML tag</b> method, copy the <code>&lt;meta name="google-site-verification" ...&gt;</code> line, and <b class="hl">send it to Jeff/Claude</b> — we'll add it to the site and deploy in ~2 minutes, then you click <b>Verify</b>. <span style="color:#5b6b86">(Or use the HTML file method and send us the file name; same idea.)</span></div></div>
+<div class="chk"><span class="box"></span><div><span class="step">1.4</span>Once verified: left menu → <b class="hl">Sitemaps</b> → under "Add a new sitemap" enter <code>sitemap.xml</code> → <b>Submit</b>. It should say "Success."</div></div>
+<div class="chk"><span class="box"></span><div><span class="step">1.5</span>(Optional, fast) Use <b class="hl">URL Inspection</b> on your top pages (e.g. <code>/medicare-basics-enrollment</code>) → <b>Request indexing</b>.</div></div>
+
+<h2>2 · Bing Webmaster Tools (1 minute — mostly auto)</h2>
+<div class="chk"><span class="box"></span><div><span class="step">2.1</span>Go to <code>bing.com/webmasters</code> (tab is open) → sign in.</div></div>
+<div class="chk"><span class="box"></span><div><span class="step">2.2</span>Easiest: click <b class="hl">Import from Google Search Console</b> (after step 1) — it copies the verified site over. Otherwise <b>Add a site</b> <code>https://1-800-medigap.com</code> and verify (send us the tag like 1.3).</div></div>
+<div class="chk"><span class="box"></span><div><span class="step">2.3</span>Submit sitemap <code>https://1-800-medigap.com/sitemap.xml</code>. <span style="color:#5b6b86">(Bing already has your URLs via IndexNow, but the sitemap helps.)</span></div></div>
+
+<h2>3 · Confirm it's working (over the next days)</h2>
+<div class="chk"><span class="box"></span><div><span class="step">3.1</span>In Google, search <code>site:1-800-medigap.com</code> — pages will start appearing within days.</div></div>
+<div class="chk"><span class="box"></span><div><span class="step">3.2</span>In Search Console → <b>Pages</b> and <b>Sitemaps</b>, watch "Discovered/Indexed" climb toward 815.</div></div>
+<div class="chk"><span class="box"></span><div><span class="step">3.3</span>Answer engines (ChatGPT/Perplexity/Claude) pick up content via crawl + <code>llms.txt</code> — no submission needed; indexing in Google/Bing accelerates it.</div></div>
+
+<div class="note"><b>The only thing we need from you to finish #1:</b> the Google (and Bing) <b>verification meta tag</b> from step 1.3. Paste it back and we'll host + deploy it so you can hit Verify. Everything else above you can click through yourself.</div>
+
+<div class="foot">1-800-MEDIGAP · America's Trusted Toll-Free Number · powered by the R0cketShip Core &nbsp;|&nbsp; 2026-06-28</div>
+</body></html>

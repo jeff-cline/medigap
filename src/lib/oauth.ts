@@ -29,6 +29,15 @@ export const OAUTH_PROVIDERS: Record<string, OAuthProvider> = {
     scope: "ads_read,ads_management,business_management",
     clientIdField: "appId", clientSecretField: "appSecret",
   },
+  // Doublewide SOCIAL connect — Pages + Instagram + insights. Per-user (a creator connects their
+  // own; god can impersonate to do it for them). App ID/Secret live in the fb_social integration.
+  fb_social: {
+    id: "fb_social", label: "Facebook (Doublewide social)", integrationKey: "fb_social",
+    authorizeUrl: "https://www.facebook.com/v19.0/dialog/oauth",
+    tokenUrl: "https://graph.facebook.com/v19.0/oauth/access_token",
+    scope: "public_profile,pages_show_list,pages_read_engagement,read_insights,business_management,instagram_basic,instagram_manage_insights",
+    clientIdField: "appId", clientSecretField: "appSecret",
+  },
   stripe: {
     id: "stripe", label: "Stripe Connect", integrationKey: "stripe",
     authorizeUrl: "https://connect.stripe.com/oauth/authorize",
@@ -48,3 +57,9 @@ export const OAUTH_PROVIDERS: Record<string, OAuthProvider> = {
 export function callbackUrl(origin: string, provider: string) {
   return `${origin}/api/oauth/${provider}/callback`;
 }
+
+// Per-USER social providers — anyone signed in can connect their own account (god, or a creator,
+// or god impersonating a creator). The token is stored per user in SocialConnection, not globally.
+export const SOCIAL_PROVIDERS = new Set(["fb_social"]);
+export const isSocialProvider = (p: string) => SOCIAL_PROVIDERS.has(p);
+export const socialPlatform = (provider: string) => (provider === "fb_social" ? "facebook" : provider);

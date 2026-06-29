@@ -1,6 +1,7 @@
 // Core business logic — pure functions reused by pages & API routes.
 import { db } from "./db";
 import { notifyPartnerNewLead } from "./notify";
+import { affiliateCallStep } from "./affiliate";
 
 // ---- Agent call auction: highest bid wins; ties broken by star rating ----
 export type BidLike = { agentId: string; amountCents: number; stars: number; active: boolean; dailyCap: number; scope: string; scopeValue: string };
@@ -21,7 +22,7 @@ export function pickWinner(bids: BidLike[], ctx: { zip?: string; state?: string 
 // If an agent wins → SOLD call (realized revenue at the bid price).
 // If nobody wins → DEFAULT/house call → forward to the house number, book the house
 // default price as UNREALIZED revenue to the God account, and flag it.
-export async function routeCall(input: { zip: string; state: string; leadId?: string; source?: string; moneyWord?: string; providerSid?: string; fromNumber?: string }) {
+export async function routeCall(input: { zip: string; state: string; leadId?: string; source?: string; moneyWord?: string; affiliateWord?: string; providerSid?: string; fromNumber?: string }) {
   const s = await getSettings();
   const bidRows = await db.agentBid.findMany({ where: { active: true }, include: { agent: true } });
   // Only agents who are AVAILABLE and have enough prepaid balance compete; optional keyword filter.
@@ -65,19 +66,51 @@ export async function routeCall(input: { zip: string; state: string; leadId?: st
       providerSid: input.providerSid || "", fromNumber: input.fromNumber || "",
     },
   });
+  // ---- Affiliate ping-tree step (QuinStreet) — runs after the agent auction ----
+  // mode off → no-op; observe → ping + log only (call routes as the auction decided);
+  // live → if QuinStreet outbids the agent/house, POST and bridge the call to their number.
+  // Defensive: any error returns null and the call routes exactly as before.
+  let affiliateWon = false;
+  try {
+    const leadRow = input.leadId ? await db.lead.findUnique({ where: { id: input.leadId } }) : null;
+    const [first, ...rest] = (leadRow?.name || "").trim().split(/\s+/);
+    const step = await affiliateCallStep({
+      moneyWord: input.affiliateWord ?? input.moneyWord,
+      callId: call.id,
+      leadId: input.leadId,
+      agentBidCents: winner ? winner.amountCents : 0,
+      lead: {
+        firstName: first || undefined, lastName: rest.join(" ") || undefined,
+        email: leadRow?.email || undefined,
+        phone: ((leadRow?.phone || input.fromNumber || "").replace(/\D/g, "").slice(-10)) || undefined,
+        zip: input.zip || leadRow?.zip || undefined, state: input.state || leadRow?.state || undefined,
+        birthDate: leadRow?.dob || undefined,
+      },
+    });
+    if (step?.override) {
+      affiliateWon = true;
+      disposition = "default"; // schema enum is sold|default|missed; we tag the channel/category as affiliate
+      priceCents = step.override.priceCents;
+      realized = true;
+      forwardedTo = step.override.forwardedTo;
+      channel = "affiliate";
+      await db.call.update({ where: { id: call.id }, data: { source: "affiliate", priceCents, realized, forwardedTo, bidWinnerId: null } }).catch(() => {});
+    }
+  } catch { /* never break the call */ }
+
   if (priceCents > 0) {
     await db.ledgerEntry.create({ data: {
-      type: "revenue", category: winner ? "call" : "default_call", channel,
+      type: "revenue", category: affiliateWon ? "affiliate_call" : winner ? "call" : "default_call", channel,
       amountCents: priceCents, realized,
-      note: winner ? `Call ${call.id} → agent ${winner.agentId}` : `Default/house call ${call.id} → ${forwardedTo} (unrealized)`,
+      note: affiliateWon ? `Affiliate call ${call.id} → QuinStreet ${forwardedTo}` : winner ? `Call ${call.id} → agent ${winner.agentId}` : `Default/house call ${call.id} → ${forwardedTo} (unrealized)`,
     } });
   }
-  // Deduct the call price from the winning agent's prepaid balance.
-  if (winner) {
+  // Deduct the call price from the winning agent's balance — UNLESS the affiliate won the call.
+  if (winner && !affiliateWon) {
     await db.user.update({ where: { id: winner.agentId }, data: { balanceCents: { decrement: priceCents } } }).catch(() => {});
     await db.transaction.create({ data: { kind: "charge", userId: winner.agentId, amountCents: priceCents, status: "settled", note: `Call charge — ${call.id}` } }).catch(() => {});
   }
-  return { call, winner, priceCents, disposition, realized, forwardedTo };
+  return { call, winner: affiliateWon ? null : winner, priceCents, disposition, realized, forwardedTo, affiliateWon };
 }
 
 // Assign a (web-form or imported) lead to the best agent by ZIP/state and charge the lead price.

@@ -64,6 +64,30 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ key: strin
       ok = r.ok; message = ok ? "Claude key valid. Autonomous brain ready." : `Anthropic rejected the key (HTTP ${r.code}).`;
       break;
     }
+    case "elevenlabs": {
+      const miss = need("apiKey");
+      if (miss.length) { message = "Missing: apiKey"; break; }
+      const r = await ping("https://api.elevenlabs.io/v1/user", { headers: { "xi-api-key": cfg.apiKey } });
+      ok = r.ok; message = ok ? "ElevenLabs key valid. Now clone your voice on /voice." : `ElevenLabs rejected the key (HTTP ${r.code}).`;
+      break;
+    }
+    case "syncso": {
+      const miss = need("apiKey");
+      if (miss.length) { message = "Missing: apiKey"; break; }
+      const r = await ping("https://api.sync.so/v2/generations", { headers: { "x-api-key": cfg.apiKey } });
+      ok = r.ok; message = ok ? "Sync.so key valid. Lip-sync ready in the TV Studio." : `Sync.so rejected the key (HTTP ${r.code}).`;
+      break;
+    }
+    case "fb_social": {
+      // Doublewide social: validate the App ID/Secret by fetching an app access token.
+      const miss = need("appId", "appSecret");
+      if (miss.length) { message = `Missing: ${miss.join(", ")}`; break; }
+      const r = await ping(`https://graph.facebook.com/oauth/access_token?client_id=${encodeURIComponent(cfg.appId)}&client_secret=${encodeURIComponent(cfg.appSecret)}&grant_type=client_credentials`, { method: "GET" });
+      ok = r.ok; message = ok ? "Meta app credentials valid. Now Connect a creator/business to pull pages." : `Meta rejected the App ID/Secret (HTTP ${r.code}). Check both values in App Settings → Basic.`;
+      break;
+    }
+    case "ig_social": { ok = !need("accessToken").length; message = ok ? "Saved. Instagram pulls through the connected Meta app." : "Connect Facebook first (Instagram runs through the same Meta app)."; break; }
+    case "x_social": { const miss = need("accessToken"); ok = !miss.length; message = ok ? "X token saved." : "Missing: accessToken (Bearer Token)."; break; }
     case "stripe": {
       const miss = need("secretKey");
       if (miss.length) { message = "Missing: secretKey"; break; }
@@ -156,7 +180,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ key: strin
   }
 
   // For providers we can only field-check, treat success as "saved" (amber→ok); live-pinged ones are "verified".
-  const liveTested = ["twilio", "groq", "xai", "claude", "stripe", "klaviyo", "facebook", "predictivedata", "dataforseo", "zapmail", "google_workspace", "runway"].includes(key);
+  const liveTested = ["twilio", "groq", "xai", "claude", "elevenlabs", "syncso", "fb_social", "stripe", "klaviyo", "facebook", "predictivedata", "dataforseo", "zapmail", "google_workspace", "runway"].includes(key);
   const status = ok ? (liveTested ? "verified" : "saved") : (Object.keys(cfg).length ? "failed" : "unconfigured");
   await db.integration.upsert({
     where: { key },

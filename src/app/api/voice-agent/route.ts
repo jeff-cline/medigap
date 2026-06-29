@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
   if (typeof b.greeting === "string") data.greeting = b.greeting;
   if (typeof b.systemPrompt === "string") data.systemPrompt = b.systemPrompt;
   if (typeof b.maxTurns === "number") data.maxTurns = Math.max(2, Math.min(20, b.maxTurns));
+  if (typeof b.engine === "string" && ["", "xai", "groq"].includes(b.engine)) data.engine = b.engine;
   if (Array.isArray(b.questions)) data.questions = JSON.stringify(b.questions);
   data.updatedAt = new Date();
   await db.voiceAgent.upsert({ where: { id: "default" }, update: data, create: { id: "default", ...data } });

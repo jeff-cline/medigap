@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { getVoiceAgent, getAIProvider, VOICES, getIntake } from "@/lib/voice";
+import { getVoiceAgent, getAIProvider, VOICES, ENGINES, estCallCost, getIntake } from "@/lib/voice";
 import { Badge, Section, Stat, Card } from "@/components/ui";
 import { num, cst } from "@/lib/format";
 import VoiceAgentForm from "@/components/VoiceAgentForm";
@@ -8,13 +8,23 @@ export const dynamic = "force-dynamic";
 type Turn = { role: "assistant" | "user"; text: string };
 
 export default async function VoiceAgentPage() {
-  const [agent, ai, recent, answeredCount] = await Promise.all([
+  const [agent, ai, recent, answeredCount, engineRows] = await Promise.all([
     getVoiceAgent(),
     getAIProvider(),
     db.call.findMany({ where: { transcript: { not: null } }, orderBy: { createdAt: "desc" }, take: 15, include: { lead: true } }),
     db.call.count({ where: { transcript: { not: null } } }),
+    db.integration.findMany({ where: { key: { in: ["xai", "groq"] } } }),
   ]);
   const questions = getIntake(agent);
+
+  // Engine cards: which are connected, est cost/call, rank highest/lowest by cost.
+  const cfgHas = (k: string) => { const r = engineRows.find((x) => x.key === k); try { return !!JSON.parse(r?.config || "{}").apiKey; } catch { return false; } };
+  const costs = ENGINES.map((e) => estCallCost(e));
+  const maxC = Math.max(...costs), minC = Math.min(...costs);
+  const engines = ENGINES.map((e) => {
+    const costPerCall = estCallCost(e);
+    return { id: e.id, label: e.label, model: e.model, tier: e.tier, note: e.note, costPerCall, configured: cfgHas(e.id), rank: (costPerCall === maxC ? "highest" : costPerCall === minC ? "lowest" : "") as "highest" | "lowest" | "" };
+  });
 
   return (
     <>
@@ -23,7 +33,7 @@ export default async function VoiceAgentPage() {
           <h1 className="text-2xl font-bold">Train Agent</h1>
           <p className="text-sm text-[var(--muted)]">The AI that answers 1-800-MEDIGAP — set its voice, tone, authentication script, intake, knowledge, and routing. Changes go live on the next call.</p>
         </div>
-        <Badge tone={ai ? "up" : "down"}>{ai ? `Brain: ${ai.provider === "xai" ? "xAI Grok" : "Groq"} · ${ai.model}` : "No AI connected"}</Badge>
+        <Badge tone={ai ? "up" : "down"}>{ai ? `Brain: ${ENGINES.find((e) => e.id === ai.provider)?.label || ai.provider}${engines.find((e) => e.id === ai.provider)?.rank === "highest" ? " ★" : ""}` : "No AI connected"}</Badge>
       </div>
 
       <Card className="mb-6 !p-4 text-sm">
@@ -44,8 +54,9 @@ export default async function VoiceAgentPage() {
 
       <Section title="Configure the agent" desc="Changes are live on the very next call.">
         <VoiceAgentForm
-          initial={{ active: agent.active, voice: agent.voice, tone: agent.tone, greeting: agent.greeting, systemPrompt: agent.systemPrompt, questions, forwardWhenDone: agent.forwardWhenDone, maxTurns: agent.maxTurns }}
+          initial={{ active: agent.active, voice: agent.voice, tone: agent.tone, greeting: agent.greeting, systemPrompt: agent.systemPrompt, questions, forwardWhenDone: agent.forwardWhenDone, maxTurns: agent.maxTurns, engine: agent.engine }}
           voices={VOICES}
+          engines={engines}
           aiConnected={!!ai}
         />
       </Section>

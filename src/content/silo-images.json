@@ -1,0 +1,374 @@
+{
+  "medicare-basics-enrollment": {
+    "url": "https://images.pexels.com/photos/13871043/pexels-photo-13871043.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly couple smiling and embracing in lush outdoor setting, capturing love and friendship.",
+    "credit": "Matheus Bertelli",
+    "creditUrl": "https://www.pexels.com/@bertellifotografia"
+  },
+  "retirement-income-planning": {
+    "url": "https://images.pexels.com/photos/13871043/pexels-photo-13871043.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly couple smiling and embracing in lush outdoor setting, capturing love and friendship.",
+    "credit": "Matheus Bertelli",
+    "creditUrl": "https://www.pexels.com/@bertellifotografia"
+  },
+  "social-security": {
+    "url": "https://images.pexels.com/photos/27086978/pexels-photo-27086978.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly man enjoying technology, typing on laptop indoors.",
+    "credit": "Helena Lopes",
+    "creditUrl": "https://www.pexels.com/@helenalopes"
+  },
+  "in-home-care-home-health": {
+    "url": "https://images.pexels.com/photos/8949908/pexels-photo-8949908.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Group portrait of caregivers with senior adults in a home setting.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "nursing-homes-skilled-nursing": {
+    "url": "https://images.pexels.com/photos/16364306/pexels-photo-16364306.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "A caregiver assists a senior adult in a wheelchair at a nursing home in Prague, Czech Republic.",
+    "credit": "Jsme  MILA",
+    "creditUrl": "https://www.pexels.com/@jsme-mila-523821574"
+  },
+  "assisted-living": {
+    "url": "https://images.pexels.com/photos/18429307/pexels-photo-18429307.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Caregiver assisting elderly woman in a wheelchair through a retirement home corridor.",
+    "credit": "Jsme  MILA",
+    "creditUrl": "https://www.pexels.com/@jsme-mila-523821574"
+  },
+  "estate-planning-elder-law": {
+    "url": "https://images.pexels.com/photos/7937682/pexels-photo-7937682.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Close-up of a business professional holding a house key and architectural plans, symbolizing real estate.",
+    "credit": "Pavel Danilyuk",
+    "creditUrl": "https://www.pexels.com/@pavel-danilyuk"
+  },
+  "medicare-supplement-medigap": {
+    "url": "https://images.pexels.com/photos/13871043/pexels-photo-13871043.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly couple smiling and embracing in lush outdoor setting, capturing love and friendship.",
+    "credit": "Matheus Bertelli",
+    "creditUrl": "https://www.pexels.com/@bertellifotografia"
+  },
+  "rmds-withdrawals": {
+    "url": "https://images.pexels.com/photos/3831181/pexels-photo-3831181.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Senior man in a suit with glasses holding US dollars, symbolizing wealth and savings.",
+    "credit": "Andrea Piacquadio",
+    "creditUrl": "https://www.pexels.com/@olly"
+  },
+  "retirement-communities": {
+    "url": "https://images.pexels.com/photos/6838622/pexels-photo-6838622.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Group of cheerful seniors taking a selfie together outdoors, capturing a moment of joy.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "long-term-care-insurance": {
+    "url": "https://images.pexels.com/photos/18429307/pexels-photo-18429307.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Caregiver assisting elderly woman in a wheelchair through a retirement home corridor.",
+    "credit": "Jsme  MILA",
+    "creditUrl": "https://www.pexels.com/@jsme-mila-523821574"
+  },
+  "special-situations-dual-eligible": {
+    "url": "https://images.pexels.com/photos/8949916/pexels-photo-8949916.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Healthcare workers in protective gear assisting elderly people indoors, highlighting COVID-19 care.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "does-medicare-cover-services": {
+    "url": "https://images.pexels.com/photos/8413389/pexels-photo-8413389.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly man receiving consultation from a medical practitioner in a modern indoor setting.",
+    "credit": "SHVETS production",
+    "creditUrl": "https://www.pexels.com/@shvets-production"
+  },
+  "medicare-advantage": {
+    "url": "https://images.pexels.com/photos/13871043/pexels-photo-13871043.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly couple smiling and embracing in lush outdoor setting, capturing love and friendship.",
+    "credit": "Matheus Bertelli",
+    "creditUrl": "https://www.pexels.com/@bertellifotografia"
+  },
+  "part-d-prescription-drugs": {
+    "url": "https://images.pexels.com/photos/8657375/pexels-photo-8657375.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "A senior woman with eyeglasses reviews a medicine bottle at a pharmacy counter indoors.",
+    "credit": "cottonbro studio",
+    "creditUrl": "https://www.pexels.com/@cottonbro"
+  },
+  "medicare-costs-irmaa": {
+    "url": "https://images.pexels.com/photos/7545298/pexels-photo-7545298.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly man in patterned shirt reading and holding bills at a home table, appearing focused.",
+    "credit": "SHVETS production",
+    "creditUrl": "https://www.pexels.com/@shvets-production"
+  },
+  "alzheimer-s-dementia": {
+    "url": "https://images.pexels.com/photos/3921418/pexels-photo-3921418.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "An elderly woman with her hands on her head, appearing stressed or in pain.",
+    "credit": "Andrea Piacquadio",
+    "creditUrl": "https://www.pexels.com/@olly"
+  },
+  "dental-vision-hearing-insurance": {
+    "url": "https://images.pexels.com/photos/5622009/pexels-photo-5622009.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly woman in dentist chair smiling while holding a mirror during a dental check-up.",
+    "credit": "Gustavo Fring",
+    "creditUrl": "https://www.pexels.com/@gustavo-fring"
+  },
+  "supplemental-health-insurance": {
+    "url": "https://images.pexels.com/photos/8441778/pexels-photo-8441778.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly couple discussing financial documents with a consultant in an office setting.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "life-insurance-for-seniors": {
+    "url": "https://images.pexels.com/photos/8441854/pexels-photo-8441854.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "A joyful senior couple smiling while reviewing documents together at a desk with a laptop.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "roth-conversions-ira-strategy": {
+    "url": "https://images.pexels.com/photos/7477711/pexels-photo-7477711.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Senior couple working together on documents with laptop and phone at home.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "senior-apartments-affordable-housing": {
+    "url": "https://images.pexels.com/photos/8815818/pexels-photo-8815818.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "An elderly couple touring a home with a realtor, discussing real estate options.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "memory-care": {
+    "url": "https://images.pexels.com/photos/8865721/pexels-photo-8865721.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Senior woman nostalgically holding a framed photo, reflecting on memories.",
+    "credit": "RDNE Stock project",
+    "creditUrl": "https://www.pexels.com/@rdne"
+  },
+  "respite-adult-day-care-rehab": {
+    "url": "https://images.pexels.com/photos/29372708/pexels-photo-29372708.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Senior woman and caregiver having a conversation in a cozy Prague kitchen setting.",
+    "credit": "Jsme  MILA",
+    "creditUrl": "https://www.pexels.com/@jsme-mila-523821574"
+  },
+  "fitness-telehealth": {
+    "url": "https://images.pexels.com/photos/8376152/pexels-photo-8376152.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Senior male doctor using laptop for telehealth consultation in office setting.",
+    "credit": "Tima Miroshnichenko",
+    "creditUrl": "https://www.pexels.com/@tima-miroshnichenko"
+  },
+  "independent-living": {
+    "url": "https://images.pexels.com/photos/8805981/pexels-photo-8805981.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Senior couple holding an American flag in a heartwarming indoor setting.",
+    "credit": "Mike Jones",
+    "creditUrl": "https://www.pexels.com/@mike-jones"
+  },
+  "final-expense-burial": {
+    "url": "https://images.pexels.com/photos/13564656/pexels-photo-13564656.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Top view of a senior man in a coffin, dressed in a suit, symbolizing serenity.",
+    "credit": "Two  Shores",
+    "creditUrl": "https://www.pexels.com/@two-shores-312590947"
+  },
+  "reverse-mortgages": {
+    "url": "https://images.pexels.com/photos/8815932/pexels-photo-8815932.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Smiling elderly couple receiving house keys from realtor indoors.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "medicaid-for-seniors": {
+    "url": "https://images.pexels.com/photos/13871043/pexels-photo-13871043.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly couple smiling and embracing in lush outdoor setting, capturing love and friendship.",
+    "credit": "Matheus Bertelli",
+    "creditUrl": "https://www.pexels.com/@bertellifotografia"
+  },
+  "55-active-adult-communities": {
+    "url": "https://images.pexels.com/photos/11674389/pexels-photo-11674389.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Group of senior adults participating in a chair exercise class, promoting fitness and healthy lifestyle.",
+    "credit": "Centre for Ageing Better",
+    "creditUrl": "https://www.pexels.com/@centre-for-ageing-better-55954677"
+  },
+  "medicare-help-quotes": {
+    "url": "https://images.pexels.com/photos/7544758/pexels-photo-7544758.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Senior woman with gray hair talks on mobile phone against a blue background.",
+    "credit": "SHVETS production",
+    "creditUrl": "https://www.pexels.com/@shvets-production"
+  },
+  "annuities": {
+    "url": "https://images.pexels.com/photos/13871043/pexels-photo-13871043.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly couple smiling and embracing in lush outdoor setting, capturing love and friendship.",
+    "credit": "Matheus Bertelli",
+    "creditUrl": "https://www.pexels.com/@bertellifotografia"
+  },
+  "401k-ira-rollovers": {
+    "url": "https://images.pexels.com/photos/11743789/pexels-photo-11743789.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Stacked coins and a classic alarm clock symbolize the value of time and money.",
+    "credit": "Towfiqu barbhuiya",
+    "creditUrl": "https://www.pexels.com/@towfiqu-barbhuiya-3440682"
+  },
+  "medicaid-ltc-planning": {
+    "url": "https://images.pexels.com/photos/7551634/pexels-photo-7551634.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Close-up of hands sorting medicine and pill organizer on a wooden table.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "senior-auto-insurance": {
+    "url": "https://images.pexels.com/photos/8441870/pexels-photo-8441870.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly couple with consultant giving thumbs up in an office setting, showcasing positive interaction.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "glp-1-drug-coverage": {
+    "url": "https://images.pexels.com/photos/7551633/pexels-photo-7551633.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Close-up of hands passing medicine, symbolizing care and support in a nursing home.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "vision-hearing-health": {
+    "url": "https://images.pexels.com/photos/8088910/pexels-photo-8088910.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "A senior woman applies eye drops to her partner at home, showing care and affection.",
+    "credit": "Yaroslav Shuraev",
+    "creditUrl": "https://www.pexels.com/@yaroslav-shuraev"
+  },
+  "mobility-fall-prevention": {
+    "url": "https://images.pexels.com/photos/18149636/pexels-photo-18149636.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Asian elderly couple strolling through a serene autumn forest path, enjoying nature's beauty.",
+    "credit": "대정 김",
+    "creditUrl": "https://www.pexels.com/@daejeung"
+  },
+  "pensions-railroad-retirement": {
+    "url": "https://images.pexels.com/photos/8691836/pexels-photo-8691836.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly man in glasses and suspenders holding a briefcase in a modern office setting.",
+    "credit": "Ron Lach",
+    "creditUrl": "https://www.pexels.com/@ron-lach"
+  },
+  "travel-pet-umbrella-id": {
+    "url": "https://images.pexels.com/photos/11802091/pexels-photo-11802091.png?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "A senior man in a brown jacket walks down a Vienna street holding an umbrella on a rainy day.",
+    "credit": "Julian Geringer",
+    "creditUrl": "https://www.pexels.com/@julian-geringer-98045657"
+  },
+  "aging-in-place-home-mods": {
+    "url": "https://images.pexels.com/photos/33080796/pexels-photo-33080796.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Senior woman sitting on bed with walker, preparing suitcase in bright bedroom.",
+    "credit": "Wheeleo Walker",
+    "creditUrl": "https://www.pexels.com/@wheeleo"
+  },
+  "durable-medical-equipment": {
+    "url": "https://images.pexels.com/photos/20164888/pexels-photo-20164888.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "High-quality image of a mobility aid walker with a shopping bag on white background.",
+    "credit": "Rollz International",
+    "creditUrl": "https://www.pexels.com/@rollz"
+  },
+  "board-care-homes": {
+    "url": "https://images.pexels.com/photos/8791167/pexels-photo-8791167.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Senior couple relaxing and playing games together indoors, capturing affectionate and joyful moments.",
+    "credit": "AI25.Studio  AI GENERATIVE",
+    "creditUrl": "https://www.pexels.com/@ai25studio"
+  },
+  "caregiving-support": {
+    "url": "https://images.pexels.com/photos/16364307/pexels-photo-16364307.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "A caregiver helps an elderly woman drink tea, showcasing empathy and support.",
+    "credit": "Jsme  MILA",
+    "creditUrl": "https://www.pexels.com/@jsme-mila-523821574"
+  },
+  "hospice-palliative-care": {
+    "url": "https://images.pexels.com/photos/7551677/pexels-photo-7551677.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "A comforting gesture as a hand holds another in a hospital setting, symbolizing care and support.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "ccrc-life-plan-communities": {
+    "url": "https://images.pexels.com/photos/8441776/pexels-photo-8441776.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Happy elderly couple enjoying a conversation with a professional advisor indoors.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "medical-alert-systems": {
+    "url": "https://images.pexels.com/photos/8376337/pexels-photo-8376337.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly man with eyeglasses carefully examining his medication while seated on a green couch.",
+    "credit": "Tima Miroshnichenko",
+    "creditUrl": "https://www.pexels.com/@tima-miroshnichenko"
+  },
+  "nutrition-meals-weight": {
+    "url": "https://images.pexels.com/photos/31144011/pexels-photo-31144011.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "A floral plate with a fork and blue measuring tape symbolizing dieting or healthy eating.",
+    "credit": "Beyzaa Yurtkuran",
+    "creditUrl": "https://www.pexels.com/@beyzaa-yurtkuran-279977530"
+  },
+  "va-benefits-for-seniors": {
+    "url": "https://images.pexels.com/photos/13871043/pexels-photo-13871043.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly couple smiling and embracing in lush outdoor setting, capturing love and friendship.",
+    "credit": "Matheus Bertelli",
+    "creditUrl": "https://www.pexels.com/@bertellifotografia"
+  },
+  "area-agency-on-aging-pace": {
+    "url": "https://images.pexels.com/photos/7983557/pexels-photo-7983557.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Three senior adults collaborating in a classroom setting on laptops, focusing on technology learning.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "prescription-savings": {
+    "url": "https://images.pexels.com/photos/8657368/pexels-photo-8657368.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Pharmacist helps customer in elegant pharmacy with rotating product display.",
+    "credit": "cottonbro studio",
+    "creditUrl": "https://www.pexels.com/@cottonbro"
+  },
+  "senior-homeowners-insurance": {
+    "url": "https://images.pexels.com/photos/8441778/pexels-photo-8441778.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly couple discussing financial documents with a consultant in an office setting.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "va-survivor-dic-benefits": {
+    "url": "https://images.pexels.com/photos/13871043/pexels-photo-13871043.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly couple smiling and embracing in lush outdoor setting, capturing love and friendship.",
+    "credit": "Matheus Bertelli",
+    "creditUrl": "https://www.pexels.com/@bertellifotografia"
+  },
+  "food-utility-energy-assistance": {
+    "url": "https://images.pexels.com/photos/8422714/pexels-photo-8422714.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly couple smiling while shopping at a local Portuguese grocery store.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "property-tax-financial-relief": {
+    "url": "https://images.pexels.com/photos/7545298/pexels-photo-7545298.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly man in patterned shirt reading and holding bills at a home table, appearing focused.",
+    "credit": "SHVETS production",
+    "creditUrl": "https://www.pexels.com/@shvets-production"
+  },
+  "senior-benefits-finder-discounts": {
+    "url": "https://images.pexels.com/photos/13871043/pexels-photo-13871043.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly couple smiling and embracing in lush outdoor setting, capturing love and friendship.",
+    "credit": "Matheus Bertelli",
+    "creditUrl": "https://www.pexels.com/@bertellifotografia"
+  },
+  "incontinence-daily-living": {
+    "url": "https://images.pexels.com/photos/5790810/pexels-photo-5790810.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Senior couple at home using a sphygmomanometer to monitor blood pressure, promoting elderly health care.",
+    "credit": "Vlada Karpovich",
+    "creditUrl": "https://www.pexels.com/@vlada-karpovich"
+  },
+  "elder-fraud-scams-id-theft": {
+    "url": "https://images.pexels.com/photos/7983559/pexels-photo-7983559.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Elderly adults learning and enjoying computer class together indoors.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "tax-planning-in-retirement": {
+    "url": "https://images.pexels.com/photos/8441812/pexels-photo-8441812.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Business professional consults elderly clients in an office setting. Collaborative discussion, paperwork visible.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "chronic-conditions": {
+    "url": "https://images.pexels.com/photos/8088856/pexels-photo-8088856.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "An elderly couple at home measuring blood pressure with a digital monitor, depicting care and health awareness.",
+    "credit": "Yaroslav Shuraev",
+    "creditUrl": "https://www.pexels.com/@yaroslav-shuraev"
+  },
+  "elder-abuse-protective-services": {
+    "url": "https://images.pexels.com/photos/7551622/pexels-photo-7551622.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "A caregiver helps an elderly man with arm exercises in a warm and caring environment.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  },
+  "social-security-disability": {
+    "url": "https://images.pexels.com/photos/8871427/pexels-photo-8871427.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "desc": "Senior couple embracing warmly on a sofa at home, showcasing love and togetherness.",
+    "credit": "Kampus Production",
+    "creditUrl": "https://www.pexels.com/@kampus"
+  }
+}

@@ -48,6 +48,18 @@ export async function getTask(id: string) {
   return rw(`/tasks/${id}`, { method: "GET" });
 }
 
+// --- TV-commercial "look" stage: restyle EXISTING footage from a single prompt (Aleph v2v) ---
+// Changes background / look & feel while keeping the performance. Returns a task to poll via getTask.
+export async function createLookTask(videoUri: string, promptText: string, ratio = "1280:720") {
+  return rw("/video_to_video", { method: "POST", body: JSON.stringify({ model: "gen4_aleph", videoUri, promptText: promptText.slice(0, 900), ratio }) });
+}
+
+// Estimated $/sec override for cost display (set on the runway integration config).
+export async function runwayCostPerSec(): Promise<number | undefined> {
+  const row = await db.integration.findUnique({ where: { key: "runway" } });
+  try { const c = row ? JSON.parse(row.config) : {}; return c.costPerSec !== undefined ? Number(c.costPerSec) : undefined; } catch { return undefined; }
+}
+
 // Convenience: poll a task briefly; returns output URLs if it finishes fast, else the id to poll.
 export async function pollTask(id: string, tries = 4, delayMs = 4000): Promise<{ done: boolean; status: string; urls: string[]; id: string }> {
   for (let i = 0; i < tries; i++) {

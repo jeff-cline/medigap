@@ -33,7 +33,7 @@ export default function Page() {
           <p className="mt-4 text-[var(--muted)]">
             This is the centralized privacy policy for medigap.plus and the websites, brands and phone numbers in our
             network (the &quot;Network&quot;). It explains what we collect, how we use it, and the choices you have.
-            Last updated June 19, 2026.
+            Last updated June 26, 2026.
           </p>
         </div>
       </section>
@@ -70,9 +70,12 @@ export default function Page() {
             When you provide your phone number and submit a form or call us, you agree that the Network and its
             licensed agent and marketing partners may contact you at that number — including by automatic telephone
             dialing system, prerecorded or artificial voice, and SMS text — about insurance and related senior products,
-            even if your number is on a state or federal Do Not Call list. <strong>Consent is not a condition of any
-            purchase</strong>, and message/data rates may apply. You can opt out of calls or texts at any time by
-            asking the caller to stop, replying STOP to a text, or contacting us using the details below.
+            even if your number is on a state or federal Do Not Call list.
+ By submitting your information you also agree it
+            may be shared with our Affiliated Companies, JV partners and affiliate networks who may likewise contact you
+            about relevant products. <strong>Consent is not a condition of any purchase</strong>, and message/data rates
+            may apply. You can opt out of calls or texts at any time by asking the caller to stop, replying STOP to a
+            text, or contacting us using the details below.
           </p>
         </Block>
 
@@ -84,6 +87,28 @@ export default function Page() {
             operate our technology on our behalf, and as required by law. We do not sell your sensitive personal
             information for money in the traditional sense, but some sharing for advertising may be considered a
             &quot;sale&quot; or &quot;sharing&quot; under certain state laws — see your rights below.
+          </p>
+        </Block>
+
+        <Block id="family" title="Our family of companies, JV partners & affiliate networks">
+          <p>
+            The Network is part of a family of brands, businesses and joint ventures operated by, affiliated with, or
+            partnered with <strong>R0cketShip.com (R0cketShip Holdings)</strong> and its sister and portfolio companies
+            (together, our &quot;Affiliated Companies&quot;). To serve you better, faster and at lower cost, we may share
+            the information you provide <strong>across our Affiliated Companies, joint-venture (JV) partners, and the
+            affiliate marketing networks we work with</strong>. We do this to:
+          </p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>match your request to the company, brand or partner best able to help — including connecting your call or inquiry to an affiliate network that can present a relevant offer;</li>
+            <li>avoid duplicate outreach and shared technology costs, so we can keep our services free to you;</li>
+            <li>improve routing, scoring, analytics, fraud prevention and the overall quality of our services across the family of companies; and</li>
+            <li>present additional products and services across our brands that may interest you.</li>
+          </ul>
+          <p>
+            Affiliated Companies, JV partners and affiliate networks that receive your information use it consistent with
+            this policy and their own privacy practices and applicable law. Some of this sharing may be considered a
+            &quot;sale&quot; or &quot;sharing&quot; under certain state privacy laws. You can limit it at any time —
+            see <Link className="text-[var(--brand)] hover:underline" href="#dnsmi">Do Not Sell or Share My Information</Link> below.
           </p>
         </Block>
 

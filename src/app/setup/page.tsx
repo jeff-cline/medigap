@@ -17,7 +17,7 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
 }
 
 export default function SetupPage() {
-  const REDIRECT = "https://doublewide.ai/api/oauth/facebook/callback";
+  const REDIRECT = "https://doublewide.ai/api/oauth/fb_social/callback";
   return (
     <div className="dw-root min-h-screen">
       <header className="border-b border-[var(--dw-border)]">

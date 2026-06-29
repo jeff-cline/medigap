@@ -1,0 +1,5820 @@
+{
+  "generatedFor": "1-800-medigap.com",
+  "cta": "Call 1-800-MEDIGAP",
+  "note": "MEDIGAP always capitalized.",
+  "totalVolume": 4427210,
+  "keywordCount": 753,
+  "siloCount": 62,
+  "pageCount": 815,
+  "groups": [
+    {
+      "group": "Medicare",
+      "totalVol": 1595630,
+      "siloCount": 9,
+      "silos": [
+        {
+          "name": "Medicare Basics & Enrollment",
+          "slug": "medicare-basics-enrollment",
+          "totalVol": 942930,
+          "avgCpc": 3.66,
+          "keywords": [
+            {
+              "keyword": "medicare",
+              "slug": "medicare",
+              "vol": 550000,
+              "cpc": 5.03,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "medicare vs medicaid",
+              "slug": "medicare-vs-medicaid",
+              "vol": 110000,
+              "cpc": 7.46,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare part b",
+              "slug": "medicare-part-b",
+              "vol": 74000,
+              "cpc": 5.37,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "what is medicare",
+              "slug": "what-is-medicare",
+              "vol": 40500,
+              "cpc": 3.62,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare part a",
+              "slug": "medicare-part-a",
+              "vol": 40500,
+              "cpc": 3.55,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare eligibility",
+              "slug": "medicare-eligibility",
+              "vol": 18100,
+              "cpc": 3.75,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "who is eligible for medicare",
+              "slug": "who-is-eligible-for-medicare",
+              "vol": 18100,
+              "cpc": 3.75,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to apply for medicare",
+              "slug": "how-to-apply-for-medicare",
+              "vol": 18100,
+              "cpc": 5.74,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "what does medicare part b cover",
+              "slug": "what-does-medicare-part-b-cover",
+              "vol": 14800,
+              "cpc": 2.23,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "what does medicare part a cover",
+              "slug": "what-does-medicare-part-a-cover",
+              "vol": 12100,
+              "cpc": 1.37,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare open enrollment 2026",
+              "slug": "medicare-open-enrollment-2026",
+              "vol": 9900,
+              "cpc": 6.48,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "medicare card replacement",
+              "slug": "medicare-card-replacement",
+              "vol": 9900,
+              "cpc": 7.77,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "when to sign up for medicare",
+              "slug": "when-to-sign-up-for-medicare",
+              "vol": 6600,
+              "cpc": 1.7,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "how does medicare work",
+              "slug": "how-does-medicare-work",
+              "vol": 4400,
+              "cpc": 2.11,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "is medicare free",
+              "slug": "is-medicare-free",
+              "vol": 4400,
+              "cpc": 2.66,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "original medicare",
+              "slug": "original-medicare",
+              "vol": 3600,
+              "cpc": 5.62,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare parts explained",
+              "slug": "medicare-parts-explained",
+              "vol": 2900,
+              "cpc": 1.59,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "medicare special enrollment period",
+              "slug": "medicare-special-enrollment-period",
+              "vol": 2400,
+              "cpc": 6.04,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "what does medicare not cover",
+              "slug": "what-does-medicare-not-cover",
+              "vol": 1000,
+              "cpc": 0.85,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare initial enrollment period",
+              "slug": "medicare-initial-enrollment-period",
+              "vol": 880,
+              "cpc": 2.18,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "turning 65 medicare",
+              "slug": "turning-65-medicare",
+              "vol": 720,
+              "cpc": 3.64,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "do i need medicare if i'm still working",
+              "slug": "do-i-need-medicare-if-i-m-still-working",
+              "vol": 10,
+              "cpc": 0.18,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "medicare annual enrollment period dates",
+              "slug": "medicare-annual-enrollment-period-dates",
+              "vol": 10,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "do i automatically get medicare at 65",
+              "slug": "do-i-automatically-get-medicare-at-65",
+              "vol": 10,
+              "cpc": 1.5,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "missed medicare enrollment what to do",
+              "slug": "missed-medicare-enrollment-what-to-do",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Medicare Supplement / Medigap",
+          "slug": "medicare-supplement-medigap",
+          "totalVol": 180640,
+          "avgCpc": 10.87,
+          "keywords": [
+            {
+              "keyword": "medicare supplement plans",
+              "slug": "medicare-supplement-plans",
+              "vol": 90500,
+              "cpc": 14.6,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare supplement insurance",
+              "slug": "medicare-supplement-insurance",
+              "vol": 40500,
+              "cpc": 21.88,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare supplement plan g",
+              "slug": "medicare-supplement-plan-g",
+              "vol": 18100,
+              "cpc": 12.94,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medigap vs medicare advantage",
+              "slug": "medigap-vs-medicare-advantage",
+              "vol": 9900,
+              "cpc": 4.21,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "what is medigap",
+              "slug": "what-is-medigap",
+              "vol": 8100,
+              "cpc": 4.63,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare plan f",
+              "slug": "medicare-plan-f",
+              "vol": 5400,
+              "cpc": 5.91,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "medicare supplement plan n",
+              "slug": "medicare-supplement-plan-n",
+              "vol": 3600,
+              "cpc": 10.08,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "plan g vs plan n",
+              "slug": "plan-g-vs-plan-n",
+              "vol": 1300,
+              "cpc": 6.05,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "high deductible plan g",
+              "slug": "high-deductible-plan-g",
+              "vol": 1000,
+              "cpc": 7.31,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare supplement quotes",
+              "slug": "medicare-supplement-quotes",
+              "vol": 590,
+              "cpc": 25.32,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medigap plan comparison chart",
+              "slug": "medigap-plan-comparison-chart",
+              "vol": 480,
+              "cpc": 5.35,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "best medicare supplement plans 2026",
+              "slug": "best-medicare-supplement-plans-2026",
+              "vol": 320,
+              "cpc": 13.97,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "cheapest medicare supplement plan",
+              "slug": "cheapest-medicare-supplement-plan",
+              "vol": 210,
+              "cpc": 15.05,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "medicare supplement plans near me",
+              "slug": "medicare-supplement-plans-near-me",
+              "vol": 210,
+              "cpc": 20.09,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "medigap open enrollment",
+              "slug": "medigap-open-enrollment",
+              "vol": 170,
+              "cpc": 2.7,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "switching medigap plans",
+              "slug": "switching-medigap-plans",
+              "vol": 90,
+              "cpc": 11.65,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "is plan f still available",
+              "slug": "is-plan-f-still-available",
+              "vol": 70,
+              "cpc": 5.38,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "do medigap plans cover prescriptions",
+              "slug": "do-medigap-plans-cover-prescriptions",
+              "vol": 50,
+              "cpc": 7.66,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "medigap underwriting questions",
+              "slug": "medigap-underwriting-questions",
+              "vol": 50,
+              "cpc": 11.69,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare supplement plan g cost 2026",
+              "slug": "medicare-supplement-plan-g-cost-2026",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Special Situations & Dual-Eligible",
+          "slug": "special-situations-dual-eligible",
+          "totalVol": 118160,
+          "avgCpc": 9.09,
+          "keywords": [
+            {
+              "keyword": "medicare savings program",
+              "slug": "medicare-savings-program",
+              "vol": 110000,
+              "cpc": 16.79,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare and medicaid dual eligible",
+              "slug": "medicare-and-medicaid-dual-eligible",
+              "vol": 1600,
+              "cpc": 9.11,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "qmb program",
+              "slug": "qmb-program",
+              "vol": 1600,
+              "cpc": 9.87,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "medicare for esrd",
+              "slug": "medicare-for-esrd",
+              "vol": 1300,
+              "cpc": 7.16,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare special needs plans",
+              "slug": "medicare-special-needs-plans",
+              "vol": 1000,
+              "cpc": 13.07,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "dual special needs plan",
+              "slug": "dual-special-needs-plan",
+              "vol": 720,
+              "cpc": 16.01,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare disability under 65",
+              "slug": "medicare-disability-under-65",
+              "vol": 720,
+              "cpc": 7.34,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare and cobra",
+              "slug": "medicare-and-cobra",
+              "vol": 720,
+              "cpc": 2.76,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "d-snp plans",
+              "slug": "d-snp-plans",
+              "vol": 390,
+              "cpc": 7.45,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare vs employer insurance",
+              "slug": "medicare-vs-employer-insurance",
+              "vol": 110,
+              "cpc": 1.36,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare while working past 65",
+              "slug": "medicare-while-working-past-65",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "medicare if i live abroad",
+              "slug": "medicare-if-i-live-abroad",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Does Medicare Cover (Services)",
+          "slug": "does-medicare-cover-services",
+          "totalVol": 89740,
+          "avgCpc": 3.5,
+          "keywords": [
+            {
+              "keyword": "does medicare cover dental",
+              "slug": "does-medicare-cover-dental",
+              "vol": 18100,
+              "cpc": 3.74,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover hearing aids",
+              "slug": "does-medicare-cover-hearing-aids",
+              "vol": 18100,
+              "cpc": 2.64,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover cataract surgery",
+              "slug": "does-medicare-cover-cataract-surgery",
+              "vol": 8100,
+              "cpc": 3.23,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover eye exams",
+              "slug": "does-medicare-cover-eye-exams",
+              "vol": 6600,
+              "cpc": 2.12,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover glasses",
+              "slug": "does-medicare-cover-glasses",
+              "vol": 4400,
+              "cpc": 2.99,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover chiropractor",
+              "slug": "does-medicare-cover-chiropractor",
+              "vol": 4400,
+              "cpc": 2,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover home health care",
+              "slug": "does-medicare-cover-home-health-care",
+              "vol": 4400,
+              "cpc": 4.11,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover hospice",
+              "slug": "does-medicare-cover-hospice",
+              "vol": 3600,
+              "cpc": 4.86,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover acupuncture",
+              "slug": "does-medicare-cover-acupuncture",
+              "vol": 3600,
+              "cpc": 2.06,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover physical therapy",
+              "slug": "does-medicare-cover-physical-therapy",
+              "vol": 2900,
+              "cpc": 1.69,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover nursing home care",
+              "slug": "does-medicare-cover-nursing-home-care",
+              "vol": 2900,
+              "cpc": 4.41,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover a wheelchair",
+              "slug": "does-medicare-cover-a-wheelchair",
+              "vol": 2400,
+              "cpc": 3.12,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover assisted living",
+              "slug": "does-medicare-cover-assisted-living",
+              "vol": 2400,
+              "cpc": 4.23,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover shingles vaccine",
+              "slug": "does-medicare-cover-shingles-vaccine",
+              "vol": 2400,
+              "cpc": 3.62,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover ambulance",
+              "slug": "does-medicare-cover-ambulance",
+              "vol": 1900,
+              "cpc": 3.63,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover mammograms",
+              "slug": "does-medicare-cover-mammograms",
+              "vol": 1300,
+              "cpc": 2.15,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover telehealth",
+              "slug": "does-medicare-cover-telehealth",
+              "vol": 720,
+              "cpc": 7.53,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover knee replacement",
+              "slug": "does-medicare-cover-knee-replacement",
+              "vol": 720,
+              "cpc": 2.8,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover an annual physical",
+              "slug": "does-medicare-cover-an-annual-physical",
+              "vol": 590,
+              "cpc": 3.54,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover skilled nursing",
+              "slug": "does-medicare-cover-skilled-nursing",
+              "vol": 210,
+              "cpc": 5.57,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover diabetic supplies",
+              "slug": "does-medicare-cover-diabetic-supplies",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "does medicare cover cgm",
+              "slug": "does-medicare-cover-cgm",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "does medicare cover a colonoscopy",
+              "slug": "does-medicare-cover-a-colonoscopy",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Medicare Advantage",
+          "slug": "medicare-advantage",
+          "totalVol": 86480,
+          "avgCpc": 8.01,
+          "keywords": [
+            {
+              "keyword": "medicare advantage",
+              "slug": "medicare-advantage",
+              "vol": 40500,
+              "cpc": 13.74,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "medicare part c",
+              "slug": "medicare-part-c",
+              "vol": 27100,
+              "cpc": 6.41,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "what is medicare advantage",
+              "slug": "what-is-medicare-advantage",
+              "vol": 9900,
+              "cpc": 3.37,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "best medicare advantage plans 2026",
+              "slug": "best-medicare-advantage-plans-2026",
+              "vol": 3600,
+              "cpc": 9.15,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "medicare advantage vs original medicare",
+              "slug": "medicare-advantage-vs-original-medicare",
+              "vol": 2400,
+              "cpc": 2.68,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "medicare advantage disadvantages",
+              "slug": "medicare-advantage-disadvantages",
+              "vol": 720,
+              "cpc": 1.68,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare advantage plans near me",
+              "slug": "medicare-advantage-plans-near-me",
+              "vol": 590,
+              "cpc": 12.91,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare advantage enrollment",
+              "slug": "medicare-advantage-enrollment",
+              "vol": 480,
+              "cpc": 21.12,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "can i switch from medicare advantage to medigap",
+              "slug": "can-i-switch-from-medicare-advantage-to-medigap",
+              "vol": 390,
+              "cpc": 5.89,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare advantage hmo vs ppo",
+              "slug": "medicare-advantage-hmo-vs-ppo",
+              "vol": 320,
+              "cpc": 4.05,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare advantage star ratings",
+              "slug": "medicare-advantage-star-ratings",
+              "vol": 320,
+              "cpc": 8.13,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare advantage prior authorization",
+              "slug": "medicare-advantage-prior-authorization",
+              "vol": 70,
+              "cpc": 6.64,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "$0 premium medicare advantage plans",
+              "slug": "0-premium-medicare-advantage-plans",
+              "vol": 40,
+              "cpc": 18.49,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare advantage out of pocket maximum 2026",
+              "slug": "medicare-advantage-out-of-pocket-maximum-2026",
+              "vol": 40,
+              "cpc": 2.5,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare advantage giveback benefit",
+              "slug": "medicare-advantage-giveback-benefit",
+              "vol": 10,
+              "cpc": 3.45,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "medicare advantage dental vision hearing",
+              "slug": "medicare-advantage-dental-vision-hearing",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Part D & Prescription Drugs",
+          "slug": "part-d-prescription-drugs",
+          "totalVol": 72050,
+          "avgCpc": 6.33,
+          "keywords": [
+            {
+              "keyword": "medicare part d",
+              "slug": "medicare-part-d",
+              "vol": 60500,
+              "cpc": 5.68,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "medicare prescription payment plan",
+              "slug": "medicare-prescription-payment-plan",
+              "vol": 6600,
+              "cpc": 6.36,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare prescription drug plans 2026",
+              "slug": "medicare-prescription-drug-plans-2026",
+              "vol": 1600,
+              "cpc": 6.59,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "medicare part d formulary",
+              "slug": "medicare-part-d-formulary",
+              "vol": 1600,
+              "cpc": 4.37,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "part d late enrollment penalty",
+              "slug": "part-d-late-enrollment-penalty",
+              "vol": 880,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare part d out of pocket maximum 2026",
+              "slug": "medicare-part-d-out-of-pocket-maximum-2026",
+              "vol": 390,
+              "cpc": 1.58,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare donut hole 2026",
+              "slug": "medicare-donut-hole-2026",
+              "vol": 320,
+              "cpc": 4.34,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "creditable drug coverage",
+              "slug": "creditable-drug-coverage",
+              "vol": 70,
+              "cpc": 14.35,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare extra help low income subsidy",
+              "slug": "medicare-extra-help-low-income-subsidy",
+              "vol": 50,
+              "cpc": 7.37,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to qualify for extra help",
+              "slug": "how-to-qualify-for-extra-help",
+              "vol": 40,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "best part d plan 2026",
+              "slug": "best-part-d-plan-2026",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "compare part d plans 2026",
+              "slug": "compare-part-d-plans-2026",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Medicare Costs & IRMAA",
+          "slug": "medicare-costs-irmaa",
+          "totalVol": 71920,
+          "avgCpc": 2.28,
+          "keywords": [
+            {
+              "keyword": "medicare part b premium 2026",
+              "slug": "medicare-part-b-premium-2026",
+              "vol": 40500,
+              "cpc": 4.03,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how much does medicare cost",
+              "slug": "how-much-does-medicare-cost",
+              "vol": 9900,
+              "cpc": 2.47,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "medicare part b deductible 2026",
+              "slug": "medicare-part-b-deductible-2026",
+              "vol": 9900,
+              "cpc": 2.53,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "irmaa 2026",
+              "slug": "irmaa-2026",
+              "vol": 3600,
+              "cpc": 1.22,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare income limits 2026",
+              "slug": "medicare-income-limits-2026",
+              "vol": 2900,
+              "cpc": 2.41,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare part a deductible 2026",
+              "slug": "medicare-part-a-deductible-2026",
+              "vol": 1900,
+              "cpc": 1.57,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare late enrollment penalty",
+              "slug": "medicare-late-enrollment-penalty",
+              "vol": 1300,
+              "cpc": 1.7,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare part d penalty",
+              "slug": "medicare-part-d-penalty",
+              "vol": 720,
+              "cpc": 2.79,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare premiums by income",
+              "slug": "medicare-premiums-by-income",
+              "vol": 480,
+              "cpc": 0.8,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare cost calculator",
+              "slug": "medicare-cost-calculator",
+              "vol": 320,
+              "cpc": 3.57,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare part b penalty calculator",
+              "slug": "medicare-part-b-penalty-calculator",
+              "vol": 260,
+              "cpc": 1.92,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare out of pocket costs",
+              "slug": "medicare-out-of-pocket-costs",
+              "vol": 140,
+              "cpc": 2.4,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to avoid medicare penalties",
+              "slug": "how-to-avoid-medicare-penalties",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Medicare Help & Quotes",
+          "slug": "medicare-help-quotes",
+          "totalVol": 18720,
+          "avgCpc": 17.42,
+          "keywords": [
+            {
+              "keyword": "medicare plan finder",
+              "slug": "medicare-plan-finder",
+              "vol": 14800,
+              "cpc": 6.42,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare plan comparison",
+              "slug": "medicare-plan-comparison",
+              "vol": 2400,
+              "cpc": 9.09,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare help for seniors",
+              "slug": "medicare-help-for-seniors",
+              "vol": 720,
+              "cpc": 8.9,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "which medicare plan is best",
+              "slug": "which-medicare-plan-is-best",
+              "vol": 480,
+              "cpc": 4.95,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "licensed medicare agent near me",
+              "slug": "licensed-medicare-agent-near-me",
+              "vol": 170,
+              "cpc": 14.33,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "compare medicare plans 2026",
+              "slug": "compare-medicare-plans-2026",
+              "vol": 90,
+              "cpc": 9.44,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "medicare quotes online",
+              "slug": "medicare-quotes-online",
+              "vol": 40,
+              "cpc": 76.99,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "best medicare plan for me",
+              "slug": "best-medicare-plan-for-me",
+              "vol": 20,
+              "cpc": 9.26,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "free medicare consultation",
+              "slug": "free-medicare-consultation",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "talk to a medicare advisor",
+              "slug": "talk-to-a-medicare-advisor",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "GLP-1 & Drug Coverage",
+          "slug": "glp-1-drug-coverage",
+          "totalVol": 14990,
+          "avgCpc": 7.05,
+          "keywords": [
+            {
+              "keyword": "does medicare cover zepbound",
+              "slug": "does-medicare-cover-zepbound",
+              "vol": 5400,
+              "cpc": 11.6,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "does medicare cover ozempic",
+              "slug": "does-medicare-cover-ozempic",
+              "vol": 3600,
+              "cpc": 9.05,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover wegovy",
+              "slug": "does-medicare-cover-wegovy",
+              "vol": 3600,
+              "cpc": 8.64,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover mounjaro",
+              "slug": "does-medicare-cover-mounjaro",
+              "vol": 1900,
+              "cpc": 7.03,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover eliquis",
+              "slug": "does-medicare-cover-eliquis",
+              "vol": 480,
+              "cpc": 4.95,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare weight loss drug coverage 2026",
+              "slug": "medicare-weight-loss-drug-coverage-2026",
+              "vol": 10,
+              "cpc": 1.05,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "does medicare cover insulin",
+              "slug": "does-medicare-cover-insulin",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "medicare $35 insulin cap",
+              "slug": "medicare-35-insulin-cap",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "medicare cover semaglutide for weight loss",
+              "slug": "medicare-cover-semaglutide-for-weight-loss",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Retirement & Finance",
+      "totalVol": 1208350,
+      "siloCount": 11,
+      "silos": [
+        {
+          "name": "Retirement Income Planning",
+          "slug": "retirement-income-planning",
+          "totalVol": 400490,
+          "avgCpc": 4.15,
+          "keywords": [
+            {
+              "keyword": "retirement calculator",
+              "slug": "retirement-calculator",
+              "vol": 368000,
+              "cpc": 3.25,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how much money do i need to retire",
+              "slug": "how-much-money-do-i-need-to-retire",
+              "vol": 18100,
+              "cpc": 2.93,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "how long will my retirement savings last",
+              "slug": "how-long-will-my-retirement-savings-last",
+              "vol": 6600,
+              "cpc": 2.4,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "sequence of returns risk",
+              "slug": "sequence-of-returns-risk",
+              "vol": 2900,
+              "cpc": 3.54,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "retirement income planning",
+              "slug": "retirement-income-planning",
+              "vol": 1000,
+              "cpc": 13.38,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "retirement withdrawal strategy",
+              "slug": "retirement-withdrawal-strategy",
+              "vol": 1000,
+              "cpc": 3.94,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "4 percent rule retirement",
+              "slug": "4-percent-rule-retirement",
+              "vol": 880,
+              "cpc": 1.75,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "can i retire with 1 million",
+              "slug": "can-i-retire-with-1-million",
+              "vol": 880,
+              "cpc": 3.58,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "safe withdrawal rate retirement",
+              "slug": "safe-withdrawal-rate-retirement",
+              "vol": 480,
+              "cpc": 3.95,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "can i retire with 500k",
+              "slug": "can-i-retire-with-500k",
+              "vol": 480,
+              "cpc": 4.54,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how much to retire at 65",
+              "slug": "how-much-to-retire-at-65",
+              "vol": 170,
+              "cpc": 2.44,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "bucket strategy retirement income",
+              "slug": "bucket-strategy-retirement-income",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Social Security",
+          "slug": "social-security",
+          "totalVol": 346940,
+          "avgCpc": 1.14,
+          "keywords": [
+            {
+              "keyword": "social security benefits",
+              "slug": "social-security-benefits",
+              "vol": 90500,
+              "cpc": 0.83,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "social security cola 2026",
+              "slug": "social-security-cola-2026",
+              "vol": 74000,
+              "cpc": 0.6,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "is social security taxable",
+              "slug": "is-social-security-taxable",
+              "vol": 49500,
+              "cpc": 0.58,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "social security benefits calculator",
+              "slug": "social-security-benefits-calculator",
+              "vol": 33100,
+              "cpc": 0.6,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "social security spousal benefits",
+              "slug": "social-security-spousal-benefits",
+              "vol": 27100,
+              "cpc": 0.45,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "social security survivor benefits",
+              "slug": "social-security-survivor-benefits",
+              "vol": 27100,
+              "cpc": 0.6,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "social security full retirement age",
+              "slug": "social-security-full-retirement-age",
+              "vol": 27100,
+              "cpc": 0.81,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "social security breakeven calculator",
+              "slug": "social-security-breakeven-calculator",
+              "vol": 8100,
+              "cpc": 3.84,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "maximum social security benefit 2026",
+              "slug": "maximum-social-security-benefit-2026",
+              "vol": 5400,
+              "cpc": 1.51,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "social security divorced spouse benefits",
+              "slug": "social-security-divorced-spouse-benefits",
+              "vol": 4400,
+              "cpc": 0.38,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "when to claim social security",
+              "slug": "when-to-claim-social-security",
+              "vol": 320,
+              "cpc": 1.27,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to maximize social security benefits",
+              "slug": "how-to-maximize-social-security-benefits",
+              "vol": 320,
+              "cpc": 2.23,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "social security claiming age 62 vs 67 vs 70",
+              "slug": "social-security-claiming-age-62-vs-67-vs-70",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "social security earnings limit while working",
+              "slug": "social-security-earnings-limit-while-working",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Estate Planning & Elder Law",
+          "slug": "estate-planning-elder-law",
+          "totalVol": 183330,
+          "avgCpc": 3.45,
+          "keywords": [
+            {
+              "keyword": "advance healthcare directive",
+              "slug": "advance-healthcare-directive",
+              "vol": 74000,
+              "cpc": 2.72,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "durable power of attorney",
+              "slug": "durable-power-of-attorney",
+              "vol": 49500,
+              "cpc": 3.68,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "elder law attorney near me",
+              "slug": "elder-law-attorney-near-me",
+              "vol": 22200,
+              "cpc": 6.91,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "transfer on death deed",
+              "slug": "transfer-on-death-deed",
+              "vol": 14800,
+              "cpc": 1.8,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "will vs living trust",
+              "slug": "will-vs-living-trust",
+              "vol": 12100,
+              "cpc": 3.2,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "how much does a will cost",
+              "slug": "how-much-does-a-will-cost",
+              "vol": 2900,
+              "cpc": 2.79,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to avoid probate",
+              "slug": "how-to-avoid-probate",
+              "vol": 2400,
+              "cpc": 2.52,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "power of attorney for elderly parent",
+              "slug": "power-of-attorney-for-elderly-parent",
+              "vol": 1900,
+              "cpc": 8.71,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "estate planning checklist",
+              "slug": "estate-planning-checklist",
+              "vol": 1600,
+              "cpc": 3.7,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "estate planning for seniors",
+              "slug": "estate-planning-for-seniors",
+              "vol": 1300,
+              "cpc": 2.14,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "revocable living trust benefits",
+              "slug": "revocable-living-trust-benefits",
+              "vol": 320,
+              "cpc": 2.07,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "guardianship for elderly parent",
+              "slug": "guardianship-for-elderly-parent",
+              "vol": 260,
+              "cpc": 5.69,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "probate process timeline",
+              "slug": "probate-process-timeline",
+              "vol": 30,
+              "cpc": 2.03,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "do i need a trust or just a will",
+              "slug": "do-i-need-a-trust-or-just-a-will",
+              "vol": 20,
+              "cpc": 0.37,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "conservatorship for aging parent",
+              "slug": "conservatorship-for-aging-parent",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "RMDs & Withdrawals",
+          "slug": "rmds-withdrawals",
+          "totalVol": 148060,
+          "avgCpc": 4.31,
+          "keywords": [
+            {
+              "keyword": "rmd calculator",
+              "slug": "rmd-calculator",
+              "vol": 110000,
+              "cpc": 0.43,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to calculate rmd",
+              "slug": "how-to-calculate-rmd",
+              "vol": 14800,
+              "cpc": 1.04,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "rmd table 2026",
+              "slug": "rmd-table-2026",
+              "vol": 12100,
+              "cpc": 1.23,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "inherited ira rmd rules",
+              "slug": "inherited-ira-rmd-rules",
+              "vol": 8100,
+              "cpc": 1.34,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does roth ira have rmd",
+              "slug": "does-roth-ira-have-rmd",
+              "vol": 2400,
+              "cpc": 20.89,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "rmd age 73",
+              "slug": "rmd-age-73",
+              "vol": 390,
+              "cpc": 0.24,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "qualified charitable distribution rmd",
+              "slug": "qualified-charitable-distribution-rmd",
+              "vol": 170,
+              "cpc": 5.02,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "rmd from 401k still working",
+              "slug": "rmd-from-401k-still-working",
+              "vol": 50,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "what age do you start taking rmd",
+              "slug": "what-age-do-you-start-taking-rmd",
+              "vol": 50,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "required minimum distribution rules 2026",
+              "slug": "required-minimum-distribution-rules-2026",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "rmd penalty for missing distribution",
+              "slug": "rmd-penalty-for-missing-distribution",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Roth Conversions & IRA Strategy",
+          "slug": "roth-conversions-ira-strategy",
+          "totalVol": 44600,
+          "avgCpc": 4.4,
+          "keywords": [
+            {
+              "keyword": "backdoor roth ira",
+              "slug": "backdoor-roth-ira",
+              "vol": 22200,
+              "cpc": 2.96,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "traditional ira vs roth ira",
+              "slug": "traditional-ira-vs-roth-ira",
+              "vol": 14800,
+              "cpc": 4.06,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "roth conversion ladder",
+              "slug": "roth-conversion-ladder",
+              "vol": 2900,
+              "cpc": 6.1,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "roth conversion 5 year rule",
+              "slug": "roth-conversion-5-year-rule",
+              "vol": 2400,
+              "cpc": 3.3,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "roth ira conversion tax calculator",
+              "slug": "roth-ira-conversion-tax-calculator",
+              "vol": 1600,
+              "cpc": 3.28,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "roth conversion in retirement",
+              "slug": "roth-conversion-in-retirement",
+              "vol": 480,
+              "cpc": 7.9,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "is a roth conversion worth it",
+              "slug": "is-a-roth-conversion-worth-it",
+              "vol": 110,
+              "cpc": 4.77,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "roth conversion rules 2026",
+              "slug": "roth-conversion-rules-2026",
+              "vol": 50,
+              "cpc": 5.86,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "roth conversion before rmd",
+              "slug": "roth-conversion-before-rmd",
+              "vol": 30,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how much to convert to roth ira",
+              "slug": "how-much-to-convert-to-roth-ira",
+              "vol": 30,
+              "cpc": 1.4,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "best age for roth conversion",
+              "slug": "best-age-for-roth-conversion",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "convert ira to roth ira pros and cons",
+              "slug": "convert-ira-to-roth-ira-pros-and-cons",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Reverse Mortgages",
+          "slug": "reverse-mortgages",
+          "totalVol": 22980,
+          "avgCpc": 27.47,
+          "keywords": [
+            {
+              "keyword": "reverse mortgage calculator",
+              "slug": "reverse-mortgage-calculator",
+              "vol": 12100,
+              "cpc": 31.32,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "reverse mortgage pros and cons",
+              "slug": "reverse-mortgage-pros-and-cons",
+              "vol": 6600,
+              "cpc": 27.37,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "is a reverse mortgage a good idea",
+              "slug": "is-a-reverse-mortgage-a-good-idea",
+              "vol": 1600,
+              "cpc": 10.74,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "reverse mortgage vs home equity loan",
+              "slug": "reverse-mortgage-vs-home-equity-loan",
+              "vol": 590,
+              "cpc": 14.45,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "reverse mortgage costs and fees",
+              "slug": "reverse-mortgage-costs-and-fees",
+              "vol": 480,
+              "cpc": 13.48,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "reverse mortgage for purchase",
+              "slug": "reverse-mortgage-for-purchase",
+              "vol": 390,
+              "cpc": 21.29,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "reverse mortgage line of credit",
+              "slug": "reverse-mortgage-line-of-credit",
+              "vol": 320,
+              "cpc": 28.83,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "what happens to reverse mortgage when you die",
+              "slug": "what-happens-to-reverse-mortgage-when-you-die",
+              "vol": 320,
+              "cpc": 2.65,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "best reverse mortgage lenders",
+              "slug": "best-reverse-mortgage-lenders",
+              "vol": 320,
+              "cpc": 91.6,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "how much can i get from a reverse mortgage",
+              "slug": "how-much-can-i-get-from-a-reverse-mortgage",
+              "vol": 260,
+              "cpc": 32.96,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "hecm reverse mortgage requirements",
+              "slug": "hecm-reverse-mortgage-requirements",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "reverse mortgage eligibility age 62",
+              "slug": "reverse-mortgage-eligibility-age-62",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "reverse mortgage rates 2026",
+              "slug": "reverse-mortgage-rates-2026",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "reverse mortgage counseling requirement",
+              "slug": "reverse-mortgage-counseling-requirement",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Annuities",
+          "slug": "annuities",
+          "totalVol": 17300,
+          "avgCpc": 7.41,
+          "keywords": [
+            {
+              "keyword": "immediate annuity calculator",
+              "slug": "immediate-annuity-calculator",
+              "vol": 8100,
+              "cpc": 2.87,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "single premium immediate annuity",
+              "slug": "single-premium-immediate-annuity",
+              "vol": 3600,
+              "cpc": 6.66,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "annuity vs cd",
+              "slug": "annuity-vs-cd",
+              "vol": 1300,
+              "cpc": 6.57,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "best annuity companies",
+              "slug": "best-annuity-companies",
+              "vol": 1000,
+              "cpc": 10.19,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "fixed vs variable annuity",
+              "slug": "fixed-vs-variable-annuity",
+              "vol": 880,
+              "cpc": 5.57,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "myga annuity rates",
+              "slug": "myga-annuity-rates",
+              "vol": 480,
+              "cpc": 10.18,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "fixed annuity rates today",
+              "slug": "fixed-annuity-rates-today",
+              "vol": 390,
+              "cpc": 9.65,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "annuity surrender charge",
+              "slug": "annuity-surrender-charge",
+              "vol": 390,
+              "cpc": 3.93,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "indexed annuity pros and cons",
+              "slug": "indexed-annuity-pros-and-cons",
+              "vol": 260,
+              "cpc": 5.4,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "deferred annuity vs immediate annuity",
+              "slug": "deferred-annuity-vs-immediate-annuity",
+              "vol": 210,
+              "cpc": 6.56,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how much does a $100000 annuity pay per month",
+              "slug": "how-much-does-a-100000-annuity-pay-per-month",
+              "vol": 210,
+              "cpc": 8.41,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "fixed indexed annuity rates",
+              "slug": "fixed-indexed-annuity-rates",
+              "vol": 140,
+              "cpc": 6.26,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "are annuities a good investment for retirees",
+              "slug": "are-annuities-a-good-investment-for-retirees",
+              "vol": 140,
+              "cpc": 3.06,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "annuity calculator monthly income",
+              "slug": "annuity-calculator-monthly-income",
+              "vol": 90,
+              "cpc": 4.52,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "best annuities for retirement income",
+              "slug": "best-annuities-for-retirement-income",
+              "vol": 70,
+              "cpc": 10.94,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "best annuity rates 2026",
+              "slug": "best-annuity-rates-2026",
+              "vol": 30,
+              "cpc": 9.45,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "annuity rates 5 year",
+              "slug": "annuity-rates-5-year",
+              "vol": 10,
+              "cpc": 15.83,
+              "comp": "MEDIUM"
+            }
+          ]
+        },
+        {
+          "name": "401k & IRA Rollovers",
+          "slug": "401k-ira-rollovers",
+          "totalVol": 17010,
+          "avgCpc": 6.91,
+          "keywords": [
+            {
+              "keyword": "401k rollover to ira",
+              "slug": "401k-rollover-to-ira",
+              "vol": 9900,
+              "cpc": 6.75,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "rollover ira vs traditional ira",
+              "slug": "rollover-ira-vs-traditional-ira",
+              "vol": 2900,
+              "cpc": 15.67,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to roll over a 401k",
+              "slug": "how-to-roll-over-a-401k",
+              "vol": 1900,
+              "cpc": 8.16,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "direct rollover vs indirect rollover",
+              "slug": "direct-rollover-vs-indirect-rollover",
+              "vol": 590,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "pension rollover to ira",
+              "slug": "pension-rollover-to-ira",
+              "vol": 590,
+              "cpc": 9.02,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "401k rollover rules",
+              "slug": "401k-rollover-rules",
+              "vol": 320,
+              "cpc": 2.48,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "in service 401k rollover",
+              "slug": "in-service-401k-rollover",
+              "vol": 260,
+              "cpc": 4.82,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "best place to rollover 401k",
+              "slug": "best-place-to-rollover-401k",
+              "vol": 260,
+              "cpc": 7.31,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "how long do i have to rollover my 401k",
+              "slug": "how-long-do-i-have-to-rollover-my-401k",
+              "vol": 260,
+              "cpc": 1.03,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "roll over 401k after retirement",
+              "slug": "roll-over-401k-after-retirement",
+              "vol": 20,
+              "cpc": 0,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "rollover 401k without penalty",
+              "slug": "rollover-401k-without-penalty",
+              "vol": 10,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "rollover old 401k to new employer",
+              "slug": "rollover-old-401k-to-new-employer",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "401k rollover to ira tax consequences",
+              "slug": "401k-rollover-to-ira-tax-consequences",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "ira rollover rules 60 day",
+              "slug": "ira-rollover-rules-60-day",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "consolidate multiple 401k accounts",
+              "slug": "consolidate-multiple-401k-accounts",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Medicaid & LTC Planning",
+          "slug": "medicaid-ltc-planning",
+          "totalVol": 16450,
+          "avgCpc": 4.17,
+          "keywords": [
+            {
+              "keyword": "medicaid asset protection trust",
+              "slug": "medicaid-asset-protection-trust",
+              "vol": 14800,
+              "cpc": 4.38,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicaid spend down rules",
+              "slug": "medicaid-spend-down-rules",
+              "vol": 480,
+              "cpc": 0.91,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "community spouse resource allowance",
+              "slug": "community-spouse-resource-allowance",
+              "vol": 480,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to protect assets from medicaid",
+              "slug": "how-to-protect-assets-from-medicaid",
+              "vol": 260,
+              "cpc": 3.93,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicaid planning for nursing home",
+              "slug": "medicaid-planning-for-nursing-home",
+              "vol": 210,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicaid 5 year look back period",
+              "slug": "medicaid-5-year-look-back-period",
+              "vol": 70,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicaid gifting rules",
+              "slug": "medicaid-gifting-rules",
+              "vol": 70,
+              "cpc": 0.02,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to qualify for medicaid long term care",
+              "slug": "how-to-qualify-for-medicaid-long-term-care",
+              "vol": 50,
+              "cpc": 7.19,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "elder law attorney medicaid planning",
+              "slug": "elder-law-attorney-medicaid-planning",
+              "vol": 30,
+              "cpc": 8.56,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "medicaid eligibility income limits 2026",
+              "slug": "medicaid-eligibility-income-limits-2026",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "irrevocable trust to avoid nursing home costs",
+              "slug": "irrevocable-trust-to-avoid-nursing-home-costs",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Pensions & Railroad Retirement",
+          "slug": "pensions-railroad-retirement",
+          "totalVol": 10880,
+          "avgCpc": 1.68,
+          "keywords": [
+            {
+              "keyword": "railroad retirement board",
+              "slug": "railroad-retirement-board",
+              "vol": 9900,
+              "cpc": 0.48,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "pension lump sum vs annuity",
+              "slug": "pension-lump-sum-vs-annuity",
+              "vol": 480,
+              "cpc": 2.48,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "pension lump sum calculator",
+              "slug": "pension-lump-sum-calculator",
+              "vol": 260,
+              "cpc": 3.24,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "railroad retirement vs social security",
+              "slug": "railroad-retirement-vs-social-security",
+              "vol": 140,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "railroad retirement cola 2026",
+              "slug": "railroad-retirement-cola-2026",
+              "vol": 50,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "should i take lump sum or monthly pension",
+              "slug": "should-i-take-lump-sum-or-monthly-pension",
+              "vol": 30,
+              "cpc": 0.5,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "railroad retirement tier 1 vs tier 2",
+              "slug": "railroad-retirement-tier-1-vs-tier-2",
+              "vol": 10,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "railroad retirement benefits calculator",
+              "slug": "railroad-retirement-benefits-calculator",
+              "vol": 10,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "pension buyout offer decision",
+              "slug": "pension-buyout-offer-decision",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "pension survivor benefit options",
+              "slug": "pension-survivor-benefit-options",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Tax Planning in Retirement",
+          "slug": "tax-planning-in-retirement",
+          "totalVol": 310,
+          "avgCpc": 10.4,
+          "keywords": [
+            {
+              "keyword": "how to reduce taxes in retirement",
+              "slug": "how-to-reduce-taxes-in-retirement",
+              "vol": 170,
+              "cpc": 4,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "tax planning strategies for retirees",
+              "slug": "tax-planning-strategies-for-retirees",
+              "vol": 70,
+              "cpc": 14.25,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "capital gains tax in retirement",
+              "slug": "capital-gains-tax-in-retirement",
+              "vol": 50,
+              "cpc": 6.64,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "taxes on 401k withdrawals after retirement",
+              "slug": "taxes-on-401k-withdrawals-after-retirement",
+              "vol": 10,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "tax free retirement income strategies",
+              "slug": "tax-free-retirement-income-strategies",
+              "vol": 10,
+              "cpc": 16.71,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to minimize taxes on social security",
+              "slug": "how-to-minimize-taxes-on-social-security",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "tax efficient withdrawal strategy retirement",
+              "slug": "tax-efficient-withdrawal-strategy-retirement",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "is social security taxed in my state",
+              "slug": "is-social-security-taxed-in-my-state",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Housing & Care",
+      "totalVol": 1100140,
+      "siloCount": 13,
+      "silos": [
+        {
+          "name": "In-Home Care & Home Health",
+          "slug": "in-home-care-home-health",
+          "totalVol": 319080,
+          "avgCpc": 13.01,
+          "keywords": [
+            {
+              "keyword": "in-home care for seniors",
+              "slug": "in-home-care-for-seniors",
+              "vol": 135000,
+              "cpc": 16.46,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "24-hour home care",
+              "slug": "24-hour-home-care",
+              "vol": 110000,
+              "cpc": 11.4,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "respite care near me",
+              "slug": "respite-care-near-me",
+              "vol": 22200,
+              "cpc": 14.11,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "private duty nursing",
+              "slug": "private-duty-nursing",
+              "vol": 18100,
+              "cpc": 8.57,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "companion care for seniors",
+              "slug": "companion-care-for-seniors",
+              "vol": 14800,
+              "cpc": 21.5,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "home health care services near me",
+              "slug": "home-health-care-services-near-me",
+              "vol": 6600,
+              "cpc": 13.12,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "caregiver agencies near me",
+              "slug": "caregiver-agencies-near-me",
+              "vol": 6600,
+              "cpc": 12.4,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "home health aide near me",
+              "slug": "home-health-aide-near-me",
+              "vol": 2900,
+              "cpc": 11.52,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "live-in care for elderly",
+              "slug": "live-in-care-for-elderly",
+              "vol": 880,
+              "cpc": 14.64,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "does medicaid cover home health care",
+              "slug": "does-medicaid-cover-home-health-care",
+              "vol": 720,
+              "cpc": 7.48,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "hourly home care",
+              "slug": "hourly-home-care",
+              "vol": 590,
+              "cpc": 42.91,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how much does 24-hour home care cost",
+              "slug": "how-much-does-24-hour-home-care-cost",
+              "vol": 320,
+              "cpc": 6.09,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "home health aide hourly rate",
+              "slug": "home-health-aide-hourly-rate",
+              "vol": 210,
+              "cpc": 2.92,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to pay for in-home care",
+              "slug": "how-to-pay-for-in-home-care",
+              "vol": 90,
+              "cpc": 8.94,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "in-home care vs assisted living",
+              "slug": "in-home-care-vs-assisted-living",
+              "vol": 50,
+              "cpc": 9.48,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "cost of in-home care per hour",
+              "slug": "cost-of-in-home-care-per-hour",
+              "vol": 20,
+              "cpc": 6.67,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "cost of in-home care per month",
+              "slug": "cost-of-in-home-care-per-month",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "how to find a caregiver for elderly parent",
+              "slug": "how-to-find-a-caregiver-for-elderly-parent",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "signs your parent needs in-home care",
+              "slug": "signs-your-parent-needs-in-home-care",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Nursing Homes & Skilled Nursing",
+          "slug": "nursing-homes-skilled-nursing",
+          "totalVol": 256230,
+          "avgCpc": 6.02,
+          "keywords": [
+            {
+              "keyword": "nursing homes near me",
+              "slug": "nursing-homes-near-me",
+              "vol": 246000,
+              "cpc": 6.6,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "best nursing homes near me",
+              "slug": "best-nursing-homes-near-me",
+              "vol": 2900,
+              "cpc": 8.06,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "how much does a nursing home cost",
+              "slug": "how-much-does-a-nursing-home-cost",
+              "vol": 1900,
+              "cpc": 4.82,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "average cost of nursing home care",
+              "slug": "average-cost-of-nursing-home-care",
+              "vol": 1600,
+              "cpc": 5.72,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "nursing home cost per month",
+              "slug": "nursing-home-cost-per-month",
+              "vol": 1300,
+              "cpc": 5.83,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to pay for nursing home care",
+              "slug": "how-to-pay-for-nursing-home-care",
+              "vol": 880,
+              "cpc": 3.95,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicaid cover nursing home",
+              "slug": "does-medicaid-cover-nursing-home",
+              "vol": 720,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "nursing home ratings",
+              "slug": "nursing-home-ratings",
+              "vol": 720,
+              "cpc": 4.58,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to choose a nursing home",
+              "slug": "how-to-choose-a-nursing-home",
+              "vol": 90,
+              "cpc": 8.59,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to qualify for medicaid nursing home",
+              "slug": "how-to-qualify-for-medicaid-nursing-home",
+              "vol": 70,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicare 100 days skilled nursing",
+              "slug": "medicare-100-days-skilled-nursing",
+              "vol": 50,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "skilled nursing facility near me",
+              "slug": "skilled-nursing-facility-near-me",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "medicaid spend down for nursing home",
+              "slug": "medicaid-spend-down-for-nursing-home",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "nursing home vs skilled nursing facility",
+              "slug": "nursing-home-vs-skilled-nursing-facility",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "what is a skilled nursing facility",
+              "slug": "what-is-a-skilled-nursing-facility",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Assisted Living",
+          "slug": "assisted-living",
+          "totalVol": 190880,
+          "avgCpc": 9.67,
+          "keywords": [
+            {
+              "keyword": "assisted living near me",
+              "slug": "assisted-living-near-me",
+              "vol": 165000,
+              "cpc": 13.13,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "assisted living cost",
+              "slug": "assisted-living-cost",
+              "vol": 5400,
+              "cpc": 8.51,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "assisted living vs nursing home",
+              "slug": "assisted-living-vs-nursing-home",
+              "vol": 5400,
+              "cpc": 12.48,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "what is assisted living",
+              "slug": "what-is-assisted-living",
+              "vol": 5400,
+              "cpc": 5.62,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "how much does assisted living cost",
+              "slug": "how-much-does-assisted-living-cost",
+              "vol": 2400,
+              "cpc": 7.01,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "best assisted living facilities near me",
+              "slug": "best-assisted-living-facilities-near-me",
+              "vol": 1900,
+              "cpc": 16.35,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "average cost of assisted living",
+              "slug": "average-cost-of-assisted-living",
+              "vol": 1600,
+              "cpc": 7.82,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "does medicaid cover assisted living",
+              "slug": "does-medicaid-cover-assisted-living",
+              "vol": 1300,
+              "cpc": 9.01,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to pay for assisted living",
+              "slug": "how-to-pay-for-assisted-living",
+              "vol": 880,
+              "cpc": 5.48,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "luxury assisted living near me",
+              "slug": "luxury-assisted-living-near-me",
+              "vol": 480,
+              "cpc": 9.73,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "assisted living cost per month",
+              "slug": "assisted-living-cost-per-month",
+              "vol": 390,
+              "cpc": 7.85,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "assisted living vs memory care",
+              "slug": "assisted-living-vs-memory-care",
+              "vol": 390,
+              "cpc": 17.69,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "pet friendly assisted living near me",
+              "slug": "pet-friendly-assisted-living-near-me",
+              "vol": 260,
+              "cpc": 13.98,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "how to choose an assisted living facility",
+              "slug": "how-to-choose-an-assisted-living-facility",
+              "vol": 50,
+              "cpc": 16.4,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "signs it's time for assisted living",
+              "slug": "signs-it-s-time-for-assisted-living",
+              "vol": 20,
+              "cpc": 1.2,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "when to move parent to assisted living",
+              "slug": "when-to-move-parent-to-assisted-living",
+              "vol": 10,
+              "cpc": 2.43,
+              "comp": "LOW"
+            }
+          ]
+        },
+        {
+          "name": "Retirement Communities",
+          "slug": "retirement-communities",
+          "totalVol": 135780,
+          "avgCpc": 8.34,
+          "keywords": [
+            {
+              "keyword": "senior living near me",
+              "slug": "senior-living-near-me",
+              "vol": 74000,
+              "cpc": 11.39,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "retirement homes near me",
+              "slug": "retirement-homes-near-me",
+              "vol": 33100,
+              "cpc": 8.99,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "retirement communities near me",
+              "slug": "retirement-communities-near-me",
+              "vol": 27100,
+              "cpc": 7.79,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "best retirement communities",
+              "slug": "best-retirement-communities",
+              "vol": 1000,
+              "cpc": 5.6,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "luxury retirement communities near me",
+              "slug": "luxury-retirement-communities-near-me",
+              "vol": 320,
+              "cpc": 10.7,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "cost of retirement communities",
+              "slug": "cost-of-retirement-communities",
+              "vol": 260,
+              "cpc": 5.56,
+              "comp": "MEDIUM"
+            }
+          ]
+        },
+        {
+          "name": "Senior Apartments & Affordable Housing",
+          "slug": "senior-apartments-affordable-housing",
+          "totalVol": 43070,
+          "avgCpc": 6.65,
+          "keywords": [
+            {
+              "keyword": "senior apartments near me",
+              "slug": "senior-apartments-near-me",
+              "vol": 27100,
+              "cpc": 6.72,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "senior housing near me",
+              "slug": "senior-housing-near-me",
+              "vol": 9900,
+              "cpc": 8.33,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "low income senior apartments near me",
+              "slug": "low-income-senior-apartments-near-me",
+              "vol": 1900,
+              "cpc": 3.1,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "hud senior housing",
+              "slug": "hud-senior-housing",
+              "vol": 1300,
+              "cpc": 5,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "subsidized senior housing near me",
+              "slug": "subsidized-senior-housing-near-me",
+              "vol": 1000,
+              "cpc": 3.71,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "affordable senior housing near me",
+              "slug": "affordable-senior-housing-near-me",
+              "vol": 880,
+              "cpc": 4.36,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "section 8 senior housing",
+              "slug": "section-8-senior-housing",
+              "vol": 590,
+              "cpc": 6.67,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "section 202 senior housing",
+              "slug": "section-202-senior-housing",
+              "vol": 170,
+              "cpc": 19.71,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "62 and older apartments near me",
+              "slug": "62-and-older-apartments-near-me",
+              "vol": 140,
+              "cpc": 6.49,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "how to apply for low income senior housing",
+              "slug": "how-to-apply-for-low-income-senior-housing",
+              "vol": 90,
+              "cpc": 2.46,
+              "comp": "LOW"
+            }
+          ]
+        },
+        {
+          "name": "Memory Care",
+          "slug": "memory-care",
+          "totalVol": 42540,
+          "avgCpc": 15.52,
+          "keywords": [
+            {
+              "keyword": "memory care facilities near me",
+              "slug": "memory-care-facilities-near-me",
+              "vol": 22200,
+              "cpc": 30.62,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "memory care near me",
+              "slug": "memory-care-near-me",
+              "vol": 18100,
+              "cpc": 29.75,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "memory care cost",
+              "slug": "memory-care-cost",
+              "vol": 880,
+              "cpc": 12.47,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "does medicare cover memory care",
+              "slug": "does-medicare-cover-memory-care",
+              "vol": 880,
+              "cpc": 3.58,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how much does memory care cost",
+              "slug": "how-much-does-memory-care-cost",
+              "vol": 320,
+              "cpc": 11.02,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "how to pay for memory care",
+              "slug": "how-to-pay-for-memory-care",
+              "vol": 90,
+              "cpc": 7.23,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "when to move to memory care",
+              "slug": "when-to-move-to-memory-care",
+              "vol": 70,
+              "cpc": 13.96,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "average cost of memory care",
+              "slug": "average-cost-of-memory-care",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "alzheimer's care facilities near me",
+              "slug": "alzheimer-s-care-facilities-near-me",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "dementia care facilities near me",
+              "slug": "dementia-care-facilities-near-me",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "memory care vs assisted living cost",
+              "slug": "memory-care-vs-assisted-living-cost",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "what is memory care",
+              "slug": "what-is-memory-care",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Respite, Adult Day Care & Rehab",
+          "slug": "respite-adult-day-care-rehab",
+          "totalVol": 41260,
+          "avgCpc": 13.98,
+          "keywords": [
+            {
+              "keyword": "adult day care centers near me",
+              "slug": "adult-day-care-centers-near-me",
+              "vol": 22200,
+              "cpc": 5.28,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "rehabilitation facilities near me",
+              "slug": "rehabilitation-facilities-near-me",
+              "vol": 14800,
+              "cpc": 46.56,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "short-term respite care",
+              "slug": "short-term-respite-care",
+              "vol": 1000,
+              "cpc": 15.93,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "short term rehab near me",
+              "slug": "short-term-rehab-near-me",
+              "vol": 880,
+              "cpc": 32.63,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "adult day care cost",
+              "slug": "adult-day-care-cost",
+              "vol": 590,
+              "cpc": 4.46,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover respite care",
+              "slug": "does-medicare-cover-respite-care",
+              "vol": 480,
+              "cpc": 3.83,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover rehab",
+              "slug": "does-medicare-cover-rehab",
+              "vol": 480,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "senior day programs near me",
+              "slug": "senior-day-programs-near-me",
+              "vol": 320,
+              "cpc": 5.22,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "respite care cost",
+              "slug": "respite-care-cost",
+              "vol": 260,
+              "cpc": 7.99,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "adult day care for dementia near me",
+              "slug": "adult-day-care-for-dementia-near-me",
+              "vol": 140,
+              "cpc": 9.06,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "what is respite care for seniors",
+              "slug": "what-is-respite-care-for-seniors",
+              "vol": 110,
+              "cpc": 8.81,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "inpatient rehab near me",
+              "slug": "inpatient-rehab-near-me",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "skilled nursing rehab near me",
+              "slug": "skilled-nursing-rehab-near-me",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "how long does medicare pay for rehab",
+              "slug": "how-long-does-medicare-pay-for-rehab",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Independent Living",
+          "slug": "independent-living",
+          "totalVol": 26360,
+          "avgCpc": 9.5,
+          "keywords": [
+            {
+              "keyword": "independent living near me",
+              "slug": "independent-living-near-me",
+              "vol": 12100,
+              "cpc": 12.59,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "independent living for seniors",
+              "slug": "independent-living-for-seniors",
+              "vol": 9900,
+              "cpc": 13.04,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "independent living communities near me",
+              "slug": "independent-living-communities-near-me",
+              "vol": 1300,
+              "cpc": 9.28,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "independent living vs assisted living",
+              "slug": "independent-living-vs-assisted-living",
+              "vol": 1300,
+              "cpc": 8.33,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "what is independent living",
+              "slug": "what-is-independent-living",
+              "vol": 1000,
+              "cpc": 4.93,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "independent living cost",
+              "slug": "independent-living-cost",
+              "vol": 480,
+              "cpc": 6.38,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "how much does independent living cost",
+              "slug": "how-much-does-independent-living-cost",
+              "vol": 170,
+              "cpc": 6.36,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "best independent living communities near me",
+              "slug": "best-independent-living-communities-near-me",
+              "vol": 110,
+              "cpc": 15.12,
+              "comp": "HIGH"
+            }
+          ]
+        },
+        {
+          "name": "55+ Active Adult Communities",
+          "slug": "55-active-adult-communities",
+          "totalVol": 19260,
+          "avgCpc": 4.73,
+          "keywords": [
+            {
+              "keyword": "55 and older communities near me",
+              "slug": "55-and-older-communities-near-me",
+              "vol": 8100,
+              "cpc": 6.41,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "55+ communities near me",
+              "slug": "55-communities-near-me",
+              "vol": 5400,
+              "cpc": 5.8,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "55 and over apartments near me",
+              "slug": "55-and-over-apartments-near-me",
+              "vol": 3600,
+              "cpc": 5.34,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "active adult communities near me",
+              "slug": "active-adult-communities-near-me",
+              "vol": 1900,
+              "cpc": 6.6,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "best 55+ communities",
+              "slug": "best-55-communities",
+              "vol": 140,
+              "cpc": 3.66,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "55 plus communities for sale",
+              "slug": "55-plus-communities-for-sale",
+              "vol": 70,
+              "cpc": 3.06,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "affordable 55+ communities near me",
+              "slug": "affordable-55-communities-near-me",
+              "vol": 50,
+              "cpc": 2.23,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "gated 55+ communities near me",
+              "slug": "gated-55-communities-near-me",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Aging in Place & Home Mods",
+          "slug": "aging-in-place-home-mods",
+          "totalVol": 9090,
+          "avgCpc": 10.13,
+          "keywords": [
+            {
+              "keyword": "walk-in tubs for seniors",
+              "slug": "walk-in-tubs-for-seniors",
+              "vol": 6600,
+              "cpc": 21.86,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "aging in place home modifications",
+              "slug": "aging-in-place-home-modifications",
+              "vol": 1600,
+              "cpc": 5.73,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "home modifications for seniors",
+              "slug": "home-modifications-for-seniors",
+              "vol": 590,
+              "cpc": 12.2,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "stair lifts for seniors cost",
+              "slug": "stair-lifts-for-seniors-cost",
+              "vol": 210,
+              "cpc": 12.27,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "how to make a home safe for elderly",
+              "slug": "how-to-make-a-home-safe-for-elderly",
+              "vol": 40,
+              "cpc": 2.29,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "wheelchair ramps for seniors",
+              "slug": "wheelchair-ramps-for-seniors",
+              "vol": 30,
+              "cpc": 4.11,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "aging in place vs assisted living",
+              "slug": "aging-in-place-vs-assisted-living",
+              "vol": 20,
+              "cpc": 12.42,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "cost of wheelchair ramp installation",
+              "slug": "cost-of-wheelchair-ramp-installation",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "grab bars for bathroom seniors",
+              "slug": "grab-bars-for-bathroom-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "does medicare pay for wheelchair ramps",
+              "slug": "does-medicare-pay-for-wheelchair-ramps",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Board & Care Homes",
+          "slug": "board-care-homes",
+          "totalVol": 6340,
+          "avgCpc": 10.67,
+          "keywords": [
+            {
+              "keyword": "adult family homes near me",
+              "slug": "adult-family-homes-near-me",
+              "vol": 2400,
+              "cpc": 9.87,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "personal care homes near me",
+              "slug": "personal-care-homes-near-me",
+              "vol": 1900,
+              "cpc": 9.17,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "board and care homes near me",
+              "slug": "board-and-care-homes-near-me",
+              "vol": 880,
+              "cpc": 13.54,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "residential care home near me",
+              "slug": "residential-care-home-near-me",
+              "vol": 880,
+              "cpc": 9.62,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "board and care vs assisted living",
+              "slug": "board-and-care-vs-assisted-living",
+              "vol": 210,
+              "cpc": 11.14,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "what is a board and care home",
+              "slug": "what-is-a-board-and-care-home",
+              "vol": 70,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "board and care home cost",
+              "slug": "board-and-care-home-cost",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Hospice & Palliative Care",
+          "slug": "hospice-palliative-care",
+          "totalVol": 5140,
+          "avgCpc": 4.29,
+          "keywords": [
+            {
+              "keyword": "does medicare cover hospice",
+              "slug": "does-medicare-cover-hospice",
+              "vol": 3600,
+              "cpc": 4.86,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "hospice care cost",
+              "slug": "hospice-care-cost",
+              "vol": 1300,
+              "cpc": 7.56,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "4 levels of hospice care",
+              "slug": "4-levels-of-hospice-care",
+              "vol": 170,
+              "cpc": 1.23,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to choose a hospice provider",
+              "slug": "how-to-choose-a-hospice-provider",
+              "vol": 70,
+              "cpc": 3.51,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "hospice care near me",
+              "slug": "hospice-care-near-me",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "hospice care at home",
+              "slug": "hospice-care-at-home",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "what is hospice care",
+              "slug": "what-is-hospice-care",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "who pays for hospice care",
+              "slug": "who-pays-for-hospice-care",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "hospice eligibility criteria medicare",
+              "slug": "hospice-eligibility-criteria-medicare",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "what is palliative care",
+              "slug": "what-is-palliative-care",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "palliative care vs hospice",
+              "slug": "palliative-care-vs-hospice",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "difference between hospice and palliative care",
+              "slug": "difference-between-hospice-and-palliative-care",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "palliative care near me",
+              "slug": "palliative-care-near-me",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "when to start palliative care",
+              "slug": "when-to-start-palliative-care",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "CCRC / Life Plan Communities",
+          "slug": "ccrc-life-plan-communities",
+          "totalVol": 5110,
+          "avgCpc": 8.71,
+          "keywords": [
+            {
+              "keyword": "continuing care retirement community near me",
+              "slug": "continuing-care-retirement-community-near-me",
+              "vol": 3600,
+              "cpc": 9.71,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "what is a ccrc",
+              "slug": "what-is-a-ccrc",
+              "vol": 880,
+              "cpc": 9.36,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "life plan communities near me",
+              "slug": "life-plan-communities-near-me",
+              "vol": 480,
+              "cpc": 8.39,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "ccrc cost",
+              "slug": "ccrc-cost",
+              "vol": 110,
+              "cpc": 4.16,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "ccrc entrance fee",
+              "slug": "ccrc-entrance-fee",
+              "vol": 40,
+              "cpc": 11.94,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "average ccrc entrance fee",
+              "slug": "average-ccrc-entrance-fee",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "ccrc type a vs type b contract",
+              "slug": "ccrc-type-a-vs-type-b-contract",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "are ccrc entrance fees refundable",
+              "slug": "are-ccrc-entrance-fees-refundable",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Insurance",
+      "totalVol": 335270,
+      "siloCount": 8,
+      "silos": [
+        {
+          "name": "Long-Term Care Insurance",
+          "slug": "long-term-care-insurance",
+          "totalVol": 130440,
+          "avgCpc": 7.76,
+          "keywords": [
+            {
+              "keyword": "long term care insurance",
+              "slug": "long-term-care-insurance",
+              "vol": 74000,
+              "cpc": 9.83,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "long term care insurance quotes",
+              "slug": "long-term-care-insurance-quotes",
+              "vol": 27100,
+              "cpc": 21.4,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "long term care insurance cost",
+              "slug": "long-term-care-insurance-cost",
+              "vol": 12100,
+              "cpc": 7.52,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "long term care insurance cost by age",
+              "slug": "long-term-care-insurance-cost-by-age",
+              "vol": 4400,
+              "cpc": 7.39,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "traditional long term care insurance",
+              "slug": "traditional-long-term-care-insurance",
+              "vol": 3600,
+              "cpc": 8.34,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how much does long term care insurance cost",
+              "slug": "how-much-does-long-term-care-insurance-cost",
+              "vol": 2400,
+              "cpc": 4.99,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "is long term care insurance worth it",
+              "slug": "is-long-term-care-insurance-worth-it",
+              "vol": 2400,
+              "cpc": 3.06,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "hybrid long term care insurance",
+              "slug": "hybrid-long-term-care-insurance",
+              "vol": 1600,
+              "cpc": 4.51,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "life insurance with long term care rider",
+              "slug": "life-insurance-with-long-term-care-rider",
+              "vol": 1300,
+              "cpc": 8.52,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "best long term care insurance companies",
+              "slug": "best-long-term-care-insurance-companies",
+              "vol": 720,
+              "cpc": 9.73,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "short term care insurance",
+              "slug": "short-term-care-insurance",
+              "vol": 390,
+              "cpc": 4.99,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "long term care insurance for couples",
+              "slug": "long-term-care-insurance-for-couples",
+              "vol": 320,
+              "cpc": 7.53,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "asset based long term care insurance",
+              "slug": "asset-based-long-term-care-insurance",
+              "vol": 110,
+              "cpc": 3.08,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "long term care insurance for seniors over 70",
+              "slug": "long-term-care-insurance-for-seniors-over-70",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Dental Vision Hearing Insurance",
+          "slug": "dental-vision-hearing-insurance",
+          "totalVol": 51850,
+          "avgCpc": 5.91,
+          "keywords": [
+            {
+              "keyword": "dental insurance for dentures",
+              "slug": "dental-insurance-for-dentures",
+              "vol": 18100,
+              "cpc": 8.12,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "dental insurance for seniors",
+              "slug": "dental-insurance-for-seniors",
+              "vol": 14800,
+              "cpc": 6.73,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "dental insurance for implants",
+              "slug": "dental-insurance-for-implants",
+              "vol": 9900,
+              "cpc": 8.64,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "best dental insurance for seniors",
+              "slug": "best-dental-insurance-for-seniors",
+              "vol": 2900,
+              "cpc": 4.83,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "hearing aid insurance",
+              "slug": "hearing-aid-insurance",
+              "vol": 1900,
+              "cpc": 5.18,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "vision insurance for seniors",
+              "slug": "vision-insurance-for-seniors",
+              "vol": 1600,
+              "cpc": 7.63,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "dental and vision insurance for seniors",
+              "slug": "dental-and-vision-insurance-for-seniors",
+              "vol": 1300,
+              "cpc": 5.64,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "senior dental discount plans",
+              "slug": "senior-dental-discount-plans",
+              "vol": 590,
+              "cpc": 7.93,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "dental insurance for seniors no waiting period",
+              "slug": "dental-insurance-for-seniors-no-waiting-period",
+              "vol": 320,
+              "cpc": 8.49,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "best vision insurance for seniors",
+              "slug": "best-vision-insurance-for-seniors",
+              "vol": 320,
+              "cpc": 5.3,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "how much is dental insurance for seniors",
+              "slug": "how-much-is-dental-insurance-for-seniors",
+              "vol": 90,
+              "cpc": 2.66,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "hearing aid discount plans",
+              "slug": "hearing-aid-discount-plans",
+              "vol": 20,
+              "cpc": 3.37,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "best dental vision hearing insurance for seniors",
+              "slug": "best-dental-vision-hearing-insurance-for-seniors",
+              "vol": 10,
+              "cpc": 2.25,
+              "comp": "MEDIUM"
+            }
+          ]
+        },
+        {
+          "name": "Supplemental Health Insurance",
+          "slug": "supplemental-health-insurance",
+          "totalVol": 51210,
+          "avgCpc": 8.22,
+          "keywords": [
+            {
+              "keyword": "hospital indemnity insurance",
+              "slug": "hospital-indemnity-insurance",
+              "vol": 33100,
+              "cpc": 5.83,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "critical illness insurance",
+              "slug": "critical-illness-insurance",
+              "vol": 14800,
+              "cpc": 8.42,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "is hospital indemnity insurance worth it",
+              "slug": "is-hospital-indemnity-insurance-worth-it",
+              "vol": 2400,
+              "cpc": 5.76,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "supplemental health insurance for seniors",
+              "slug": "supplemental-health-insurance-for-seniors",
+              "vol": 390,
+              "cpc": 20.86,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "is supplemental insurance worth it",
+              "slug": "is-supplemental-insurance-worth-it",
+              "vol": 260,
+              "cpc": 4.08,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "hospital indemnity insurance for seniors",
+              "slug": "hospital-indemnity-insurance-for-seniors",
+              "vol": 140,
+              "cpc": 5.48,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "critical illness insurance for seniors",
+              "slug": "critical-illness-insurance-for-seniors",
+              "vol": 90,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "accident insurance for seniors",
+              "slug": "accident-insurance-for-seniors",
+              "vol": 20,
+              "cpc": 7.12,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "do seniors need supplemental health insurance",
+              "slug": "do-seniors-need-supplemental-health-insurance",
+              "vol": 10,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "cancer insurance for seniors",
+              "slug": "cancer-insurance-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Life Insurance for Seniors",
+          "slug": "life-insurance-for-seniors",
+          "totalVol": 48850,
+          "avgCpc": 25.5,
+          "keywords": [
+            {
+              "keyword": "life insurance for seniors",
+              "slug": "life-insurance-for-seniors",
+              "vol": 22200,
+              "cpc": 32.87,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "term life insurance for seniors",
+              "slug": "term-life-insurance-for-seniors",
+              "vol": 12100,
+              "cpc": 30.84,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "whole life insurance for seniors",
+              "slug": "whole-life-insurance-for-seniors",
+              "vol": 4400,
+              "cpc": 26.9,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "best life insurance for seniors",
+              "slug": "best-life-insurance-for-seniors",
+              "vol": 3600,
+              "cpc": 20.99,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "cheapest life insurance for seniors",
+              "slug": "cheapest-life-insurance-for-seniors",
+              "vol": 2900,
+              "cpc": 33,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "life insurance for seniors over 70",
+              "slug": "life-insurance-for-seniors-over-70",
+              "vol": 880,
+              "cpc": 30.63,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "life insurance for seniors over 80",
+              "slug": "life-insurance-for-seniors-over-80",
+              "vol": 880,
+              "cpc": 18.59,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "life insurance for seniors over 75",
+              "slug": "life-insurance-for-seniors-over-75",
+              "vol": 590,
+              "cpc": 23.75,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "no medical exam life insurance for seniors",
+              "slug": "no-medical-exam-life-insurance-for-seniors",
+              "vol": 480,
+              "cpc": 42.58,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "life insurance quotes for seniors",
+              "slug": "life-insurance-quotes-for-seniors",
+              "vol": 260,
+              "cpc": 37.32,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "mortgage protection insurance for seniors",
+              "slug": "mortgage-protection-insurance-for-seniors",
+              "vol": 260,
+              "cpc": 13.13,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "guaranteed issue life insurance for seniors",
+              "slug": "guaranteed-issue-life-insurance-for-seniors",
+              "vol": 210,
+              "cpc": 16.9,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "guaranteed universal life insurance for seniors",
+              "slug": "guaranteed-universal-life-insurance-for-seniors",
+              "vol": 70,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "do seniors need life insurance",
+              "slug": "do-seniors-need-life-insurance",
+              "vol": 20,
+              "cpc": 3.94,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "how much is life insurance for a 75 year old",
+              "slug": "how-much-is-life-insurance-for-a-75-year-old",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Final Expense & Burial",
+          "slug": "final-expense-burial",
+          "totalVol": 23650,
+          "avgCpc": 17.11,
+          "keywords": [
+            {
+              "keyword": "final expense insurance",
+              "slug": "final-expense-insurance",
+              "vol": 12100,
+              "cpc": 18.41,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "burial insurance",
+              "slug": "burial-insurance",
+              "vol": 9900,
+              "cpc": 20.92,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "funeral insurance for seniors",
+              "slug": "funeral-insurance-for-seniors",
+              "vol": 590,
+              "cpc": 16.86,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "final expense insurance for seniors over 70",
+              "slug": "final-expense-insurance-for-seniors-over-70",
+              "vol": 390,
+              "cpc": 14.89,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "is burial insurance worth it",
+              "slug": "is-burial-insurance-worth-it",
+              "vol": 170,
+              "cpc": 7.61,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "guaranteed issue final expense insurance",
+              "slug": "guaranteed-issue-final-expense-insurance",
+              "vol": 140,
+              "cpc": 11.15,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how much does burial insurance cost",
+              "slug": "how-much-does-burial-insurance-cost",
+              "vol": 110,
+              "cpc": 10.47,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "cremation insurance for seniors",
+              "slug": "cremation-insurance-for-seniors",
+              "vol": 90,
+              "cpc": 16.43,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "best final expense insurance companies",
+              "slug": "best-final-expense-insurance-companies",
+              "vol": 50,
+              "cpc": 19.11,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "best burial insurance companies",
+              "slug": "best-burial-insurance-companies",
+              "vol": 40,
+              "cpc": 12.41,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "guaranteed acceptance burial insurance",
+              "slug": "guaranteed-acceptance-burial-insurance",
+              "vol": 30,
+              "cpc": 12.65,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "burial insurance for seniors over 75",
+              "slug": "burial-insurance-for-seniors-over-75",
+              "vol": 20,
+              "cpc": 17.26,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "no medical exam burial insurance",
+              "slug": "no-medical-exam-burial-insurance",
+              "vol": 10,
+              "cpc": 36.98,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "burial insurance no health questions",
+              "slug": "burial-insurance-no-health-questions",
+              "vol": 10,
+              "cpc": 24.35,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "burial insurance cost by age",
+              "slug": "burial-insurance-cost-by-age",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "compare final expense insurance quotes",
+              "slug": "compare-final-expense-insurance-quotes",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Senior Auto Insurance",
+          "slug": "senior-auto-insurance",
+          "totalVol": 16280,
+          "avgCpc": 37.76,
+          "keywords": [
+            {
+              "keyword": "car insurance for seniors",
+              "slug": "car-insurance-for-seniors",
+              "vol": 9900,
+              "cpc": 35.23,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "cheap car insurance for seniors",
+              "slug": "cheap-car-insurance-for-seniors",
+              "vol": 1900,
+              "cpc": 46.31,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "senior car insurance discounts",
+              "slug": "senior-car-insurance-discounts",
+              "vol": 1600,
+              "cpc": 43.75,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "auto insurance discounts for seniors",
+              "slug": "auto-insurance-discounts-for-seniors",
+              "vol": 1600,
+              "cpc": 43.75,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "best car insurance for seniors over 70",
+              "slug": "best-car-insurance-for-seniors-over-70",
+              "vol": 720,
+              "cpc": 24.16,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "low mileage car insurance for seniors",
+              "slug": "low-mileage-car-insurance-for-seniors",
+              "vol": 320,
+              "cpc": 18.95,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "car insurance quotes for seniors",
+              "slug": "car-insurance-quotes-for-seniors",
+              "vol": 210,
+              "cpc": 60.16,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "best car insurance for seniors over 65",
+              "slug": "best-car-insurance-for-seniors-over-65",
+              "vol": 30,
+              "cpc": 29.77,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "car insurance for seniors over 75",
+              "slug": "car-insurance-for-seniors-over-75",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "mature driver discount car insurance",
+              "slug": "mature-driver-discount-car-insurance",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "how much is car insurance for seniors",
+              "slug": "how-much-is-car-insurance-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Travel, Pet, Umbrella, ID",
+          "slug": "travel-pet-umbrella-id",
+          "totalVol": 10110,
+          "avgCpc": 19.66,
+          "keywords": [
+            {
+              "keyword": "travel insurance for seniors",
+              "slug": "travel-insurance-for-seniors",
+              "vol": 1900,
+              "cpc": 19.14,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "pet insurance for older dogs",
+              "slug": "pet-insurance-for-older-dogs",
+              "vol": 1900,
+              "cpc": 26.65,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "pet insurance for senior dogs",
+              "slug": "pet-insurance-for-senior-dogs",
+              "vol": 1900,
+              "cpc": 26.65,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "umbrella insurance cost",
+              "slug": "umbrella-insurance-cost",
+              "vol": 1600,
+              "cpc": 10.21,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "travel medical insurance for seniors",
+              "slug": "travel-medical-insurance-for-seniors",
+              "vol": 720,
+              "cpc": 15.26,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "best pet insurance for older dogs",
+              "slug": "best-pet-insurance-for-older-dogs",
+              "vol": 720,
+              "cpc": 29.8,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "do i need umbrella insurance",
+              "slug": "do-i-need-umbrella-insurance",
+              "vol": 720,
+              "cpc": 7.56,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "best identity theft protection for seniors",
+              "slug": "best-identity-theft-protection-for-seniors",
+              "vol": 320,
+              "cpc": 19.33,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "best travel insurance for seniors over 70",
+              "slug": "best-travel-insurance-for-seniors-over-70",
+              "vol": 210,
+              "cpc": 11.89,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "identity theft protection for seniors",
+              "slug": "identity-theft-protection-for-seniors",
+              "vol": 70,
+              "cpc": 24.65,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "travel insurance for seniors with pre-existing conditions",
+              "slug": "travel-insurance-for-seniors-with-pre-existing-conditions",
+              "vol": 40,
+              "cpc": 14.66,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "travel insurance for seniors over 65",
+              "slug": "travel-insurance-for-seniors-over-65",
+              "vol": 10,
+              "cpc": 30.08,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "umbrella insurance for seniors",
+              "slug": "umbrella-insurance-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "credit monitoring for seniors",
+              "slug": "credit-monitoring-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Senior Homeowners Insurance",
+          "slug": "senior-homeowners-insurance",
+          "totalVol": 2880,
+          "avgCpc": 46.74,
+          "keywords": [
+            {
+              "keyword": "cheapest homeowners insurance for seniors",
+              "slug": "cheapest-homeowners-insurance-for-seniors",
+              "vol": 1300,
+              "cpc": 48.05,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "homeowners insurance for seniors",
+              "slug": "homeowners-insurance-for-seniors",
+              "vol": 720,
+              "cpc": 53.26,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "home insurance for seniors",
+              "slug": "home-insurance-for-seniors",
+              "vol": 720,
+              "cpc": 53.49,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "best homeowners insurance for seniors",
+              "slug": "best-homeowners-insurance-for-seniors",
+              "vol": 140,
+              "cpc": 32.16,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "senior home insurance discounts",
+              "slug": "senior-home-insurance-discounts",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "home insurance discounts for retirees",
+              "slug": "home-insurance-discounts-for-retirees",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "how much is homeowners insurance for seniors",
+              "slug": "how-much-is-homeowners-insurance-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "home and auto insurance bundle for seniors",
+              "slug": "home-and-auto-insurance-bundle-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Health & Daily Living",
+      "totalVol": 148940,
+      "siloCount": 11,
+      "silos": [
+        {
+          "name": "Alzheimer's & Dementia",
+          "slug": "alzheimer-s-dementia",
+          "totalVol": 60800,
+          "avgCpc": 1.17,
+          "keywords": [
+            {
+              "keyword": "lewy body dementia symptoms",
+              "slug": "lewy-body-dementia-symptoms",
+              "vol": 22200,
+              "cpc": 0.83,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "types of dementia",
+              "slug": "types-of-dementia",
+              "vol": 18100,
+              "cpc": 0.5,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "difference between dementia and alzheimer's",
+              "slug": "difference-between-dementia-and-alzheimer-s",
+              "vol": 18100,
+              "cpc": 1.46,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "7 stages of dementia",
+              "slug": "7-stages-of-dementia",
+              "vol": 2400,
+              "cpc": 1.89,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "early signs of dementia in elderly parent",
+              "slug": "early-signs-of-dementia-in-elderly-parent",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "stages of alzheimer's disease explained",
+              "slug": "stages-of-alzheimer-s-disease-explained",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "what is sundowning in dementia",
+              "slug": "what-is-sundowning-in-dementia",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "how to stop sundowning in dementia patients",
+              "slug": "how-to-stop-sundowning-in-dementia-patients",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "early stage dementia symptoms",
+              "slug": "early-stage-dementia-symptoms",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "mild cognitive impairment vs dementia",
+              "slug": "mild-cognitive-impairment-vs-dementia",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "how to talk to someone with dementia",
+              "slug": "how-to-talk-to-someone-with-dementia",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "dementia care tips for caregivers at home",
+              "slug": "dementia-care-tips-for-caregivers-at-home",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "when to get help for dementia parent",
+              "slug": "when-to-get-help-for-dementia-parent",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "vascular dementia life expectancy",
+              "slug": "vascular-dementia-life-expectancy",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "frontotemporal dementia early signs",
+              "slug": "frontotemporal-dementia-early-signs",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "signs your elderly parent shouldn't live alone",
+              "slug": "signs-your-elderly-parent-shouldn-t-live-alone",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "how to get a dementia diagnosis",
+              "slug": "how-to-get-a-dementia-diagnosis",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "dementia wandering prevention",
+              "slug": "dementia-wandering-prevention",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "is forgetfulness normal aging or dementia",
+              "slug": "is-forgetfulness-normal-aging-or-dementia",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Fitness & Telehealth",
+          "slug": "fitness-telehealth",
+          "totalVol": 37330,
+          "avgCpc": 1.16,
+          "keywords": [
+            {
+              "keyword": "chair exercises for seniors",
+              "slug": "chair-exercises-for-seniors",
+              "vol": 22200,
+              "cpc": 1.2,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "balance exercises for seniors",
+              "slug": "balance-exercises-for-seniors",
+              "vol": 14800,
+              "cpc": 0.63,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "strength training for seniors over 70",
+              "slug": "strength-training-for-seniors-over-70",
+              "vol": 260,
+              "cpc": 2.29,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "best exercises for seniors at home",
+              "slug": "best-exercises-for-seniors-at-home",
+              "vol": 70,
+              "cpc": 0.51,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "silversneakers participating gyms near me",
+              "slug": "silversneakers-participating-gyms-near-me",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "is silversneakers free with medicare",
+              "slug": "is-silversneakers-free-with-medicare",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "telehealth for seniors on medicare",
+              "slug": "telehealth-for-seniors-on-medicare",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "online doctor visit for seniors",
+              "slug": "online-doctor-visit-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Vision & Hearing Health",
+          "slug": "vision-hearing-health",
+          "totalVol": 12300,
+          "avgCpc": 5.57,
+          "keywords": [
+            {
+              "keyword": "best hearing aids for seniors",
+              "slug": "best-hearing-aids-for-seniors",
+              "vol": 4400,
+              "cpc": 4.7,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "how much do hearing aids cost",
+              "slug": "how-much-do-hearing-aids-cost",
+              "vol": 4400,
+              "cpc": 2.53,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "over the counter hearing aids reviews",
+              "slug": "over-the-counter-hearing-aids-reviews",
+              "vol": 1900,
+              "cpc": 6.65,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "cheap hearing aids for seniors",
+              "slug": "cheap-hearing-aids-for-seniors",
+              "vol": 880,
+              "cpc": 6.37,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "rechargeable hearing aids for seniors",
+              "slug": "rechargeable-hearing-aids-for-seniors",
+              "vol": 390,
+              "cpc": 4.46,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "best otc hearing aids 2026",
+              "slug": "best-otc-hearing-aids-2026",
+              "vol": 320,
+              "cpc": 8.69,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "glaucoma symptoms in elderly",
+              "slug": "glaucoma-symptoms-in-elderly",
+              "vol": 10,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "macular degeneration symptoms and treatment",
+              "slug": "macular-degeneration-symptoms-and-treatment",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "wet vs dry macular degeneration",
+              "slug": "wet-vs-dry-macular-degeneration",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "best vitamins for macular degeneration",
+              "slug": "best-vitamins-for-macular-degeneration",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "cataract surgery for seniors cost",
+              "slug": "cataract-surgery-for-seniors-cost",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "signs of hearing loss in elderly",
+              "slug": "signs-of-hearing-loss-in-elderly",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Mobility & Fall Prevention",
+          "slug": "mobility-fall-prevention",
+          "totalVol": 12010,
+          "avgCpc": 5.97,
+          "keywords": [
+            {
+              "keyword": "wheelchair ramps for home",
+              "slug": "wheelchair-ramps-for-home",
+              "vol": 9900,
+              "cpc": 4.37,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "walk in tubs for seniors cost",
+              "slug": "walk-in-tubs-for-seniors-cost",
+              "vol": 1000,
+              "cpc": 9.57,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "best shower chair for elderly",
+              "slug": "best-shower-chair-for-elderly",
+              "vol": 720,
+              "cpc": 0.97,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "how to prevent falls in elderly at home",
+              "slug": "how-to-prevent-falls-in-elderly-at-home",
+              "vol": 260,
+              "cpc": 4.96,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "walk in tub prices installed",
+              "slug": "walk-in-tub-prices-installed",
+              "vol": 70,
+              "cpc": 15.43,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "fall prevention for elderly at home",
+              "slug": "fall-prevention-for-elderly-at-home",
+              "vol": 50,
+              "cpc": 2.95,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "best lift chair recliner for elderly",
+              "slug": "best-lift-chair-recliner-for-elderly",
+              "vol": 10,
+              "cpc": 3.54,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "best rollator walker for seniors",
+              "slug": "best-rollator-walker-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "walker vs rollator for elderly",
+              "slug": "walker-vs-rollator-for-elderly",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "best mobility scooter for seniors",
+              "slug": "best-mobility-scooter-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "stair lift cost for seniors",
+              "slug": "stair-lift-cost-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "best stair lift brands 2026",
+              "slug": "best-stair-lift-brands-2026",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "grab bars for bathroom for elderly",
+              "slug": "grab-bars-for-bathroom-for-elderly",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "best cane for balance for seniors",
+              "slug": "best-cane-for-balance-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Durable Medical Equipment",
+          "slug": "durable-medical-equipment",
+          "totalVol": 8190,
+          "avgCpc": 4.77,
+          "keywords": [
+            {
+              "keyword": "does medicare cover wheelchairs",
+              "slug": "does-medicare-cover-wheelchairs",
+              "vol": 2400,
+              "cpc": 3.12,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover lift chairs",
+              "slug": "does-medicare-cover-lift-chairs",
+              "vol": 2400,
+              "cpc": 4.21,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover walkers",
+              "slug": "does-medicare-cover-walkers",
+              "vol": 1000,
+              "cpc": 1.28,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover stair lifts",
+              "slug": "does-medicare-cover-stair-lifts",
+              "vol": 1000,
+              "cpc": 6.78,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover mobility scooters",
+              "slug": "does-medicare-cover-mobility-scooters",
+              "vol": 590,
+              "cpc": 3.13,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "does medicare cover walk in tubs",
+              "slug": "does-medicare-cover-walk-in-tubs",
+              "vol": 590,
+              "cpc": 8.85,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "does medicare cover hospital beds for home",
+              "slug": "does-medicare-cover-hospital-beds-for-home",
+              "vol": 140,
+              "cpc": 2.35,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare cover oxygen at home",
+              "slug": "does-medicare-cover-oxygen-at-home",
+              "vol": 70,
+              "cpc": 8.43,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "does medicare cover cpap machines",
+              "slug": "does-medicare-cover-cpap-machines",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "how to get a free wheelchair from medicare",
+              "slug": "how-to-get-a-free-wheelchair-from-medicare",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "durable medical equipment covered by medicare list",
+              "slug": "durable-medical-equipment-covered-by-medicare-list",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "diabetic supplies covered by medicare",
+              "slug": "diabetic-supplies-covered-by-medicare",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Caregiving Support",
+          "slug": "caregiving-support",
+          "totalVol": 5170,
+          "avgCpc": 4.11,
+          "keywords": [
+            {
+              "keyword": "support groups for caregivers near me",
+              "slug": "support-groups-for-caregivers-near-me",
+              "vol": 2900,
+              "cpc": 4.1,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "caregiver burnout symptoms",
+              "slug": "caregiver-burnout-symptoms",
+              "vol": 1000,
+              "cpc": 1.97,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicare pay family caregivers",
+              "slug": "does-medicare-pay-family-caregivers",
+              "vol": 590,
+              "cpc": 3.99,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "va caregiver stipend program",
+              "slug": "va-caregiver-stipend-program",
+              "vol": 320,
+              "cpc": 8.52,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to care for aging parent",
+              "slug": "how-to-care-for-aging-parent",
+              "vol": 140,
+              "cpc": 2.78,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "how to get paid to care for elderly parent",
+              "slug": "how-to-get-paid-to-care-for-elderly-parent",
+              "vol": 90,
+              "cpc": 5.91,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "signs of caregiver stress",
+              "slug": "signs-of-caregiver-stress",
+              "vol": 70,
+              "cpc": 4.14,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to deal with caregiver burnout",
+              "slug": "how-to-deal-with-caregiver-burnout",
+              "vol": 50,
+              "cpc": 1.47,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "long distance caregiving tips",
+              "slug": "long-distance-caregiving-tips",
+              "vol": 10,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "caregiver pay from medicaid",
+              "slug": "caregiver-pay-from-medicaid",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "how to care for a parent with dementia",
+              "slug": "how-to-care-for-a-parent-with-dementia",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "how to convince elderly parent to accept help",
+              "slug": "how-to-convince-elderly-parent-to-accept-help",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "what to do when aging parents need help",
+              "slug": "what-to-do-when-aging-parents-need-help",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Medical Alert Systems",
+          "slug": "medical-alert-systems",
+          "totalVol": 5070,
+          "avgCpc": 11.28,
+          "keywords": [
+            {
+              "keyword": "life alert cost per month",
+              "slug": "life-alert-cost-per-month",
+              "vol": 2900,
+              "cpc": 9.67,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "medical alert systems with fall detection",
+              "slug": "medical-alert-systems-with-fall-detection",
+              "vol": 880,
+              "cpc": 22.62,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "fall detection device for elderly",
+              "slug": "fall-detection-device-for-elderly",
+              "vol": 320,
+              "cpc": 12.82,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "does medicare cover medical alert systems",
+              "slug": "does-medicare-cover-medical-alert-systems",
+              "vol": 320,
+              "cpc": 5.33,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "medical alert watch for seniors",
+              "slug": "medical-alert-watch-for-seniors",
+              "vol": 260,
+              "cpc": 8.61,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "medical alert system no monthly fee",
+              "slug": "medical-alert-system-no-monthly-fee",
+              "vol": 210,
+              "cpc": 4.09,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "cheapest medical alert system",
+              "slug": "cheapest-medical-alert-system",
+              "vol": 140,
+              "cpc": 15.17,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "life alert vs medical alert",
+              "slug": "life-alert-vs-medical-alert",
+              "vol": 30,
+              "cpc": 11.95,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "best medical alert necklace for elderly",
+              "slug": "best-medical-alert-necklace-for-elderly",
+              "vol": 10,
+              "cpc": 0,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "best medical alert systems for seniors 2026",
+              "slug": "best-medical-alert-systems-for-seniors-2026",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "medical alert system with gps tracking",
+              "slug": "medical-alert-system-with-gps-tracking",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Nutrition, Meals & Weight",
+          "slug": "nutrition-meals-weight",
+          "totalVol": 3950,
+          "avgCpc": 5.74,
+          "keywords": [
+            {
+              "keyword": "high protein foods for elderly",
+              "slug": "high-protein-foods-for-elderly",
+              "vol": 1900,
+              "cpc": 0.57,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "meals on wheels eligibility",
+              "slug": "meals-on-wheels-eligibility",
+              "vol": 880,
+              "cpc": 6.86,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "best meal delivery for seniors",
+              "slug": "best-meal-delivery-for-seniors",
+              "vol": 720,
+              "cpc": 9.74,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "low sodium meal delivery for seniors",
+              "slug": "low-sodium-meal-delivery-for-seniors",
+              "vol": 260,
+              "cpc": 4.83,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "best diet for seniors to lose weight",
+              "slug": "best-diet-for-seniors-to-lose-weight",
+              "vol": 70,
+              "cpc": 1.53,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "diabetic meal delivery for seniors",
+              "slug": "diabetic-meal-delivery-for-seniors",
+              "vol": 40,
+              "cpc": 5.86,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "nutrition tips for seniors",
+              "slug": "nutrition-tips-for-seniors",
+              "vol": 40,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "meal delivery for elderly near me",
+              "slug": "meal-delivery-for-elderly-near-me",
+              "vol": 20,
+              "cpc": 6.84,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "weight loss for seniors over 65",
+              "slug": "weight-loss-for-seniors-over-65",
+              "vol": 10,
+              "cpc": 9.68,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "prepared meals for elderly delivered",
+              "slug": "prepared-meals-for-elderly-delivered",
+              "vol": 10,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Prescription Savings",
+          "slug": "prescription-savings",
+          "totalVol": 3030,
+          "avgCpc": 13.59,
+          "keywords": [
+            {
+              "keyword": "best prescription discount card",
+              "slug": "best-prescription-discount-card",
+              "vol": 1900,
+              "cpc": 3.17,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "patient assistance programs for prescriptions",
+              "slug": "patient-assistance-programs-for-prescriptions",
+              "vol": 1000,
+              "cpc": 32.87,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to save money on prescriptions",
+              "slug": "how-to-save-money-on-prescriptions",
+              "vol": 90,
+              "cpc": 4.72,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "prescription discount card for seniors",
+              "slug": "prescription-discount-card-for-seniors",
+              "vol": 20,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "goodrx vs medicare part d",
+              "slug": "goodrx-vs-medicare-part-d",
+              "vol": 20,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "mail order pharmacy for seniors",
+              "slug": "mail-order-pharmacy-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "free prescription assistance for seniors",
+              "slug": "free-prescription-assistance-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "how to lower medication costs medicare",
+              "slug": "how-to-lower-medication-costs-medicare",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "extra help with medicare prescription costs",
+              "slug": "extra-help-with-medicare-prescription-costs",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "drug manufacturer copay assistance programs",
+              "slug": "drug-manufacturer-copay-assistance-programs",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Incontinence & Daily Living",
+          "slug": "incontinence-daily-living",
+          "totalVol": 790,
+          "avgCpc": 3.97,
+          "keywords": [
+            {
+              "keyword": "incontinence supplies near me",
+              "slug": "incontinence-supplies-near-me",
+              "vol": 720,
+              "cpc": 3.62,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "best overnight incontinence underwear",
+              "slug": "best-overnight-incontinence-underwear",
+              "vol": 50,
+              "cpc": 4.32,
+              "comp": "HIGH"
+            },
+            {
+              "keyword": "best incontinence products for seniors",
+              "slug": "best-incontinence-products-for-seniors",
+              "vol": 20,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "adult diapers for elderly reviews",
+              "slug": "adult-diapers-for-elderly-reviews",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "incontinence supplies covered by medicare",
+              "slug": "incontinence-supplies-covered-by-medicare",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "how to manage incontinence in elderly",
+              "slug": "how-to-manage-incontinence-in-elderly",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "bladder control products for seniors",
+              "slug": "bladder-control-products-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "underpads for elderly bed",
+              "slug": "underpads-for-elderly-bed",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Chronic Conditions",
+          "slug": "chronic-conditions",
+          "totalVol": 300,
+          "avgCpc": 2.72,
+          "keywords": [
+            {
+              "keyword": "signs of a mini stroke in elderly",
+              "slug": "signs-of-a-mini-stroke-in-elderly",
+              "vol": 210,
+              "cpc": 2.99,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "congestive heart failure life expectancy elderly",
+              "slug": "congestive-heart-failure-life-expectancy-elderly",
+              "vol": 90,
+              "cpc": 2.44,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "diabetes management for seniors",
+              "slug": "diabetes-management-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "type 2 diabetes diet for seniors",
+              "slug": "type-2-diabetes-diet-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "managing arthritis pain in elderly",
+              "slug": "managing-arthritis-pain-in-elderly",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "best supplements for arthritis in seniors",
+              "slug": "best-supplements-for-arthritis-in-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "osteoporosis treatment for seniors",
+              "slug": "osteoporosis-treatment-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "how to prevent osteoporosis after 65",
+              "slug": "how-to-prevent-osteoporosis-after-65",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "copd management at home for elderly",
+              "slug": "copd-management-at-home-for-elderly",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "early signs of heart disease in seniors",
+              "slug": "early-signs-of-heart-disease-in-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "parkinson's disease early symptoms",
+              "slug": "parkinson-s-disease-early-symptoms",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "stages of parkinson's disease",
+              "slug": "stages-of-parkinson-s-disease",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "stroke recovery for elderly at home",
+              "slug": "stroke-recovery-for-elderly-at-home",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "high blood pressure in seniors treatment",
+              "slug": "high-blood-pressure-in-seniors-treatment",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Benefits & Protection",
+      "totalVol": 38880,
+      "siloCount": 10,
+      "silos": [
+        {
+          "name": "Medicaid for Seniors",
+          "slug": "medicaid-for-seniors",
+          "totalVol": 21820,
+          "avgCpc": 6.16,
+          "keywords": [
+            {
+              "keyword": "medicaid long term care eligibility",
+              "slug": "medicaid-long-term-care-eligibility",
+              "vol": 18100,
+              "cpc": 9.63,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "does medicaid pay for assisted living",
+              "slug": "does-medicaid-pay-for-assisted-living",
+              "vol": 2900,
+              "cpc": 6.24,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicaid nursing home eligibility",
+              "slug": "medicaid-nursing-home-eligibility",
+              "vol": 590,
+              "cpc": 5.32,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to apply for medicaid for elderly parent",
+              "slug": "how-to-apply-for-medicaid-for-elderly-parent",
+              "vol": 90,
+              "cpc": 6.5,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicaid income limits for seniors",
+              "slug": "medicaid-income-limits-for-seniors",
+              "vol": 70,
+              "cpc": 3.1,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to qualify for medicaid for nursing home care",
+              "slug": "how-to-qualify-for-medicaid-for-nursing-home-care",
+              "vol": 70,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "medicaid eligibility for seniors 2026",
+              "slug": "medicaid-eligibility-for-seniors-2026",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "medicaid asset limits for seniors",
+              "slug": "medicaid-asset-limits-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "medicaid hcbs waiver for seniors",
+              "slug": "medicaid-hcbs-waiver-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "dual eligible medicare and medicaid seniors",
+              "slug": "dual-eligible-medicare-and-medicaid-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "medicaid penalty period gifting assets",
+              "slug": "medicaid-penalty-period-gifting-assets",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "VA Benefits for Seniors",
+          "slug": "va-benefits-for-seniors",
+          "totalVol": 3790,
+          "avgCpc": 2.53,
+          "keywords": [
+            {
+              "keyword": "va aid and attendance benefit",
+              "slug": "va-aid-and-attendance-benefit",
+              "vol": 2900,
+              "cpc": 2.68,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "va housebound benefits",
+              "slug": "va-housebound-benefits",
+              "vol": 320,
+              "cpc": 3.02,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "va aid and attendance eligibility",
+              "slug": "va-aid-and-attendance-eligibility",
+              "vol": 170,
+              "cpc": 2.36,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "va aid and attendance income limits",
+              "slug": "va-aid-and-attendance-income-limits",
+              "vol": 110,
+              "cpc": 2,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to apply for va aid and attendance",
+              "slug": "how-to-apply-for-va-aid-and-attendance",
+              "vol": 90,
+              "cpc": 4.22,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "va aid and attendance for assisted living",
+              "slug": "va-aid-and-attendance-for-assisted-living",
+              "vol": 70,
+              "cpc": 0.74,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "va pension for wartime veterans",
+              "slug": "va-pension-for-wartime-veterans",
+              "vol": 70,
+              "cpc": 0.01,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "va benefits for veterans over 65",
+              "slug": "va-benefits-for-veterans-over-65",
+              "vol": 40,
+              "cpc": 2.99,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "va aid and attendance 2026 rates",
+              "slug": "va-aid-and-attendance-2026-rates",
+              "vol": 10,
+              "cpc": 3.13,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "va nursing home benefits for veterans",
+              "slug": "va-nursing-home-benefits-for-veterans",
+              "vol": 10,
+              "cpc": 4.1,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "va pension eligibility for seniors",
+              "slug": "va-pension-eligibility-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "va health care eligibility for elderly veterans",
+              "slug": "va-health-care-eligibility-for-elderly-veterans",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "elderly veterans benefits programs",
+              "slug": "elderly-veterans-benefits-programs",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Area Agency on Aging & PACE",
+          "slug": "area-agency-on-aging-pace",
+          "totalVol": 3590,
+          "avgCpc": 6.03,
+          "keywords": [
+            {
+              "keyword": "area agency on aging near me",
+              "slug": "area-agency-on-aging-near-me",
+              "vol": 1300,
+              "cpc": 6.95,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "pace program for the elderly",
+              "slug": "pace-program-for-the-elderly",
+              "vol": 1000,
+              "cpc": 6.06,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "program of all inclusive care for the elderly",
+              "slug": "program-of-all-inclusive-care-for-the-elderly",
+              "vol": 1000,
+              "cpc": 7.37,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "free senior transportation services",
+              "slug": "free-senior-transportation-services",
+              "vol": 170,
+              "cpc": 3.38,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "transportation for elderly to doctor appointments",
+              "slug": "transportation-for-elderly-to-doctor-appointments",
+              "vol": 50,
+              "cpc": 2.98,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "what does area agency on aging do",
+              "slug": "what-does-area-agency-on-aging-do",
+              "vol": 30,
+              "cpc": 6.85,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "in home support services for elderly",
+              "slug": "in-home-support-services-for-elderly",
+              "vol": 30,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "pace program eligibility requirements",
+              "slug": "pace-program-eligibility-requirements",
+              "vol": 10,
+              "cpc": 8.64,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "older americans act services for seniors",
+              "slug": "older-americans-act-services-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "VA Survivor & DIC Benefits",
+          "slug": "va-survivor-dic-benefits",
+          "totalVol": 2650,
+          "avgCpc": 2.28,
+          "keywords": [
+            {
+              "keyword": "va dependency and indemnity compensation",
+              "slug": "va-dependency-and-indemnity-compensation",
+              "vol": 1900,
+              "cpc": 1.48,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "va survivor benefits for widows",
+              "slug": "va-survivor-benefits-for-widows",
+              "vol": 720,
+              "cpc": 3.08,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "how to apply for va dic benefits",
+              "slug": "how-to-apply-for-va-dic-benefits",
+              "vol": 30,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "dic benefits eligibility surviving spouse",
+              "slug": "dic-benefits-eligibility-surviving-spouse",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "va survivors pension for widow",
+              "slug": "va-survivors-pension-for-widow",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "va death benefits for veteran spouse",
+              "slug": "va-death-benefits-for-veteran-spouse",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "champva benefits for surviving spouse",
+              "slug": "champva-benefits-for-surviving-spouse",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Food, Utility & Energy Assistance",
+          "slug": "food-utility-energy-assistance",
+          "totalVol": 2440,
+          "avgCpc": 4.56,
+          "keywords": [
+            {
+              "keyword": "commodity supplemental food program for seniors",
+              "slug": "commodity-supplemental-food-program-for-seniors",
+              "vol": 2400,
+              "cpc": 8.4,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "food assistance programs for older adults",
+              "slug": "food-assistance-programs-for-older-adults",
+              "vol": 20,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "snap income limits for seniors",
+              "slug": "snap-income-limits-for-seniors",
+              "vol": 10,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to apply for food stamps for seniors",
+              "slug": "how-to-apply-for-food-stamps-for-seniors",
+              "vol": 10,
+              "cpc": 0.72,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "snap food stamps for seniors over 60",
+              "slug": "snap-food-stamps-for-seniors-over-60",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "liheap utility assistance for seniors",
+              "slug": "liheap-utility-assistance-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "help paying electric bill for seniors",
+              "slug": "help-paying-electric-bill-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "meals on wheels for seniors eligibility",
+              "slug": "meals-on-wheels-for-seniors-eligibility",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "energy assistance for elderly on fixed income",
+              "slug": "energy-assistance-for-elderly-on-fixed-income",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Property Tax & Financial Relief",
+          "slug": "property-tax-financial-relief",
+          "totalVol": 2240,
+          "avgCpc": 3.76,
+          "keywords": [
+            {
+              "keyword": "property tax freeze for seniors",
+              "slug": "property-tax-freeze-for-seniors",
+              "vol": 1300,
+              "cpc": 5.83,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to apply for senior property tax exemption",
+              "slug": "how-to-apply-for-senior-property-tax-exemption",
+              "vol": 390,
+              "cpc": 5.5,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "states with no property tax for seniors",
+              "slug": "states-with-no-property-tax-for-seniors",
+              "vol": 320,
+              "cpc": 0.06,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "financial assistance for senior citizens",
+              "slug": "financial-assistance-for-senior-citizens",
+              "vol": 210,
+              "cpc": 3.66,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "senior citizen property tax credit",
+              "slug": "senior-citizen-property-tax-credit",
+              "vol": 20,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "property tax exemption for seniors over 65",
+              "slug": "property-tax-exemption-for-seniors-over-65",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "senior property tax relief by state",
+              "slug": "senior-property-tax-relief-by-state",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "property tax deferral for elderly homeowners",
+              "slug": "property-tax-deferral-for-elderly-homeowners",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "homestead exemption for seniors over 65",
+              "slug": "homestead-exemption-for-seniors-over-65",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "debt relief for seniors on fixed income",
+              "slug": "debt-relief-for-seniors-on-fixed-income",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Senior Benefits Finder & Discounts",
+          "slug": "senior-benefits-finder-discounts",
+          "totalVol": 1720,
+          "avgCpc": 6.89,
+          "keywords": [
+            {
+              "keyword": "medicare savings programs for seniors",
+              "slug": "medicare-savings-programs-for-seniors",
+              "vol": 1300,
+              "cpc": 8.28,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "help paying for medicare premiums",
+              "slug": "help-paying-for-medicare-premiums",
+              "vol": 320,
+              "cpc": 8.34,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "eldercare locator phone number",
+              "slug": "eldercare-locator-phone-number",
+              "vol": 90,
+              "cpc": 7.69,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "free government benefits for seniors",
+              "slug": "free-government-benefits-for-seniors",
+              "vol": 10,
+              "cpc": 3.24,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "what benefits am i entitled to as a senior",
+              "slug": "what-benefits-am-i-entitled-to-as-a-senior",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "government benefits for seniors low income",
+              "slug": "government-benefits-for-seniors-low-income",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "benefits checkup for seniors ncoa",
+              "slug": "benefits-checkup-for-seniors-ncoa",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "senior discounts programs list",
+              "slug": "senior-discounts-programs-list",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "help paying for prescriptions for seniors",
+              "slug": "help-paying-for-prescriptions-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "financial assistance programs for low income seniors",
+              "slug": "financial-assistance-programs-for-low-income-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Elder Fraud, Scams & ID Theft",
+          "slug": "elder-fraud-scams-id-theft",
+          "totalVol": 360,
+          "avgCpc": 8.1,
+          "keywords": [
+            {
+              "keyword": "medicare scam phone calls",
+              "slug": "medicare-scam-phone-calls",
+              "vol": 320,
+              "cpc": 14.74,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to protect elderly parents from scams",
+              "slug": "how-to-protect-elderly-parents-from-scams",
+              "vol": 40,
+              "cpc": 1.45,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "grandparent scam how it works",
+              "slug": "grandparent-scam-how-it-works",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "how to report elder fraud",
+              "slug": "how-to-report-elder-fraud",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "national elder fraud hotline number",
+              "slug": "national-elder-fraud-hotline-number",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "romance scams targeting seniors",
+              "slug": "romance-scams-targeting-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "tech support scams targeting elderly",
+              "slug": "tech-support-scams-targeting-elderly",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "elder financial exploitation warning signs",
+              "slug": "elder-financial-exploitation-warning-signs",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "report medicare fraud and scams",
+              "slug": "report-medicare-fraud-and-scams",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "common scams targeting older adults",
+              "slug": "common-scams-targeting-older-adults",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "social security scam calls for seniors",
+              "slug": "social-security-scam-calls-for-seniors",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Elder Abuse & Protective Services",
+          "slug": "elder-abuse-protective-services",
+          "totalVol": 270,
+          "avgCpc": 5.39,
+          "keywords": [
+            {
+              "keyword": "free legal aid for seniors",
+              "slug": "free-legal-aid-for-seniors",
+              "vol": 260,
+              "cpc": 5.39,
+              "comp": "MEDIUM"
+            },
+            {
+              "keyword": "elder financial abuse what to do",
+              "slug": "elder-financial-abuse-what-to-do",
+              "vol": 10,
+              "cpc": 0,
+              "comp": "LOW"
+            },
+            {
+              "keyword": "how to report elder abuse",
+              "slug": "how-to-report-elder-abuse",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "adult protective services elder abuse",
+              "slug": "adult-protective-services-elder-abuse",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "signs of elder abuse and neglect",
+              "slug": "signs-of-elder-abuse-and-neglect",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "elder abuse hotline number",
+              "slug": "elder-abuse-hotline-number",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "report nursing home abuse and neglect",
+              "slug": "report-nursing-home-abuse-and-neglect",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        },
+        {
+          "name": "Social Security Disability",
+          "slug": "social-security-disability",
+          "totalVol": 0,
+          "avgCpc": 0,
+          "keywords": [
+            {
+              "keyword": "ssdi for seniors over 55",
+              "slug": "ssdi-for-seniors-over-55",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "social security disability rules after age 55",
+              "slug": "social-security-disability-rules-after-age-55",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "ssi eligibility for seniors over 65",
+              "slug": "ssi-eligibility-for-seniors-over-65",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "ssi income and asset limits 2026",
+              "slug": "ssi-income-and-asset-limits-2026",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "ssdi vs ssi for older adults",
+              "slug": "ssdi-vs-ssi-for-older-adults",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "how to apply for ssi for elderly",
+              "slug": "how-to-apply-for-ssi-for-elderly",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "qualifying for disability after age 60",
+              "slug": "qualifying-for-disability-after-age-60",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            },
+            {
+              "keyword": "social security disability after age 65",
+              "slug": "social-security-disability-after-age-65",
+              "vol": 0,
+              "cpc": 0,
+              "comp": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

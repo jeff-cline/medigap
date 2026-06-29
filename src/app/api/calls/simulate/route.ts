@@ -26,18 +26,23 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const { winner, priceCents, call } = await routeCall({
+  const r = await routeCall({
     zip,
     state,
     leadId,
     source: b.source ? String(b.source) : undefined,
     moneyWord: b.moneyWord ? String(b.moneyWord) : undefined,
+    // a spoken word to test the QuinStreet ping-tree (e.g. "medicare", "auto insurance")
+    affiliateWord: b.affiliateWord ? String(b.affiliateWord) : (b.moneyWord ? String(b.moneyWord) : undefined),
   });
 
   return NextResponse.json({
     ok: true,
-    callId: call.id,
-    winner: winner?.agentId ?? null,
-    priceCents,
+    callId: r.call.id,
+    winner: r.winner?.agentId ?? null,
+    priceCents: r.priceCents,
+    disposition: r.disposition,
+    forwardedTo: r.forwardedTo,
+    affiliateWon: !!r.affiliateWon,
   });
 }

@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import { OAUTH_PROVIDERS, callbackUrl } from "@/lib/oauth";
+import { OAUTH_PROVIDERS, callbackUrl, isSocialProvider } from "@/lib/oauth";
 
 // Begin an OAuth authorization. Requires the app's client id to be saved in the
 // provider's Integration config first; otherwise returns a clear instruction.
 export async function GET(req: NextRequest, ctx: { params: Promise<{ provider: string }> }) {
   const session = await getSession();
-  if (!session || session.role !== "god") return NextResponse.json({ error: "God only" }, { status: 403 });
   const { provider } = await ctx.params;
+  // Ads/billing OAuth = god only. SOCIAL connect = any signed-in user (a creator connecting their
+  // own account, or god impersonating a creator). session.uid is the effective (impersonated) user.
+  if (!session || (!isSocialProvider(provider) && session.role !== "god")) {
+    return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+  }
   const p = OAUTH_PROVIDERS[provider];
   if (!p) return NextResponse.json({ error: "Unknown provider" }, { status: 404 });
 
@@ -17,8 +21,11 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ provider: s
   try { config = row ? JSON.parse(row.config) : {}; } catch {}
   const clientId = config[p.clientIdField];
   if (!clientId) {
-    const url = new URL("/dashboard/integrations", req.url);
-    url.searchParams.set("needs", provider);
+    // App not configured yet. God → integrations to add the App ID/Secret; creator → friendly note.
+    const url = isSocialProvider(provider)
+      ? new URL("/creator?connect=notready", req.url)
+      : new URL("/dashboard/integrations", req.url);
+    if (!isSocialProvider(provider)) url.searchParams.set("needs", provider);
     return NextResponse.redirect(url);
   }
 

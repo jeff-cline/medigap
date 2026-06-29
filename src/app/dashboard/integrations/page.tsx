@@ -1,5 +1,8 @@
 import { db } from "@/lib/db";
 import IntegrationCard, { IntegrationMeta } from "@/components/IntegrationCard";
+import QuinStreetCard from "@/components/QuinStreetCard";
+import { STAGE, isQsVertical, type QsVertical } from "@/lib/quinstreet";
+import { verticalLabel } from "@/lib/affiliate";
 import { TOLLFREE } from "@/lib/format";
 
 type Status = "unconfigured" | "saved" | "verified" | "failed";
@@ -41,6 +44,20 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
     dataFlow: "data-driven recommendations → the Autonomous Logic queue",
     steps: ["console.anthropic.com → API Keys → Create Key.", "Copy the key.", "Save, then Test connection."],
     fields: [{ name: "apiKey", label: "Anthropic API Key", type: "password", placeholder: "sk-ant-xxx" }, { name: "model", label: "Model", placeholder: "claude-opus-4-8" }],
+  },
+  {
+    phase: "Money rails", key: "elevenlabs", label: "ElevenLabs — Voice Clone & Voiceovers",
+    blurb: "Clones your spokesperson's voice and generates voiceovers (TV/Runway). Powers the /voice engine.",
+    dataFlow: "cloned voice + script → mp3 voiceover (fit to a timeframe) for Runway / TV",
+    steps: ["elevenlabs.io → Profile → API Keys; create a key (starts with sk_).", "Save it here + Test connection.", "Then go to medigap.plus/voice and upload your voice sample to clone it (sets the voice_id)."],
+    fields: [{ name: "apiKey", label: "ElevenLabs API Key", type: "password", placeholder: "sk_xxx" }, { name: "voiceId", label: "Voice ID (set automatically when you clone on /voice)" }, { name: "model", label: "Model (optional)", placeholder: "eleven_multilingual_v2" }, { name: "costPer1kChars", label: "Est. $ per 1,000 chars (cost display)", placeholder: "0.15" }],
+  },
+  {
+    phase: "Money rails", key: "syncso", label: "Sync.so — Lip-Sync (TV Studio)",
+    blurb: "Re-syncs your spokesperson's mouth to the cloned voiceover. Powers the TV Commercial Studio at /dashboard/tv.",
+    dataFlow: "face clip + cloned voiceover → lip-synced video (his mouth says your new script)",
+    steps: ["Create an account at sync.so → API keys; create a key (starts with sk-).", "Paste below + Test connection.", "Note: each plan caps generation length (e.g. 20s) — longer spots need a plan upgrade.", "Then produce spots in the TV Commercial Studio (left nav)."],
+    fields: [{ name: "apiKey", label: "Sync.so API Key", type: "password", placeholder: "sk-xxx" }, { name: "model", label: "Model (optional)", placeholder: "lipsync-2" }, { name: "maxSeconds", label: "Plan max seconds per generation", placeholder: "20" }, { name: "costPerSec", label: "Est. $ per second (cost display)", placeholder: "0.10" }],
   },
   {
     phase: "Remarketing", key: "klaviyo", label: "Klaviyo — Opted-In Remarketing", oauth: true,
@@ -89,7 +106,7 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
     blurb: "Connect a business portfolio of Facebook Pages (and Instagram via Meta Graph) to pull impressions, engagement and trending posts into the Core — and run lead forms that attribute back to the creator.",
     dataFlow: "social metrics + lead-form submissions → Core dashboard & CRM (creator-attributed)",
     steps: ["Meta for Developers → create an app with the Pages + Instagram Graph permissions.", "Add this app's callback as an OAuth redirect URI.", "Save the App ID/Secret.", "Connect to authorize the business portfolio (Krystalore can connect her own).", "Test connection."],
-    fields: [{ name: "appId", label: "Meta App ID" }, { name: "appSecret", label: "Meta App Secret", type: "password" }, { name: "accessToken", label: "Page/User Access Token (optional)", type: "password" }],
+    fields: [{ name: "appId", label: "Meta App ID" }, { name: "appSecret", label: "Meta App Secret", type: "password" }, { name: "businessId", label: "Business Portfolio ID (pulls the whole portfolio)", placeholder: "1531355990484848" }, { name: "accessToken", label: "Page/User Access Token (optional)", type: "password" }],
   },
   {
     phase: "Social media", key: "ig_social", label: "Instagram — Social Accounts (Doublewide)", oauth: true,
@@ -114,10 +131,10 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
   },
   {
     phase: "Scale & arbitrage", key: "runway", label: "RunwayML — AI Video & Graphics",
-    blurb: "Generates the social-media video series, media kit graphics & brand visuals for partner sites and the video-marketing test tool.",
-    dataFlow: "AI-generated video/image assets → partner media kits + upgrades",
-    steps: ["Create an account at runwayml.com → dev.runwayml.com (developer API).", "API Keys → create a key.", "Paste below and Test connection.", "Powers the $1,500 video/media-kit upgrades + the God 'Test video marketing capacity' tool."],
-    fields: [{ name: "apiKey", label: "RunwayML API Key", type: "password", placeholder: "key_..." }],
+    blurb: "Generates social-media video/graphics AND powers the TV Studio 'look prompt' — restyle a spot's background/feel from one prompt (video-to-video).",
+    dataFlow: "AI-generated video/image assets → media kits + TV-commercial look restyling",
+    steps: ["Create an account at runwayml.com → dev.runwayml.com (developer API).", "API Keys → create a key.", "Paste below and Test connection.", "Powers the $1,500 upgrades + the TV Commercial Studio look/background prompt."],
+    fields: [{ name: "apiKey", label: "RunwayML API Key", type: "password", placeholder: "key_..." }, { name: "costPerSec", label: "Est. $ per second (cost display)", placeholder: "0.15" }],
   },
   {
     phase: "Scale & arbitrage", key: "dataforseo", label: "DataForSEO — Keyword CPC & Search Volume",
@@ -148,6 +165,13 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
   const sp = await searchParams;
   const rows = await db.integration.findMany();
   const byKey = new Map(rows.map((r) => [r.key, r]));
+
+  // QuinStreet affiliate (its credential is the per-vertical prod quadTag, not a generic key).
+  const qs = await db.affiliate.findFirst({ where: { slug: "quinstreet" }, include: { verticals: { orderBy: { label: "asc" } } } });
+  const qsVerticals = (qs?.verticals || []).filter((v) => isQsVertical(v.vertical)).map((v) => ({
+    id: v.id, vertical: v.vertical, label: verticalLabel(v.vertical), quadTag: v.quadTag,
+    isTest: !v.quadTag || v.quadTag === STAGE[v.vertical as QsVertical].testQuadTag, hasEndpoint: !!v.pingUrl,
+  }));
   const statusOf = (key: string): Status => (byKey.get(key)?.status as Status) || "unconfigured";
   const verified = ITEMS.filter((i) => statusOf(i.key) === "verified").length;
   const oauthStatus = sp?.oauth?.split(":") ?? [];
@@ -185,6 +209,15 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
           <span><span style={{ color: "var(--danger)" }}>●</span> not connected</span>
         </div>
       </div>
+
+      {qs && (
+        <section className="mb-8">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)] mb-3">
+            <span className="text-gradient">Affiliate revenue</span> · QuinStreet (call ping-post)
+          </h2>
+          <QuinStreetCard affiliateId={qs.id} mode={qs.mode} verticals={qsVerticals} />
+        </section>
+      )}
 
       {PHASES.map((phase, pi) => (
         <section key={phase} className="mb-8">

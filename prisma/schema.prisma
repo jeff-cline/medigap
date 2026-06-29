@@ -15,56 +15,57 @@ datasource db {
 // MULTI-TENANCY — one backend, many marketing sites, routed by hostname
 // ---------------------------------------------------------------------------
 model Site {
-  id        String   @id @default(cuid())
-  hostname  String   @unique // e.g. medigap.plus, 1-800-medigap.com
-  name      String
-  kind      String   @default("marketing") // management | marketing
-  goal      String   @default("") // the prompt that defines what this site does
-  vertical  String   @default("medicare") // medicare | housing | care | alzheimers | ...
-  theme     String   @default("{}") // JSON: colors, layout variant for A/B testing
-  active    Boolean  @default(true)
+  id                   String     @id @default(cuid())
+  hostname             String     @unique // e.g. medigap.plus, 1-800-medigap.com
+  name                 String
+  kind                 String     @default("marketing") // management | marketing
+  goal                 String     @default("") // the prompt that defines what this site does
+  vertical             String     @default("medicare") // medicare | housing | care | alzheimers | ...
+  theme                String     @default("{}") // JSON: colors, layout variant for A/B testing
+  active               Boolean    @default(true)
   // --- mode: network (leads go to the network auction) vs standalone (partner-owned) ---
-  mode      String   @default("network") // network | standalone
-  ownerId   String?  // standalone site owner (a partner)
-  territoryZips String @default("[]") // ZIPs the owner keeps for themselves (JSON)
-  affiliateRevSharePct Int @default(0) // % paid to the owner on overflow leads we sell
+  mode                 String     @default("network") // network | standalone
+  ownerId              String? // standalone site owner (a partner)
+  territoryZips        String     @default("[]") // ZIPs the owner keeps for themselves (JSON)
+  affiliateRevSharePct Int        @default(0) // % paid to the owner on overflow leads we sell
   // --- advanced intent ---
-  audience  String   @default("")
-  primaryCta String  @default("call") // call | form
-  brandColor String  @default("")
-  logoUrl   String   @default("")
-  footerLinks String @default("[]") // JSON [{label, href}] — partner's custom footer
-  heroHeadline String @default("")
-  moneyWords String  @default("")
+  audience             String     @default("")
+  primaryCta           String     @default("call") // call | form
+  brandColor           String     @default("")
+  logoUrl              String     @default("")
+  footerLinks          String     @default("[]") // JSON [{label, href}] — partner's custom footer
+  heroHeadline         String     @default("")
+  moneyWords           String     @default("")
   // --- AI site builder ---
-  buildStatus String @default("none") // none | engineering | brief_ready | building | complete | error
-  buildBrief String  @default("{}")   // engineered/approved brief JSON
-  buildProgress String @default("{}") // {done,total,current,error} for the progress UI
-  createdAt DateTime @default(now())
-  leads     Lead[]
-  calls     Call[]
-  pages     SitePage[]
+  buildStatus          String     @default("none") // none | engineering | brief_ready | building | complete | error
+  buildBrief           String     @default("{}") // engineered/approved brief JSON
+  buildProgress        String     @default("{}") // {done,total,current,error} for the progress UI
+  createdAt            DateTime   @default(now())
+  leads                Lead[]
+  calls                Call[]
+  pages                SitePage[]
 }
 
 // AI-generated page belonging to a white-label Site. Content is stored as typed
 // JSON blocks so every page renders through one shared renderer that matches the
 // site's own homepage styling.
 model SitePage {
-  id        String   @id @default(cuid())
-  siteId    String
-  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  kind      String   @default("page") // home | page | faq | blog
-  slug      String                    // "" for home, e.g. "faq", "resources/taking-the-keys-away", "blog/<slug>"
-  title     String   @default("")
-  metaDescription String @default("")
-  heroHeadline String @default("")
-  blocks    String   @default("[]")   // JSON: ordered typed content blocks (the page body)
-  keywords  String   @default("[]")   // JSON: target keywords (+ optional cpc)
-  images    String   @default("[]")   // JSON: [{url, alt, photographer, photographerUrl}]
-  order     Int      @default(0)
-  published Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(cuid())
+  siteId          String
+  site            Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  kind            String   @default("page") // home | page | faq | blog
+  slug            String // "" for home, e.g. "faq", "resources/taking-the-keys-away", "blog/<slug>"
+  title           String   @default("")
+  metaDescription String   @default("")
+  heroHeadline    String   @default("")
+  blocks          String   @default("[]") // JSON: ordered typed content blocks (the page body)
+  keywords        String   @default("[]") // JSON: target keywords (+ optional cpc)
+  images          String   @default("[]") // JSON: [{url, alt, photographer, photographerUrl}]
+  order           Int      @default(0)
+  published       Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
   @@unique([siteId, slug])
 }
 
@@ -103,7 +104,7 @@ model Upgrade {
   id            String   @id @default(cuid())
   applicationId String?
   siteId        String?
-  kind          String   // video | mediakit
+  kind          String // video | mediakit
   amountCents   Int      @default(150000)
   paidCents     Int      @default(0)
   couponCode    String   @default("")
@@ -116,41 +117,113 @@ model Upgrade {
 // Affiliate leads: overflow leads a standalone site sent into the network that we sold,
 // revenue-shared back to the source owner. Minimal PII (first name) + the money.
 model AffiliateLead {
-  id          String   @id @default(cuid())
-  siteId      String?
-  ownerId     String?
-  leadId      String
-  firstName   String   @default("")
-  soldForCents Int     @default(0)
-  revShareCents Int    @default(0)
-  createdAt   DateTime @default(now())
+  id            String   @id @default(cuid())
+  siteId        String?
+  ownerId       String?
+  leadId        String
+  firstName     String   @default("")
+  soldForCents  Int      @default(0)
+  revShareCents Int      @default(0)
+  createdAt     DateTime @default(now())
+}
+
+// Affiliate NETWORK partner (e.g. QuinStreet) — the backstop monetization for calls/leads we
+// can't sell at a premium. Ping-post-tree per vertical: ping for a bid, post if it wins.
+model Affiliate {
+  id              String              @id @default(cuid())
+  name            String // QuinStreet
+  slug            String              @unique // quinstreet
+  active          Boolean             @default(true) // master on/off
+  liveRouting     Boolean             @default(false) // legacy flag (superseded by mode)
+  mode            String              @default("off") // off | observe (ping+log, don't reroute) | live (ping+post+reroute)
+  defaultVertical String              @default("") // vertical to ping when no money word resolves one (e.g. medicare for the medigap line)
+  config          String              @default("{}") // JSON: extra API config
+  baseUrl         String              @default("") // live API base endpoint (go-live)
+  apiKey          String              @default("") // live API key / publisher id (go-live)
+  apiSecret       String              @default("") // live API secret (go-live)
+  createdAt       DateTime            @default(now())
+  verticals       AffiliateVertical[]
+  pings           AffiliatePing[]
+}
+
+// One row per affiliate × vertical. One-click on/off; carries the current bid + ping/post endpoints.
+model AffiliateVertical {
+  id             String    @id @default(cuid())
+  affiliateId    String
+  affiliate      Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  vertical       String // home_insurance | medicare | life_insurance | pet_insurance | auto_insurance | ...
+  label          String    @default("")
+  active         Boolean   @default(true)
+  bidCents       Int       @default(0) // typical/last payout they'll pay (live from ping once wired)
+  pingUrl        String    @default("") // live ping endpoint for this vertical (go-live)
+  postUrl        String    @default("") // live post endpoint for this vertical (go-live)
+  quadTag        String    @default("") // QuinStreet quadTag credential/attribution for this vertical (go-live)
+  trackingNumber String    @default("") // call-tracking number that routes this vertical to them (go-live)
+  calls          Int       @default(0) // calls/leads routed to this vertical
+  revenueCents   Int       @default(0) // total received from them
+  lastBidAt      DateTime?
+
+  @@unique([affiliateId, vertical])
+}
+
+// One row per ping-tree event — the spine of reconciliation. Every call/lead we ping to an
+// affiliate lands here: what we asked, what they offered, whether we posted/sold it, what we
+// recorded vs what THEIR system later reports they owe. Lets you reconcile their statement to ours.
+model AffiliatePing {
+  id             String    @id @default(cuid())
+  affiliateId    String
+  affiliate      Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  verticalId     String?
+  vertical       String // denormalized for fast reporting
+  callId         String? // the Call this routed from
+  leadId         String? // the Lead this routed from
+  status         String    @default("pinged") // pinged | posted | sold | rejected | no_bid
+  offerCents     Int       @default(0) // what they bid/offered on the ping (the tree's answer)
+  qualifySec     Int       @default(0) // callQualificationDuration — the call must last this long to clear/pay
+  matchedClient  String    @default("") // the downstream buyer in their tree (e.g. "AccuQuote")
+  soldCents      Int       @default(0) // what WE recorded as the accepted sale price
+  reportedCents  Int       @default(0) // what THEIR system later reports they'll pay (reconciliation)
+  reconciled     Boolean   @default(false)
+  externalId     String    @default("") // their lead/transaction id (for matching their statement)
+  trackingNumber String    @default("") // tracking number this call came in on
+  moneyWord      String    @default("") // the money word that selected the vertical (if any)
+  isTest         Boolean   @default(false) // simulated row (clearable) so you can see the flow pre-go-live
+  note           String    @default("")
+  createdAt      DateTime  @default(now())
+  postedAt       DateTime?
+  reconciledAt   DateTime?
+
+  @@index([affiliateId, vertical])
+  @@index([status])
+  @@index([reconciled])
+  @@index([createdAt])
 }
 
 // ---------------------------------------------------------------------------
 // USERS & ROLES — God sees all; everyone else scoped
 // ---------------------------------------------------------------------------
 model User {
-  id                String   @id @default(cuid())
-  email             String   @unique
-  passwordHash      String
-  name              String   @default("")
-  phone             String   @default("")
-  role              String   @default("agent") // god|agent|advertiser|investor|marketing|accounting|moneywords|risk|consumer
-  status            String   @default("active") // active|paused|pending
-  mustChangePassword Boolean @default(true)
-  stars             Float    @default(0) // agent rating 0-5
-  balanceCents      Int      @default(0) // prepaid bucket for pay-per-call bidding
-  available         Boolean  @default(false) // taking calls right now (on/off)
-  source            String   @default("") // attribution: where the account came in from
-  features          String   @default("") // JSON: partner portal features the God account enabled
-  refCode           String   @default("") // Doublewide creator tracking code (their /c/<refCode> link)
-  payoutMode        String   @default("activation") // creator payout: activation ($5) | revshare (1%)
-  createdAt         DateTime @default(now())
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  passwordHash       String
+  name               String   @default("")
+  phone              String   @default("")
+  role               String   @default("agent") // god|agent|advertiser|investor|marketing|accounting|moneywords|risk|consumer
+  status             String   @default("active") // active|paused|pending
+  mustChangePassword Boolean  @default(true)
+  stars              Float    @default(0) // agent rating 0-5
+  balanceCents       Int      @default(0) // prepaid bucket for pay-per-call bidding
+  available          Boolean  @default(false) // taking calls right now (on/off)
+  source             String   @default("") // attribution: where the account came in from
+  features           String   @default("") // JSON: partner portal features the God account enabled
+  refCode            String   @default("") // Doublewide creator tracking code (their /c/<refCode> link)
+  payoutMode         String   @default("activation") // creator payout: activation ($5) | revshare (1%)
+  createdAt          DateTime @default(now())
 
-  agentBids   AgentBid[]
-  agentSeats  AgentSeat[]
-  ads         Ad[]
-  investor    Investor?
+  agentBids     AgentBid[]
+  agentSeats    AgentSeat[]
+  ads           Ad[]
+  investor      Investor?
   assignedLeads Lead[]
 }
 
@@ -174,71 +247,73 @@ model Counter {
 model Pixel {
   id        String   @id @default(cuid())
   name      String
-  code      String   // the raw <script>…</script> / pixel snippet
-  siteId    String?  // null = applies to every site
+  code      String // the raw <script>…</script> / pixel snippet
+  siteId    String? // null = applies to every site
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
 }
 
 model Lead {
-  id        String   @id @default(cuid())
-  refNum    Int?     @unique // human reference: 444-<10 digit sequence>
-  name      String   @default("")
-  phone     String   @default("")
-  email     String   @default("")
-  dob       String   @default("")
-  zip       String   @default("")
-  city      String   @default("")
-  state     String   @default("")
-  vertical  String   @default("medicare")
-  source    String   @default("organic") // house|google|facebook|organic|tv|affiliate
-  status    String   @default("new") // new|contacted|sold|dead
-  valueCents Int     @default(0)
-  smsOptOut Boolean  @default(false) // honored STOP / do-not-text
-  emailOptOut Boolean @default(false) // honored unsubscribe / do-not-email
-  appended  String   @default("{}") // PredictiveData-appended data (JSON)
-  tags      String   @default("[]") // JSON array of campaign tags, e.g. ["chapter-1"]
-  creatorRef String  @default("") // Doublewide: the creator/social code that drove this lead (attribution)
-  recaptureStage String @default("") // ""|missed|engaged|clicked|opted_in|revenue — old-data recapture funnel
-  engagedAt DateTime? // first cold outreach (SMS/email) sent
-  clickedAt DateTime? // clicked a CTA link from outreach
-  optedInAt DateTime? // submitted a form / opted in → real lead
-  priority  String   @default("") // JV deal CRM: high|medium|low
-  ltvMonthlyCents Int @default(0) // JV: estimated lifetime value per month — used to rank opportunities
-  jvInterest String  @default("") // sponsor_zip|sponsor_city|sponsor_state|sponsor_national|lock_zip|brand_takeover|investor|book_call|exclusive
-  autoReply String   @default("") // JV: first-time auto-reply text sent when this contact first replies
-  autoReplySent Boolean @default(false) // whether the first-time auto-reply has fired
-  siteId    String?
-  site      Site?    @relation(fields: [siteId], references: [id])
-  agentId   String?
-  agent     User?    @relation(fields: [agentId], references: [id])
-  answers   LeadAnswer[]
-  notes     LeadNote[]
-  docs      LeadDoc[]
-  calls     Call[]
-  createdAt DateTime @default(now())
+  id              String       @id @default(cuid())
+  refNum          Int?         @unique // human reference: 444-<10 digit sequence>
+  name            String       @default("")
+  phone           String       @default("")
+  email           String       @default("")
+  dob             String       @default("")
+  zip             String       @default("")
+  city            String       @default("")
+  state           String       @default("")
+  vertical        String       @default("medicare")
+  source          String       @default("organic") // house|google|facebook|organic|tv|affiliate
+  status          String       @default("new") // new|contacted|sold|dead
+  valueCents      Int          @default(0)
+  smsOptOut       Boolean      @default(false) // honored STOP / do-not-text
+  emailOptOut     Boolean      @default(false) // honored unsubscribe / do-not-email
+  appended        String       @default("{}") // PredictiveData-appended data (JSON)
+  tags            String       @default("[]") // JSON array of campaign tags, e.g. ["chapter-1"]
+  creatorRef      String       @default("") // Doublewide: the creator/social code that drove this lead (attribution)
+  recaptureStage  String       @default("") // ""|missed|engaged|clicked|opted_in|revenue — old-data recapture funnel
+  engagedAt       DateTime? // first cold outreach (SMS/email) sent
+  clickedAt       DateTime? // clicked a CTA link from outreach
+  optedInAt       DateTime? // submitted a form / opted in → real lead
+  priority        String       @default("") // JV deal CRM: high|medium|low
+  score           Int          @default(0) // founder rocket score 0-5 (🚀) for the unified inbox
+  emoji           String       @default("") // founder category emoji (👤 default for phone-synced) — searchable
+  ltvMonthlyCents Int          @default(0) // JV: estimated lifetime value per month — used to rank opportunities
+  jvInterest      String       @default("") // sponsor_zip|sponsor_city|sponsor_state|sponsor_national|lock_zip|brand_takeover|investor|book_call|exclusive
+  autoReply       String       @default("") // JV: first-time auto-reply text sent when this contact first replies
+  autoReplySent   Boolean      @default(false) // whether the first-time auto-reply has fired
+  siteId          String?
+  site            Site?        @relation(fields: [siteId], references: [id])
+  agentId         String?
+  agent           User?        @relation(fields: [agentId], references: [id])
+  answers         LeadAnswer[]
+  notes           LeadNote[]
+  docs            LeadDoc[]
+  calls           Call[]
+  createdAt       DateTime     @default(now())
 }
 
 // Personal-CRM notes on a lead, attributed to whoever wrote them (founder or assistant).
 model LeadNote {
-  id        String   @id @default(cuid())
-  leadId    String
-  lead      Lead     @relation(fields: [leadId], references: [id])
-  authorId  String   @default("")
-  authorName String  @default("")
-  body      String
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  leadId     String
+  lead       Lead     @relation(fields: [leadId], references: [id])
+  authorId   String   @default("")
+  authorName String   @default("")
+  body       String
+  createdAt  DateTime @default(now())
 }
 
 // Documents saved against a lead for bigger deals (uploaded to /uploads).
 model LeadDoc {
-  id        String   @id @default(cuid())
-  leadId    String
-  lead      Lead     @relation(fields: [leadId], references: [id])
-  url       String
-  label     String   @default("")
-  uploadedBy String  @default("")
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  leadId     String
+  lead       Lead     @relation(fields: [leadId], references: [id])
+  url        String
+  label      String   @default("")
+  uploadedBy String   @default("")
+  createdAt  DateTime @default(now())
 }
 
 // AI voice intake Q&A — God-level visibility only
@@ -255,81 +330,81 @@ model LeadAnswer {
 // CALLS — the highest-value asset; everything pushes calls to 1-800-MEDIGAP
 // ---------------------------------------------------------------------------
 model Call {
-  id          String   @id @default(cuid())
-  leadId      String?
-  lead        Lead?    @relation(fields: [leadId], references: [id])
-  fromNumber  String   @default("")
-  toNumber    String   @default("18006334427")
-  zip         String   @default("")
-  state       String   @default("")
-  durationSec Int      @default(0)
-  costCents   Int      @default(0) // Twilio charge for this call (persisted from backfill)
-  direction   String   @default("inbound") // inbound|outbound
-  status      String   @default("ringing") // ringing|connected|completed|missed
-  source      String   @default("organic") // house|paid|organic
-  disposition String   @default("sold") // sold|default|missed — default = house call, no agent bought it
-  realized    Boolean  @default(true) // false for default/house calls until collected
-  forwardedTo String   @default("") // number the call was bridged to
-  providerSid String   @default("") // Twilio CallSid
-  moneyWord   String?  // detected money word that re-routed the flow
-  detectedWords String @default("[]") // AI-extracted money words from the transcript
-  bidWinnerId String?  // agent that won the call auction
-  priceCents  Int      @default(0) // what the winning agent paid (or house default price)
-  recordingUrl String?
-  transcript  String?
-  siteId      String?
-  site        Site?    @relation(fields: [siteId], references: [id])
-  createdAt   DateTime @default(now())
+  id            String   @id @default(cuid())
+  leadId        String?
+  lead          Lead?    @relation(fields: [leadId], references: [id])
+  fromNumber    String   @default("")
+  toNumber      String   @default("18006334427")
+  zip           String   @default("")
+  state         String   @default("")
+  durationSec   Int      @default(0)
+  costCents     Int      @default(0) // Twilio charge for this call (persisted from backfill)
+  direction     String   @default("inbound") // inbound|outbound
+  status        String   @default("ringing") // ringing|connected|completed|missed
+  source        String   @default("organic") // house|paid|organic
+  disposition   String   @default("sold") // sold|default|missed — default = house call, no agent bought it
+  realized      Boolean  @default(true) // false for default/house calls until collected
+  forwardedTo   String   @default("") // number the call was bridged to
+  providerSid   String   @default("") // Twilio CallSid
+  moneyWord     String? // detected money word that re-routed the flow
+  detectedWords String   @default("[]") // AI-extracted money words from the transcript
+  bidWinnerId   String? // agent that won the call auction
+  priceCents    Int      @default(0) // what the winning agent paid (or house default price)
+  recordingUrl  String?
+  transcript    String?
+  siteId        String?
+  site          Site?    @relation(fields: [siteId], references: [id])
+  createdAt     DateTime @default(now())
 }
 
 // ---------------------------------------------------------------------------
 // AGENT BIDDING — pay-per-call auction, $99/mo seat per zip
 // ---------------------------------------------------------------------------
 model AgentBid {
-  id         String  @id @default(cuid())
-  agentId    String
-  agent      User    @relation(fields: [agentId], references: [id])
-  scope      String  @default("zip") // zip|city|state|national
-  scopeValue String  @default("")
-  keyword    String  @default("") // optional keyword/money-word this bid targets
-  amountCents Int    @default(2500) // bid per call (min controlled by Setting.minCallBidCents)
-  active     Boolean @default(true)
-  dailyCap   Int     @default(0) // 0 = unlimited
-  budgetCents Int    @default(0)
-  createdAt  DateTime @default(now())
-}
-
-model AgentSeat {
   id          String   @id @default(cuid())
   agentId     String
   agent       User     @relation(fields: [agentId], references: [id])
-  zip         String   @default("") // legacy; mirrors scopeValue for zip seats
-  scope       String   @default("zip") // zip|state|national
-  scopeValue  String   @default("") // the zip or state (empty for national)
-  monthlyFeeCents Int  @default(9900)
+  scope       String   @default("zip") // zip|city|state|national
+  scopeValue  String   @default("")
+  keyword     String   @default("") // optional keyword/money-word this bid targets
+  amountCents Int      @default(2500) // bid per call (min controlled by Setting.minCallBidCents)
   active      Boolean  @default(true)
-  paidThrough DateTime?
+  dailyCap    Int      @default(0) // 0 = unlimited
+  budgetCents Int      @default(0)
   createdAt   DateTime @default(now())
+}
+
+model AgentSeat {
+  id              String    @id @default(cuid())
+  agentId         String
+  agent           User      @relation(fields: [agentId], references: [id])
+  zip             String    @default("") // legacy; mirrors scopeValue for zip seats
+  scope           String    @default("zip") // zip|state|national
+  scopeValue      String    @default("") // the zip or state (empty for national)
+  monthlyFeeCents Int       @default(9900)
+  active          Boolean   @default(true)
+  paidThrough     DateTime?
+  createdAt       DateTime  @default(now())
 }
 
 // ---------------------------------------------------------------------------
 // ADVERTISERS — CPC banner/text/display ads, prepaid balance
 // ---------------------------------------------------------------------------
 model Ad {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   advertiserId String
-  advertiser   User     @relation(fields: [advertiserId], references: [id])
-  kind         String   @default("text") // text|banner|display
-  headline     String   @default("")
-  body         String   @default("")
-  assetUrl     String   @default("")
-  targetUrl    String   @default("")
-  bidCents     Int      @default(50) // cost per click
-  balanceCents Int      @default(0)
-  placement    String   @default("inline") // inline|footer|exit|sidebar
-  active       Boolean  @default(true)
+  advertiser   User      @relation(fields: [advertiserId], references: [id])
+  kind         String    @default("text") // text|banner|display
+  headline     String    @default("")
+  body         String    @default("")
+  assetUrl     String    @default("")
+  targetUrl    String    @default("")
+  bidCents     Int       @default(50) // cost per click
+  balanceCents Int       @default(0)
+  placement    String    @default("inline") // inline|footer|exit|sidebar
+  active       Boolean   @default(true)
   events       AdEvent[]
-  createdAt    DateTime @default(now())
+  createdAt    DateTime  @default(now())
 }
 
 model AdEvent {
@@ -346,85 +421,86 @@ model AdEvent {
 // INTEGRATIONS — one checklist page; keys live here (encrypt in prod)
 // ---------------------------------------------------------------------------
 model Integration {
-  key          String   @id // twilio|klaviyo|zapmail|groq|xai|stripe|predictivedata|google_ads|facebook|claude|affiliate|vibe|google_tv
-  label        String   @default("")
-  config       String   @default("{}") // JSON of keys/fields
-  connected    Boolean  @default(false)
-  status       String   @default("unconfigured") // unconfigured|saved|verified|failed
+  key          String    @id // twilio|klaviyo|zapmail|groq|xai|stripe|predictivedata|google_ads|facebook|claude|affiliate|vibe|google_tv
+  label        String    @default("")
+  config       String    @default("{}") // JSON of keys/fields
+  connected    Boolean   @default(false)
+  status       String    @default("unconfigured") // unconfigured|saved|verified|failed
   lastTestedAt DateTime?
-  lastError    String   @default("")
-  updatedAt    DateTime @default(now())
+  lastError    String    @default("")
+  updatedAt    DateTime  @default(now())
 }
 
 // ---------------------------------------------------------------------------
 // INVESTORS — deposit, profit waterfall, accredited-only
 // ---------------------------------------------------------------------------
 model Investor {
-  id            String  @id @default(cuid())
-  userId        String  @unique
-  user          User    @relation(fields: [userId], references: [id])
-  accredited    Boolean @default(false)
-  depositedCents Int    @default(0)
-  deployedCents Int     @default(0)
-  profitCents   Int     @default(0)
-  createdAt     DateTime @default(now())
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  accredited     Boolean  @default(false)
+  depositedCents Int      @default(0)
+  deployedCents  Int      @default(0)
+  profitCents    Int      @default(0)
+  createdAt      DateTime @default(now())
 }
 
 // ---------------------------------------------------------------------------
 // ACCOUNTING LEDGER — every dollar in & out, to the cent
 // ---------------------------------------------------------------------------
 model LedgerEntry {
-  id        String   @id @default(cuid())
-  type      String   // revenue|spend
-  category  String   // call|default_call|click|lead|adspend|seat|upsell|risk|fee|sms
-  channel   String   @default("") // google|facebook|tv|organic|stripe|house|auction
+  id          String   @id @default(cuid())
+  type        String // revenue|spend
+  category    String // call|default_call|click|lead|adspend|seat|upsell|risk|fee|sms
+  channel     String   @default("") // google|facebook|tv|organic|stripe|house|auction
   amountCents Int
-  realized  Boolean  @default(true) // false = unrealized (e.g. house/default-call revenue not yet collected)
-  note      String   @default("")
-  siteId    String?
-  createdAt DateTime @default(now())
+  realized    Boolean  @default(true) // false = unrealized (e.g. house/default-call revenue not yet collected)
+  note        String   @default("")
+  siteId      String?
+  createdAt   DateTime @default(now())
 }
 
 // ---------------------------------------------------------------------------
 // MONEY WORDS — keyword-triggered alternate monetization flows
 // ---------------------------------------------------------------------------
 model MoneyWord {
-  id        String  @id @default(cuid())
-  word      String  @unique
-  partner   String  @default("")
-  action    String  @default("transfer") // transfer|qualify
-  logic     String  @default("[]") // JSON qualification questions
-  payoutCents Int   @default(0)
-  routeUserId String?  // user (e.g. a partner rep) the hot transfer goes to
-  routeNumber String  @default("") // OR a direct phone number to bridge to
-  aliases   String  @default("[]") // JSON variant cloud, e.g. ["incontinent","incontinence supplies"]
-  triggers  Int     @default(0) // how many times heard on a call (sizes the cloud)
-  cpcCents  Int     @default(0) // cached live keyword CPC from DataForSEO
-  active    Boolean @default(true)
+  id                String  @id @default(cuid())
+  word              String  @unique
+  partner           String  @default("")
+  action            String  @default("transfer") // transfer|qualify
+  logic             String  @default("[]") // JSON qualification questions
+  payoutCents       Int     @default(0)
+  routeUserId       String? // user (e.g. a partner rep) the hot transfer goes to
+  routeNumber       String  @default("") // OR a direct phone number to bridge to
+  aliases           String  @default("[]") // JSON variant cloud, e.g. ["incontinent","incontinence supplies"]
+  affiliateVertical String  @default("") // QuinStreet vertical this word pings (medicare|home_insurance|life_insurance|auto_insurance)
+  triggers          Int     @default(0) // how many times heard on a call (sizes the cloud)
+  cpcCents          Int     @default(0) // cached live keyword CPC from DataForSEO
+  active            Boolean @default(true)
 }
 
 // ---------------------------------------------------------------------------
 // LIVE UPSELLS — drop-in offers to re-monetize a call
 // ---------------------------------------------------------------------------
 model UpsellOffer {
-  id        String  @id @default(cuid())
-  name      String
-  trigger   String  @default("") // when to drop it
-  payoutCents Int   @default(0)
-  vendor    String  @default("")
-  active    Boolean @default(true)
+  id          String  @id @default(cuid())
+  name        String
+  trigger     String  @default("") // when to drop it
+  payoutCents Int     @default(0)
+  vendor      String  @default("")
+  active      Boolean @default(true)
 }
 
 // ---------------------------------------------------------------------------
 // AUTONOMOUS RISK — become the carrier; enroll, collect, sweep via Stripe
 // ---------------------------------------------------------------------------
 model RiskProduct {
-  id          String  @id @default(cuid())
-  name        String
-  premiumCents Int    @default(9700)
-  sweepDays   Int     @default(3)
-  apiConfig   String  @default("{}")
-  active      Boolean @default(true)
+  id           String  @id @default(cuid())
+  name         String
+  premiumCents Int     @default(9700)
+  sweepDays    Int     @default(3)
+  apiConfig    String  @default("{}")
+  active       Boolean @default(true)
 }
 
 // ---------------------------------------------------------------------------
@@ -435,7 +511,7 @@ model AutonomousLog {
   decision  String
   rationale String   @default("")
   data      String   @default("{}")
-  question  String?  // open question for the operator
+  question  String? // open question for the operator
   pinned    Boolean  @default(false)
   createdAt DateTime @default(now())
 }
@@ -444,40 +520,43 @@ model AutonomousLog {
 // AFFILIATE / EXIT TRAFFIC — pop & arbitrage offers
 // ---------------------------------------------------------------------------
 model AffiliateOffer {
-  id            String  @id @default(cuid())
-  name          String
-  code          String  @default("")
-  apiUrl        String  @default("")
-  kind          String  @default("text") // text|banner|exit
-  clickValueCents Int   @default(0)
-  active        Boolean @default(true)
+  id              String  @id @default(cuid())
+  name            String
+  code            String  @default("")
+  apiUrl          String  @default("")
+  kind            String  @default("text") // text|banner|exit
+  clickValueCents Int     @default(0)
+  active          Boolean @default(true)
 }
 
 // ---------------------------------------------------------------------------
 // COMMUNICATIONS — multi-channel outreach (email + SMS) to segments
 // ---------------------------------------------------------------------------
 model EmailMessage {
-  id        String   @id @default(cuid())
-  to        String
-  subject   String   @default("")
-  body      String   @default("")
-  status    String   @default("sent") // sent|failed|skipped
-  error     String   @default("")
-  batch     String   @default("")
-  leadId    String?
+  id           String    @id @default(cuid())
+  to           String
+  subject      String    @default("")
+  body         String    @default("")
+  status       String    @default("sent") // sent|failed|skipped
+  error        String    @default("")
+  batch        String    @default("")
+  leadId       String?
   // --- Founder Communication / engine routing ---
-  direction String   @default("outbound") // outbound|inbound
-  engine    String   @default("")         // personal|zapmail|smtp|klaviyo
-  fromEmail String   @default("")
-  founder   Boolean  @default(false)       // sent from the Founder Communication console
+  direction    String    @default("outbound") // outbound|inbound
+  engine       String    @default("") // personal|zapmail|smtp|klaviyo
+  fromEmail    String    @default("")
+  founder      Boolean   @default(false) // sent from the Founder Communication console
   templateId   String?
-  templateName String @default("")
+  templateName String    @default("")
   // --- Slice-2 tracking columns (added now to avoid a second prod migration) ---
-  openToken String   @default("")          // pixel token for open tracking
-  openedAt  DateTime?
-  repliedAt DateTime?
-  messageId String   @default("")          // SMTP Message-ID for reply matching
-  createdAt DateTime @default(now())
+  openToken    String    @default("") // pixel token for open tracking
+  openedAt     DateTime?
+  repliedAt    DateTime?
+  messageId    String    @default("") // SMTP Message-ID for reply matching
+  readAt       DateTime? // inbound read in the unified inbox
+  sentVia      String    @default("") // iphone | desktop (where an outbound was sent from)
+  sentBy       String    @default("") // actor email (for the 🚀/🔥/💎 attribution)
+  createdAt    DateTime  @default(now())
 }
 
 // Reusable founder email templates (HTML + plain text), selectable in the console.
@@ -511,7 +590,7 @@ model Offer {
   name        String
   description String   @default("")
   url         String   @default("") // destination the creator's /c/<code>?to= points at
-  payoutCents Int      @default(0)  // what the network pays out per activation (illustrative)
+  payoutCents Int      @default(0) // what the network pays out per activation (illustrative)
   category    String   @default("") // e.g. insurance, finance, wellness
   scope       String   @default("account") // account | network (network = promotable by all creators)
   active      Boolean  @default(true)
@@ -521,16 +600,16 @@ model Offer {
 // CORE API keys — issued by God so external partners build on the Core. The secret is
 // stored hashed (shown in plaintext only once at issuance). keyId is the public identifier.
 model ApiKey {
-  id         String   @id @default(cuid())
-  ownerId    String   @default("") // user/partner the key is issued to (optional)
-  name       String   @default("") // label, e.g. "Acme Partner"
-  keyId      String   @unique      // public: core_pk_xxxxx
-  secretHash String                // bcrypt of core_sk_xxxxx
-  scopes     String   @default("lead:create") // csv: lead:create, lead:read, ...
-  active     Boolean  @default(true)
+  id         String    @id @default(cuid())
+  ownerId    String    @default("") // user/partner the key is issued to (optional)
+  name       String    @default("") // label, e.g. "Acme Partner"
+  keyId      String    @unique // public: core_pk_xxxxx
+  secretHash String // bcrypt of core_sk_xxxxx
+  scopes     String    @default("lead:create") // csv: lead:create, lead:read, ...
+  active     Boolean   @default(true)
   lastUsedAt DateTime?
-  callCount  Int      @default(0)
-  createdAt  DateTime @default(now())
+  callCount  Int       @default(0)
+  createdAt  DateTime  @default(now())
   revokedAt  DateTime?
 }
 
@@ -538,18 +617,18 @@ model ApiKey {
 // COUPONS — deposit credit (flat) or matching-deposit % up to a cap
 // ---------------------------------------------------------------------------
 model Coupon {
-  id             String   @id @default(cuid())
-  code           String   @unique
-  kind           String   @default("credit") // credit (flat bonus) | match (% of deposit, capped)
-  amountCents    Int      @default(0) // credit: bonus granted; match: cap
-  percent        Int      @default(0) // match: % of deposit matched
-  maxRedemptions Int      @default(0) // 0 = unlimited
-  redemptions    Int      @default(0)
-  oncePerUser    Boolean  @default(true)
-  active         Boolean  @default(true)
+  id             String    @id @default(cuid())
+  code           String    @unique
+  kind           String    @default("credit") // credit (flat bonus) | match (% of deposit, capped)
+  amountCents    Int       @default(0) // credit: bonus granted; match: cap
+  percent        Int       @default(0) // match: % of deposit matched
+  maxRedemptions Int       @default(0) // 0 = unlimited
+  redemptions    Int       @default(0)
+  oncePerUser    Boolean   @default(true)
+  active         Boolean   @default(true)
   expiresAt      DateTime?
-  note           String   @default("")
-  createdAt      DateTime @default(now())
+  note           String    @default("")
+  createdAt      DateTime  @default(now())
 }
 
 model CouponRedemption {
@@ -563,6 +642,49 @@ model CouponRedemption {
 // ---------------------------------------------------------------------------
 // VOICE AGENT — the AI that answers 1-800-MEDIGAP (voice, script, knowledge)
 // ---------------------------------------------------------------------------
+// QR code tracking — per-page QR (auto) + custom QR for TV/display/print campaigns. Each scan of
+// /q/<code> logs a QrScan and redirects to the target, so scans are tracked outside the call.
+model QrCode {
+  id         String    @id @default(cuid())
+  code       String    @unique // short code in the tracking URL /q/<code>
+  label      String    @default("")
+  targetUrl  String // where a scan redirects to
+  kind       String    @default("campaign") // page | campaign
+  source     String    @default("") // tv | display | print | direct-mail | social | other
+  scans      Int       @default(0)
+  lastScanAt DateTime?
+  createdAt  DateTime  @default(now())
+  scanLog    QrScan[]
+}
+
+model QrScan {
+  id       String   @id @default(cuid())
+  qrCodeId String
+  qr       QrCode   @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+  code     String
+  ua       String   @default("")
+  ref      String   @default("")
+  at       DateTime @default(now())
+
+  @@index([code, at])
+  @@index([at])
+}
+
+// Every AI call's token usage — the basis for the AI Spend accounting (cost computed from ENGINES pricing).
+model AiUsage {
+  id               String   @id @default(cuid())
+  provider         String // xai | groq
+  model            String   @default("")
+  promptTokens     Int      @default(0)
+  completionTokens Int      @default(0)
+  purpose          String   @default("") // voice | other
+  callId           String?
+  createdAt        DateTime @default(now())
+
+  @@index([provider, createdAt])
+  @@index([createdAt])
+}
+
 model VoiceAgent {
   id              String   @id @default("default")
   active          Boolean  @default(true) // AI answers; off = straight forward
@@ -573,6 +695,7 @@ model VoiceAgent {
   questions       String   @default("[]") // JSON intake steps: [{field, ask}]  field in name|zip|dob
   forwardWhenDone Boolean  @default(true)
   maxTurns        Int      @default(10)
+  engine          String   @default("") // chosen AI brain: xai | groq | "" (auto: xai→groq)
   updatedAt       DateTime @default(now())
 }
 
@@ -580,49 +703,52 @@ model VoiceAgent {
 // SMS — outbound blasts/reminders + inbound (STOP handling) via Twilio
 // ---------------------------------------------------------------------------
 model SmsMessage {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   to        String
-  fromLabel String   @default("")
+  fromLabel String    @default("")
   body      String
-  status    String   @default("queued") // queued|sent|delivered|failed|received|skipped
-  direction String   @default("outbound") // outbound|inbound
+  status    String    @default("queued") // queued|sent|delivered|failed|received|skipped
+  direction String    @default("outbound") // outbound|inbound
   leadId    String?
-  twilioSid String   @default("")
-  error     String   @default("")
-  batch     String   @default("") // batch label, e.g. "callback-reminder 2026-06-19"
-  createdAt DateTime @default(now())
+  twilioSid String    @default("")
+  error     String    @default("")
+  batch     String    @default("") // batch label, e.g. "callback-reminder 2026-06-19"
+  readAt    DateTime? // inbound read in the unified inbox
+  sentVia   String    @default("") // iphone | desktop
+  sentBy    String    @default("") // actor email (🚀/🔥/💎 attribution)
+  createdAt DateTime  @default(now())
 }
 
 // ---------------------------------------------------------------------------
 // MARKETING CAMPAIGNS — Google/Meta/TV, with A/B variants
 // ---------------------------------------------------------------------------
 model Campaign {
-  id        String   @id @default(cuid())
-  channel   String   @default("google") // google|facebook|tv|vibe|organic
-  name      String
-  vertical  String   @default("medicare")
-  variant   String   @default("A") // A/B test arm
-  headline  String   @default("")
-  description String @default("")
-  spendCents Int     @default(0)
-  clicks    Int      @default(0)
-  leads     Int      @default(0)
-  calls     Int      @default(0)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  channel     String   @default("google") // google|facebook|tv|vibe|organic
+  name        String
+  vertical    String   @default("medicare")
+  variant     String   @default("A") // A/B test arm
+  headline    String   @default("")
+  description String   @default("")
+  spendCents  Int      @default(0)
+  clicks      Int      @default(0)
+  leads       Int      @default(0)
+  calls       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
 }
 
 // ---------------------------------------------------------------------------
 // TRANSACTIONS — every money movement (deposits, top-ups, charges, sweeps, payouts)
 // ---------------------------------------------------------------------------
 model Transaction {
-  id        String   @id @default(cuid())
-  kind      String   // deposit|topup|charge|sweep|payout|fee
-  userId    String?
+  id          String   @id @default(cuid())
+  kind        String // deposit|topup|charge|sweep|payout|fee
+  userId      String?
   amountCents Int
-  status    String   @default("settled") // pending|settled|failed
-  note      String   @default("")
-  createdAt DateTime @default(now())
+  status      String   @default("settled") // pending|settled|failed
+  note        String   @default("")
+  createdAt   DateTime @default(now())
 }
 
 // ---------------------------------------------------------------------------
@@ -641,11 +767,104 @@ model Asset {
 // OAUTH CONNECTIONS — tokens from real-time OAuth authorization per provider
 // ---------------------------------------------------------------------------
 model OAuthConnection {
-  provider     String   @id // google_ads|facebook|stripe|klaviyo
-  accessToken  String   @default("")
-  refreshToken String   @default("")
-  scope        String   @default("")
-  accountLabel String   @default("")
+  provider     String    @id // google_ads|facebook|stripe|klaviyo
+  accessToken  String    @default("")
+  refreshToken String    @default("")
+  scope        String    @default("")
+  accountLabel String    @default("")
   expiresAt    DateTime?
-  connectedAt  DateTime @default(now())
+  connectedAt  DateTime  @default(now())
+}
+
+// Time-series snapshot of a page's metrics — captured on each pull so we can MEASURE CHANGE
+// (followers/impressions/engagement deltas vs any prior snapshot or baseline).
+model SocialSnapshot {
+  id          String   @id @default(cuid())
+  userId      String   @default("") // whose connection captured it
+  platform    String // facebook | instagram
+  pageId      String
+  pageName    String   @default("")
+  followers   Int      @default(0)
+  impressions Int      @default(0) // period impressions
+  reach       Int      @default(0)
+  engagement  Int      @default(0) // engaged users / post engagements
+  posts       Int      @default(0)
+  capturedAt  DateTime @default(now())
+
+  @@index([pageId, capturedAt])
+  @@index([capturedAt])
+}
+
+// Per-USER social account connection (Doublewide). A creator (or god impersonating them) does the
+// OAuth from their own login; the token + their pages land here, scoped to that user — so god can
+// drill into any creator and see/manage their connected Facebook/Instagram/X.
+model SocialConnection {
+  id           String    @id @default(cuid())
+  userId       String
+  platform     String // facebook | instagram | x
+  accessToken  String    @default("")
+  refreshToken String    @default("")
+  scope        String    @default("")
+  accountId    String    @default("") // FB user / business id
+  accountName  String    @default("") // display name
+  pages        String    @default("[]") // JSON [{id,name,category,access_token,followers}]
+  lastError    String    @default("")
+  expiresAt    DateTime?
+  connectedAt  DateTime  @default(now())
+
+  @@unique([userId, platform])
+  @@index([platform])
+}
+
+// A produced TV commercial for the 1-800-MEDIGAP "AS SEEN ON TV" gallery. Created in the dashboard,
+// approved before it shows publicly at /tv. Stores the exact script + seconds so the same Wink
+// voiceover can be regenerated anytime, plus the final Runway-produced video.
+model TvSpot {
+  id         String    @id @default(cuid())
+  title      String
+  subtitle   String    @default("")
+  script     String    @default("")
+  seconds    Int       @default(30)
+  videoUrl   String    @default("") // FINAL produced mp4 (after render) — served from /uploads/tv
+  posterUrl  String    @default("") // thumbnail / poster frame
+  voiceUrl   String    @default("") // the generated ElevenLabs Wink voiceover mp3
+  status     String    @default("draft") // draft | approved | archived
+  featured   Boolean   @default(false)
+  qrCode     String    @default("") // tracking code for this spot
+  views      Int       @default(0)
+  sortOrder  Int       @default(0)
+  createdAt  DateTime  @default(now())
+  approvedAt DateTime?
+
+  // --- studio: source footage + manual tightening controls ---
+  sourceUrl    String  @default("") // raw uploaded face clip
+  clipStart    Float   @default(0) // trim start (seconds into the source)
+  clipDuration Float   @default(0) // trim length (seconds); 0 = auto (capped at the plan max)
+  cropEnabled  Boolean @default(false)
+  cropX        Float   @default(0) // crop region as % of width  (0-100)
+  cropY        Float   @default(0) // crop region as % of height (0-100)
+  cropW        Float   @default(100)
+  cropH        Float   @default(100)
+  lookPrompt   String  @default("") // single prompt → Runway restyles background/look
+
+  // --- per-screen content (the 4 hanging monitors, left→right). Each is JSON {type,text,url}. ---
+  // type: black | text | image | video. Composited (perspective-warped) onto its monitor.
+  baseUrl String @default("") // the fixed lip-synced spokesperson base to composite screens onto
+  screen1 String @default("{\"type\":\"black\"}")
+  screen2 String @default("{\"type\":\"black\"}")
+  screen3 String @default("{\"type\":\"black\"}")
+  screen4 String @default("{\"type\":\"black\"}")
+
+  // --- render pipeline state ---
+  renderStatus String @default("idle") // idle | rendering | done | failed
+  renderStage  String @default("") // voice | look | lipsync
+  syncJobId    String @default("")
+  runwayJobId  String @default("")
+  lastError    String @default("")
+
+  // --- cost (estimated; god-only) ---
+  costCents Int    @default(0) // total estimated cents
+  costJson  String @default("{}") // breakdown {voice, look, lipsync, chars, lipsyncSec, lookSec}
+
+  @@index([status])
 }

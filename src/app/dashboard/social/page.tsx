@@ -5,6 +5,7 @@ import { getSession } from "@/lib/auth";
 import { num, usd, cst } from "@/lib/format";
 import AddCreator from "@/components/AddCreator";
 import OfferManager, { type OfferRow } from "@/components/OfferManager";
+import CreatorConnections from "@/components/CreatorConnections";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +42,16 @@ export default async function SocialCreatorsPage() {
   const offers = isGod ? await db.offer.findMany({ orderBy: { createdAt: "desc" } }) : [];
   const offerRows: OfferRow[] = offers.map((o) => ({ id: o.id, name: o.name, description: o.description, url: o.url, payoutCents: o.payoutCents, category: o.category, scope: o.scope, active: o.active }));
 
+  // Creator USER accounts + their per-creator Facebook connection (god drill-in + impersonate).
+  const creatorUsers = isGod ? await db.user.findMany({ where: { role: "creator" }, orderBy: { createdAt: "desc" }, select: { id: true, name: true, email: true, refCode: true } }) : [];
+  const conns = isGod && creatorUsers.length ? await db.socialConnection.findMany({ where: { userId: { in: creatorUsers.map((u) => u.id) }, platform: "facebook" } }) : [];
+  const connByUser = new Map(conns.map((c) => [c.userId, c]));
+  const connectionRows = creatorUsers.map((u) => {
+    const c = connByUser.get(u.id);
+    let pages = 0; try { pages = JSON.parse(c?.pages || "[]").length; } catch {}
+    return { id: u.id, name: u.name, email: u.email, refCode: u.refCode || "", connected: !!(c && c.accountName), accountName: c?.accountName || "", pages, lastError: c?.lastError || "" };
+  });
+
   const totalLeads = leads.length;
   const totalActivated = creators.reduce((s, c) => s + c.activated, 0);
   const totalRevenue = creators.reduce((s, c) => s + c.revenueCents, 0);
@@ -65,6 +76,12 @@ export default async function SocialCreatorsPage() {
         <Stat label="Revenue Driven" value={usd(totalRevenue)} sub="from creator leads" tone="up" />
         <Stat label="Modeled Payout" value={usd(totalPayout)} sub="best of activation / rev-share" tone="gold" />
       </div>
+
+      {isGod && (
+        <Section title="Creator accounts & Facebook connections" desc="Drill into any creator. They click “Connect Facebook” in their own studio — or use “Impersonate to connect” to do it for them. Connected pages & insights flow into the Core.">
+          <CreatorConnections rows={connectionRows} />
+        </Section>
+      )}
 
       {isGod && (
         <Section title="Offers" desc="Brand offers in the network. Publish one network-wide (JV backfill) so every creator can promote it." action={<AddCreator role="brand" />}>

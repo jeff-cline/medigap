@@ -45,6 +45,7 @@ fi
 npm run build
 pm2 reload medigap
 npx tsx scripts/ensure-god.ts
+npx tsx scripts/seed-quinstreet.ts
 echo "  • build + reload done"
 REMOTE
 
@@ -57,6 +58,25 @@ https://medigap.plus/dashboard
 https://medigap.plus/dashboard/jv
 https://medigap.plus/dashboard/social
 https://medigap.plus/dashboard/playbook
+https://medigap.plus/dashboard/affiliates
+https://medigap.plus/dashboard/ping-tree
+https://medigap.plus/dashboard/social-metrics
+https://medigap.plus/dashboard/ai-spend
+https://medigap.plus/dashboard/qr
+https://medigap.plus/dashboard/seo-plan
+https://medigap.plus/dashboard/integrations
+https://medigap.plus/insurance
+https://medigap.plus/insurance/medicare-insurance
+https://medigap.plus/insurance/home-insurance
+https://medigap.plus/answers
+https://medigap.plus/sitemap.xml
+https://medigap.plus/robots.txt
+https://1-800-medigap.com/insurance
+https://1-800-medigap.com/medicare-basics-enrollment
+https://1-800-medigap.com/assisted-living
+https://1-800-medigap.com/assisted-living/assisted-living-cost
+https://1-800-medigap.com/answers
+https://1-800-medigap.com/sitemap.xml
 https://medigap.plus/playbook
 https://medigap.plus/playbook/secret-weapon
 https://medigap.plus/agetech

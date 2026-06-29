@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { routeCall, getSettings } from "@/lib/logic";
 import { normalizePhone } from "@/lib/sms";
-import { getVoiceAgent, aiReply, esc, getIntake, firstName, ageFromSpeech, detectMoneyWord, ChatMsg } from "@/lib/voice";
+import { getVoiceAgent, aiReply, esc, getIntake, firstName, ageFromSpeech, detectMoneyWord, normalizeDob, normalizeDobAI, ChatMsg } from "@/lib/voice";
 
 const BASE = "https://medigap.plus";
 function xml(body: string) {
@@ -21,11 +21,12 @@ const sayGather = (action: string, voice: string, line: string) => {
 };
 
 // Build the <Dial> that bridges the caller to the winning agent or the house number.
-async function transfer(callId: string, voice: string, moneyWordId?: string) {
+async function transfer(callId: string, voice: string, moneyWordId?: string, affiliateWord?: string) {
   const call = await db.call.findUnique({ where: { id: callId } });
   if (!call) return `<Hangup/>`;
   const s = await getSettings();
-  const r = await routeCall({ zip: call.zip, state: call.state, leadId: call.leadId || undefined, providerSid: call.providerSid, fromNumber: call.fromNumber, source: "house", moneyWord: moneyWordId ? "1" : undefined });
+  // affiliateWord (the actual spoken word) feeds ONLY the QuinStreet vertical resolver, never the auction.
+  const r = await routeCall({ zip: call.zip, state: call.state, leadId: call.leadId || undefined, providerSid: call.providerSid, fromNumber: call.fromNumber, source: "house", moneyWord: moneyWordId ? "1" : undefined, affiliateWord: affiliateWord || call.moneyWord || undefined });
   await db.call.update({ where: { id: call.id }, data: { disposition: r.disposition, realized: r.realized, forwardedTo: r.forwardedTo, priceCents: r.priceCents, bidWinnerId: r.winner?.agentId, status: "transferring" } }).catch(() => {});
   const dest = normalizePhone(r.forwardedTo) || r.forwardedTo;
   if (!dest) return `<Say voice="${voice}">All our specialists are busy. We'll call you right back. Goodbye.</Say><Hangup/>`;
@@ -39,7 +40,7 @@ async function transferMoneyWord(callId: string, voice: string, mw: { id: string
   let dest = mw.routeNumber;
   if (!dest && mw.routeUserId) { const u = await db.user.findUnique({ where: { id: mw.routeUserId } }); dest = u?.phone || ""; }
   dest = normalizePhone(dest) || dest;
-  if (!dest) return transfer(callId, voice, mw.id); // no destination → auction/house
+  if (!dest) return transfer(callId, voice, mw.id, mw.word); // no destination → auction/house (+ affiliate ping on the word)
 
   await db.call.update({ where: { id: callId }, data: { disposition: "moneyword", realized: true, forwardedTo: dest, priceCents: mw.payoutCents, moneyWord: mw.word, status: "transferring" } }).catch(() => {});
   await db.ledgerEntry.create({ data: { type: "revenue", category: "moneyword", channel: mw.partner || "partner", amountCents: mw.payoutCents, realized: true, note: `Money word "${mw.word}" → ${dest}` } }).catch(() => {});
@@ -54,6 +55,7 @@ export async function POST(req: NextRequest) {
   const phase = url.searchParams.get("phase") || "open";
   const idx = parseInt(url.searchParams.get("idx") || "0", 10);
   const turn = parseInt(url.searchParams.get("turn") || "0", 10);
+  const retry = url.searchParams.get("retry") === "1";
   const form = await req.formData().catch(() => null);
   const speech = String(form?.get("SpeechResult") || "").trim();
 
@@ -80,7 +82,24 @@ export async function POST(req: NextRequest) {
     const leadData: Record<string, unknown> = {};
     if (step?.field === "name" && speech) leadData.name = speech;
     if (step?.field === "zip") { const z = speech.replace(/\D/g, "").slice(0, 5); if (z) { leadData.zip = z; } }
-    if (step?.field === "dob") { leadData.dob = speech; }
+    if (step?.field === "dob") {
+      // Normalize the spoken DOB to ISO (YYYY-MM-DD) so it's valid for downstream pings. Fast parse
+      // first, AI fallback for spelled-out dates. If we still can't get it, re-ask ONCE with a clear
+      // format, then accept best-effort (raw) so we never trap the caller.
+      let dob = normalizeDob(speech);
+      if (!dob) dob = await normalizeDobAI(speech);
+      if (dob) {
+        leadData.dob = dob;
+      } else if (!retry) {
+        const ask = "I want to get your date of birth exactly right. Please say it as the month, then the day, then the year — for example, June fifth, nineteen fifty.";
+        const action = `${BASE}/api/voice/step?callId=${call.id}&phase=intake&idx=${idx}&retry=1`;
+        dialogue.push({ role: "assistant", text: ask, at: nowISO() });
+        await db.call.update({ where: { id: call.id }, data: { transcript: JSON.stringify(dialogue) } }).catch(() => {});
+        return xml(sayGather(action, agent.voice, ask));
+      } else {
+        leadData.dob = speech; // couldn't parse after a retry — store raw so it's visible
+      }
+    }
     if (call.leadId && Object.keys(leadData).length) await db.lead.update({ where: { id: call.leadId }, data: leadData }).catch(() => {});
 
     const next = intake[idx + 1];
@@ -126,7 +145,7 @@ export async function POST(req: NextRequest) {
   ].filter(Boolean).join("\n");
   const sys = `${agent.systemPrompt || ""}\n\nTone: ${agent.tone}\n\n${steer}`;
   const messages: ChatMsg[] = [{ role: "system", content: sys }, ...dialogue.map((d) => ({ role: d.role, content: d.text } as ChatMsg))];
-  let reply = await aiReply(messages, { temperature: 0.8 });
+  let reply = await aiReply(messages, { temperature: 0.8, purpose: "voice", callId: call.id });
   const lastTurn = turn + 1 >= agent.maxTurns;
   if (!reply) reply = "Thanks. Let me connect you with a licensed specialist who can help. One moment. [TRANSFER:insurance]";
 

@@ -22,6 +22,14 @@ export function middleware(req: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
+  // 1-800-medigap.com is a fully STANDALONE senior brand (its own look + footer), wired to the Core.
+  // Serve the standalone silo hub at the root; medigap.plus root is untouched.
+  if ((host === "1-800-medigap.com" || host === "www.1-800-medigap.com") && path === "/") {
+    const url = req.nextUrl.clone();
+    url.pathname = "/medigap-home";
+    return NextResponse.rewrite(url);
+  }
+
   const headers = new Headers(req.headers);
   headers.set("x-pathname", path);
   return NextResponse.next({ request: { headers } });

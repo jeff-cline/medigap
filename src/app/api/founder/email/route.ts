@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { sendFounderEmail, engineReady } from "@/lib/founder";
 
@@ -27,5 +28,10 @@ export async function POST(req: NextRequest) {
     templateId: b.templateId ? String(b.templateId) : undefined,
     templateName: String(b.templateName || ""),
   });
+  // Attribute the desktop send for the unified inbox (🔥 if Jeff, 💎 if anyone else).
+  if (r.ok) {
+    const last = await db.emailMessage.findFirst({ where: { leadId, direction: "outbound" }, orderBy: { createdAt: "desc" } });
+    if (last) await db.emailMessage.update({ where: { id: last.id }, data: { sentVia: "desktop", sentBy: s.email } }).catch(() => {});
+  }
   return NextResponse.json(r);
 }

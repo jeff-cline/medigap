@@ -8,13 +8,20 @@ export const dynamic = "force-dynamic";
 
 const ACTIVATION_FEE_CENTS = 500, REV_SHARE_PCT = 0.01;
 
-export default async function CreatorPortal() {
+export default async function CreatorPortal({ searchParams }: { searchParams?: Promise<{ fb?: string; connect?: string }> }) {
   const session = await getSession();
   if (!session) return <Card><p className="text-sm text-[var(--muted)]">Sign in to your Creator Studio.</p></Card>;
+  const sp = (await searchParams) || {};
 
   const me = await db.user.findUnique({ where: { id: session.uid }, select: { name: true, email: true, refCode: true, payoutMode: true } });
   const refCode = me?.refCode || "";
   const link = `https://doublewide.ai/c/${refCode}`;
+
+  // Facebook / Instagram connection for THIS creator (per-user OAuth).
+  const fb = await db.socialConnection.findUnique({ where: { userId_platform: { userId: session.uid, platform: "facebook" } } }).catch(() => null);
+  let fbPages: { id: string; name: string; category?: string; followers?: number }[] = [];
+  try { fbPages = JSON.parse(fb?.pages || "[]"); } catch {}
+  const fbMsg = sp.fb === "connected" ? "✅ Facebook connected!" : sp.fb === "error" ? "⚠️ Connection failed — try again." : sp.connect === "notready" ? "Facebook isn’t set up by your manager yet — check back shortly." : "";
 
   const leads = refCode
     ? await db.lead.findMany({ where: { creatorRef: refCode }, orderBy: { createdAt: "desc" }, take: 200, select: { id: true, name: true, status: true, valueCents: true, createdAt: true } })
@@ -34,6 +41,32 @@ export default async function CreatorPortal() {
         <h1 className="text-2xl font-bold">Welcome{me?.name ? `, ${me.name.split(" ")[0]}` : ""} 👋</h1>
         <p className="text-sm text-[var(--muted)] max-w-2xl">Your Creator Studio on the R0cketShip Core. Share your link, drive leads, get paid on every customer — for as long as they spend.</p>
       </div>
+
+      <Section title="Connect your Facebook & Instagram" desc="One secure connection lets Doublewide pull your Pages, posts and insights into your dashboard. No passwords or app keys — just log in and approve.">
+        <Card glow>
+          {fbMsg && <div className="mb-3 text-sm font-medium">{fbMsg}</div>}
+          {fb && fb.accountName ? (
+            <div>
+              <div className="flex items-center gap-2"><Badge tone="up">Connected</Badge> <span className="font-semibold">{fb.accountName}</span></div>
+              {fbPages.length > 0 ? (
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {fbPages.map((p) => (
+                    <div key={p.id} className="rounded border border-[var(--border)] px-3 py-2 text-sm">
+                      📘 {p.name} {p.followers != null && <span className="text-[var(--muted)]">· {num(p.followers)} followers</span>}
+                    </div>
+                  ))}
+                </div>
+              ) : <p className="text-sm text-[var(--muted)] mt-2">No Pages found on this account yet. {fb.lastError ? `(${fb.lastError})` : "Make sure your Pages are in your Business portfolio, then reconnect."}</p>}
+              <a href="/api/oauth/fb_social/start" className="btn btn-ghost text-sm mt-4">↻ Reconnect / add pages</a>
+            </div>
+          ) : (
+            <div>
+              <a href="/api/oauth/fb_social/start" className="btn btn-brand">📘 Connect Facebook</a>
+              <p className="text-xs text-[var(--muted)] mt-2">You’ll be sent to Facebook to approve access to your Pages &amp; Instagram. We never see your password.</p>
+            </div>
+          )}
+        </Card>
+      </Section>
 
       {!refCode ? (
         <Card><p className="text-sm text-[var(--muted)]">Your creator code is being set up — check back shortly or contact your Doublewide manager.</p></Card>

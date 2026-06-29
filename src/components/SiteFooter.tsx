@@ -3,13 +3,13 @@ import { TOLLFREE, TOLLFREE_TEL } from "@/lib/format";
 import Ticker from "./Ticker";
 
 const verticals = [
-  ["Medicare Insurance", "/medicare"],
-  ["Medicare Advantage", "/medicare-advantage"],
-  ["Medicare Supplements", "/medigap"],
-  ["Senior Housing", "/senior-housing"],
+  ["Medicare Insurance", "/insurance/medicare-insurance"],
+  ["Home Insurance", "/insurance/home-insurance"],
+  ["Life Insurance", "/insurance/life-insurance"],
+  ["Pet Insurance", "/insurance/pet-insurance"],
+  ["Auto Insurance", "/insurance/auto-insurance"],
+  ["All Insurance", "/insurance"],
   ["Senior Care", "/senior-care"],
-  ["Alzheimer's Care", "/alzheimers-care"],
-  ["Life & Final Expense", "/life"],
 ];
 const business = [
   ["Become a Marketing Partner", "/onboard"],
@@ -51,6 +51,16 @@ export default function SiteFooter({ ticker, brand }: { ticker?: string[]; brand
           <FooterCol title="Products" links={verticals} />
           {custom.length > 0 ? <FooterCol title="More" links={custom} /> : <FooterCol title="Partner & Business" links={business} />}
           <FooterCol title="Company" links={company} />
+        </div>
+        {/* Site maps: XML (machine), HTML (human), and the answer-engine index (AEO). */}
+        <div className="border-t border-[var(--border)]">
+          <div className="mx-auto max-w-7xl px-6 py-3 text-xs text-[var(--muted)] flex flex-wrap items-center gap-x-4 gap-y-1">
+            <span className="font-semibold text-[var(--text)]">Site maps:</span>
+            <a href="/sitemap.xml" className="hover:text-[var(--brand)]">XML sitemap</a>
+            <Link href="/sitemap" className="hover:text-[var(--brand)]">HTML sitemap</Link>
+            <Link href="/answers" className="hover:text-[var(--brand)]">Answer-engine index</Link>
+            <a href="/llms.txt" className="hover:text-[var(--brand)]">llms.txt</a>
+          </div>
         </div>
         <div className="border-t border-[var(--border)]">
           <div className="mx-auto max-w-7xl px-6 py-4 text-xs text-[var(--muted)] flex flex-wrap justify-between gap-2">
