@@ -61,6 +61,44 @@ export async function pullFacebook(userId: string): Promise<{ ok: boolean; captu
   return { ok: true, captured };
 }
 
+export type PageTrend = {
+  pageId: string; pageName: string; platform: string; followers: number;
+  dDay: number; dWeek: number; dMonth: number; // follower change over each window
+  series: number[]; // followers oldest→newest, for the sparkline
+};
+
+/** Day / week / month follower trends per page (and totals), from the stored snapshots. */
+export async function socialTrends(): Promise<{
+  pages: PageTrend[];
+  totals: { followers: number; dDay: number; dWeek: number; dMonth: number };
+  sample: boolean;
+  points: number;
+}> {
+  const snaps = await db.socialSnapshot.findMany({ orderBy: { capturedAt: "asc" } });
+  const sample = snaps.some((s) => s.userId === "sample");
+  const byPage = new Map<string, typeof snaps>();
+  for (const s of snaps) { const a = byPage.get(s.pageId) || []; a.push(s); byPage.set(s.pageId, a); }
+  const DAY = 86400000;
+  const pages: PageTrend[] = [];
+  for (const [pageId, list] of byPage) {
+    const cur = list[list.length - 1];
+    const at = (ms: number) => {
+      const target = cur.capturedAt.getTime() - ms;
+      let best = list[0];
+      for (const s of list) { if (s.capturedAt.getTime() <= target) best = s; else break; }
+      return best.followers;
+    };
+    pages.push({
+      pageId, pageName: cur.pageName, platform: cur.platform, followers: cur.followers,
+      dDay: cur.followers - at(DAY), dWeek: cur.followers - at(7 * DAY), dMonth: cur.followers - at(30 * DAY),
+      series: list.map((s) => s.followers),
+    });
+  }
+  pages.sort((a, b) => b.followers - a.followers);
+  const totals = pages.reduce((t, p) => ({ followers: t.followers + p.followers, dDay: t.dDay + p.dDay, dWeek: t.dWeek + p.dWeek, dMonth: t.dMonth + p.dMonth }), { followers: 0, dDay: 0, dWeek: 0, dMonth: 0 });
+  return { pages, totals, sample, points: snaps.length };
+}
+
 export type PageReport = {
   pageId: string; pageName: string;
   followers: number; impressions: number; reach: number; engagement: number;
