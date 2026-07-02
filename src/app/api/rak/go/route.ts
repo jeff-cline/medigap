@@ -27,7 +27,8 @@ export async function GET(req: NextRequest) {
   const subId = click ? `${rakSubId(slug, offerId)}_${click.id.slice(-8)}` : rakSubId(slug, offerId);
   const dest = offer?.deepLink ? trackedLink(offer.deepLink, subId) : "";
 
-  // No live deep link yet (pre-Rakuten-go-live) → send them to call instead of dead-ending.
-  if (!dest) return NextResponse.redirect(new URL(`/${slug}`, req.url), 302);
+  // No live deep link yet (pre-Rakuten-go-live) → return to the lander they came from
+  // (preserves the /r mirror host+prefix) instead of dead-ending.
+  if (!dest) return NextResponse.redirect(req.headers.get("referer") || new URL(`/${slug}`, req.url).toString(), 302);
   return NextResponse.redirect(dest, 302);
 }

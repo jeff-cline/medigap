@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import LeadForm from "@/components/LeadForm";
 import { MEDIGAPP } from "@/lib/medigapp";
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function MedigappHome() {
+  const base = ((await headers()).get("x-pathname") || "").startsWith("/r") ? "/r" : ""; // works under medigap.plus/r mirror
   const pages = await db.rakPage.findMany({ where: { active: true }, orderBy: { views: "desc" }, take: 12 }).catch(() => []);
   return (
     <div style={vars} className="min-h-screen bg-white text-[var(--ink)]">
@@ -36,7 +38,7 @@ export default async function MedigappHome() {
             <div className="text-xs font-bold uppercase tracking-widest text-[var(--gold)] text-center mb-3">Popular topics</div>
             <div className="flex flex-wrap justify-center gap-2">
               {pages.map((p) => (
-                <a key={p.id} href={`/${p.slug}`} className="rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm font-medium hover:border-[var(--brand)]">{p.moneyWord || p.title}</a>
+                <a key={p.id} href={`${base}/${p.slug}`} className="rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm font-medium hover:border-[var(--brand)]">{p.moneyWord || p.title}</a>
               ))}
             </div>
           </div>

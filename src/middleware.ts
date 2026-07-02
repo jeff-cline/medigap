@@ -41,6 +41,17 @@ export function middleware(req: NextRequest) {
     }
   }
 
+  // medigap.plus/r/* — a WORKING mirror of the full medig.app site (same pages + tracking),
+  // for testing on the live HTTPS domain before medig.app DNS is pointed.
+  if (path === "/r" || path.startsWith("/r/")) {
+    const url = req.nextUrl.clone();
+    const rest = path.slice(2); // strip "/r"
+    url.pathname = rest && rest !== "/" ? `/medigapp${rest}` : "/medigapp";
+    const h = new Headers(req.headers);
+    h.set("x-pathname", path); // pages read this to prefix internal links with /r
+    return NextResponse.rewrite(url, { request: { headers: h } });
+  }
+
   const headers = new Headers(req.headers);
   headers.set("x-pathname", path);
   return NextResponse.next({ request: { headers } });
