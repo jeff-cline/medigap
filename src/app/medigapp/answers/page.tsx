@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import { MEDIGAPP } from "@/lib/medigapp";
 import { TAXONOMY, isPhoneVertical } from "@/lib/rak-taxonomy";
 import { pageContent } from "@/lib/rak-content";
+import MedigappSearch from "@/components/MedigappSearch";
+import MedigappFooter from "@/components/MedigappFooter";
 
 export const dynamic = "force-dynamic";
 const C = MEDIGAPP.colors;
@@ -34,6 +36,7 @@ export default async function Answers() {
         <a href={`tel:${MEDIGAPP.tel}`} className="block w-full text-center text-white font-extrabold py-4 rounded-2xl text-2xl" style={{ background: `linear-gradient(110deg, ${C.brand}, ${C.green})` }}>📞 Call {MEDIGAPP.brand} — {MEDIGAPP.telDisplay}</a>
         <h1 className="mt-6 text-3xl font-extrabold tracking-tight">Answers</h1>
         <p className="mt-2 text-[15px] text-[var(--muted)]">Straight answers to the questions people ask most — across every category we cover.</p>
+        <div className="mt-5"><MedigappSearch base={base} /></div>
 
         <div className="mt-7 space-y-8">
           {groups.map(({ cat, subs }) => (
@@ -52,6 +55,7 @@ export default async function Answers() {
             </div>
           ))}
         </div>
+        <MedigappFooter base={base} />
       </div>
     </div>
   );

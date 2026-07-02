@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { MEDIGAPP } from "@/lib/medigapp";
 import { TAXONOMY, TIER_LABEL } from "@/lib/rak-taxonomy";
+import MedigappSearch from "@/components/MedigappSearch";
+import MedigappFooter from "@/components/MedigappFooter";
 
 export const dynamic = "force-dynamic";
 const C = MEDIGAPP.colors;
@@ -37,6 +39,8 @@ export default async function Directory() {
           <p className="mt-2 text-[15px] text-[var(--muted)] max-w-2xl mx-auto">Compare top-rated deals across dozens of categories — insurance, financial, travel, home and more — or call {MEDIGAPP.brand} for free help. <a href={`${base}/answers`} className="text-[var(--brand)]">See common questions →</a></p>
         </div>
 
+        <div className="mt-6"><MedigappSearch base={base} extra={landers.map((p) => ({ name: p.moneyWord || p.title, slug: p.slug, kind: "Topic" }))} /></div>
+
         {landers.length > 0 && (
           <div className="mt-7">
             <div className="text-xs font-bold uppercase tracking-widest text-[var(--gold)] mb-2">Featured topics</div>
@@ -63,7 +67,7 @@ export default async function Directory() {
         <div className="mt-9 text-center">
           <a href={`tel:${MEDIGAPP.tel}`} className="inline-block text-white font-extrabold py-3.5 px-7 rounded-2xl text-xl" style={{ background: `linear-gradient(110deg, ${C.brand}, ${C.green})` }}>📞 Call {MEDIGAPP.telDisplay}</a>
         </div>
-        <p className="mt-6 text-[10px] text-[var(--muted)] text-center">© 2026 {MEDIGAPP.brand} · Not affiliated with or endorsed by the U.S. government, Medicare, or any insurer. Offers via Rakuten Advertising; we may earn a commission.</p>
+        <MedigappFooter base={base} />
       </div>
     </div>
   );

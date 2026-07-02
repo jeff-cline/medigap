@@ -5,6 +5,8 @@ import { db } from "@/lib/db";
 import { MEDIGAPP, offersForKeyword, offersForPage, type Offer } from "@/lib/medigapp";
 import { getCategory, getSub, isPhoneVertical } from "@/lib/rak-taxonomy";
 import { pageContent } from "@/lib/rak-content";
+import MedigappSearch from "@/components/MedigappSearch";
+import MedigappFooter from "@/components/MedigappFooter";
 
 export const dynamic = "force-dynamic";
 const C = MEDIGAPP.colors;
@@ -81,6 +83,7 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
           <nav className="mt-4 text-xs text-[var(--muted)]"><a href={base || "/"} className="hover:text-[var(--brand)]">Home</a> › <span className="text-[var(--ink)]">{cat.name}</span></nav>
           <h1 className="mt-2 text-3xl font-extrabold tracking-tight">{cat.icon} {cat.name} offers &amp; deals</h1>
           <p className="mt-2 text-[15px] text-[var(--muted)]">Browse {cat.name.toLowerCase()} by category, or see today&apos;s top offers below.</p>
+          <div className="mt-5"><MedigappSearch base={base} /></div>
 
           {offers.length > 0 && (<div className="mt-6 space-y-3"><div className="text-xs font-bold uppercase tracking-widest text-[var(--gold)]">Top {cat.name.toLowerCase()} offers</div>{offers.slice(0, 4).map((o) => <OfferCard key={o.id} slug={slug} o={o} />)}</div>)}
 
@@ -92,6 +95,7 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
             ))}
           </div>
           {isPhoneVertical(cat.slug) && <div className="mt-8"><CallBar /></div>}
+          <MedigappFooter base={base} />
         </div>
       </div>
     );
@@ -121,6 +125,7 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
 
         <h1 className="mt-3 text-3xl font-extrabold tracking-tight">{rakPage?.headline || content.headline}</h1>
         <p className="mt-3 text-[15px] text-[var(--muted)] leading-relaxed">{rakPage?.intro || content.intro}</p>
+        <div className="mt-4"><MedigappSearch base={base} /></div>
 
         {/* OFFERS — TOP */}
         <div className="mt-6 space-y-3">
@@ -156,7 +161,7 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
         {rakPage?.outro && <p className="mt-7 text-sm text-[var(--muted)] leading-relaxed text-center">{rakPage.outro}</p>}
 
         {phone && <div className="mt-8"><CallBar /></div>}
-        <p className="mt-6 text-[10px] text-[var(--muted)] text-center leading-relaxed">Offers provided by third-party advertisers via Rakuten Advertising; we may earn a commission at no cost to you. {MEDIGAPP.brand} is a private informational resource — not affiliated with or endorsed by the U.S. government, Medicare, or any insurer.</p>
+        <MedigappFooter base={base} />
       </div>
     </div>
   );

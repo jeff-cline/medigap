@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import LeadForm from "@/components/LeadForm";
 import { MEDIGAPP } from "@/lib/medigapp";
+import MedigappSearch from "@/components/MedigappSearch";
+import MedigappFooter from "@/components/MedigappFooter";
 
 export const dynamic = "force-dynamic";
 const C = MEDIGAPP.colors;
@@ -28,7 +30,9 @@ export default async function MedigappHome() {
           </a>
         </div>
 
-        <div className="mt-9 rounded-2xl border border-[var(--border)] bg-[var(--soft)] p-5">
+        <div className="mt-7"><MedigappSearch base={base} extra={pages.map((p) => ({ name: p.moneyWord || p.title, slug: p.slug, kind: "Topic" }))} /></div>
+
+        <div className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--soft)] p-5">
           <div className="text-sm font-bold mb-2 text-center">Prefer we call you? Enter your info — it&apos;s free.</div>
           <LeadForm vertical="senior" compact />
         </div>
@@ -44,7 +48,7 @@ export default async function MedigappHome() {
           </div>
         )}
 
-        <p className="mt-10 text-[10px] text-[var(--muted)] text-center">© 2026 {MEDIGAPP.brand} · Not affiliated with or endorsed by the U.S. government, Medicare, or any insurer. Offers via Rakuten Advertising; we may earn a commission.</p>
+        <MedigappFooter base={base} />
       </div>
     </div>
   );
