@@ -886,6 +886,7 @@ model RakOffer {
   active       Boolean  @default(true)
   sortOrder    Int      @default(0)
   createdAt    DateTime @default(now())
+  refreshedAt  DateTime? // last time seen in a Rakuten pull (freshness)
 
   @@index([approved, active])
 }

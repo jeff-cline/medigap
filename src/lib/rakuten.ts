@@ -6,13 +6,13 @@ import { db } from "@/lib/db";
 const TOKEN_URL = "https://api.linksynergy.com/token";
 const API = "https://api.linksynergy.com";
 
-export type RakCfg = { clientId: string; clientSecret: string; sid: string };
+export type RakCfg = { clientId: string; clientSecret: string; sid: string; autoApprove: string };
 
 export async function rakCfg(): Promise<RakCfg> {
   const row = await db.integration.findUnique({ where: { key: "rakuten" } });
   let c: Record<string, string> = {};
   try { c = row ? JSON.parse(row.config) : {}; } catch {}
-  return { clientId: c.clientId || "", clientSecret: c.clientSecret || "", sid: c.sid || "" };
+  return { clientId: c.clientId || "", clientSecret: c.clientSecret || "", sid: c.sid || "", autoApprove: c.autoApprove || "" };
 }
 
 let _tok: { token: string; exp: number } | null = null;

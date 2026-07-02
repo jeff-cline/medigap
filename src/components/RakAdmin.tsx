@@ -26,6 +26,7 @@ export default function RakAdmin({ ready, pages, offers }: { ready: boolean; pag
     if (r.ok) { setMoneyWord(""); setHeadline(""); setIntro(""); router.refresh(); }
   }
   async function act(body: Record<string, unknown>, tag: string) { setBusy(tag); const r = await api(body); setBusy(""); if (r.note || r.error) setMsg(r.note || r.error); if (r.pulled !== undefined) setMsg(`Pulled ${r.pulled}, added ${r.added}. ${r.note || ""}`); if (r.imported !== undefined) setMsg(`Fetched ${r.fetched}, imported ${r.imported} commissions.`); router.refresh(); }
+  async function refreshNow() { setBusy("refresh"); const r = await fetch("/api/rak/refresh", { method: "POST" }).then((x) => x.json()).catch(() => ({})); setBusy(""); setMsg(r.ok ? `♻️ Refreshed ${r.keywords} keywords · +${r.added} new, ${r.updated} updated, ${r.expired} expired${r.autoApprove ? " (auto-approved)" : ""}.` : `⚠️ ${r.error || "refresh failed"}`); router.refresh(); }
 
   return (
     <div className="mt-8 space-y-6">
@@ -68,6 +69,7 @@ export default function RakAdmin({ ready, pages, offers }: { ready: boolean; pag
           <div className="flex items-center gap-2">
             <input value={kw} onChange={(e) => setKw(e.target.value)} placeholder="keyword (e.g. medicare)" className="rounded border border-[var(--border)] bg-[var(--panel2)] px-3 py-1.5 text-sm" />
             <button onClick={() => act({ action: "pullOffers", keyword: kw }, "pull")} disabled={!ready || !!busy} className="btn btn-brand text-xs" title={ready ? "" : "Add Rakuten keys first"}>{busy === "pull" ? "Pulling…" : "⬇ Pull offers"}</button>
+            <button onClick={refreshNow} disabled={!ready || !!busy} className="btn btn-brand text-xs" title="Refresh every keyword's offers now (auto-runs on a schedule)">{busy === "refresh" ? "Refreshing…" : "♻️ Refresh all keywords"}</button>
             <button onClick={() => act({ action: "importTransactions" }, "imp")} disabled={!ready || !!busy} className="btn btn-ghost text-xs">{busy === "imp" ? "Importing…" : "↻ Import commissions"}</button>
           </div>
         </div>
