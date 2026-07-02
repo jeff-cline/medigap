@@ -42,23 +42,44 @@ export type RakOfferRaw = { advertiserId: string; advertiser: string; title: str
 export async function searchOffers(keyword: string, category = ""): Promise<RakOfferRaw[]> {
   try {
     const qs = new URLSearchParams();
-    if (keyword) qs.set("keyword", keyword);
-    if (category) qs.set("category", category);
-    qs.set("resultsperpage", "50");
-    const r = await authed(`/coupon/1.0?${qs.toString()}`);
-    const d = await r.json().catch(() => null);
+    void category;
+    qs.set("keyword", keyword || "deal");
+    qs.set("max", "40");
+    // Product Search returns products WITH image + affiliate deep link (XML).
+    const r = await authed(`/productsearch/1.0?${qs.toString()}`);
+    const xml = await r.text();
+    const items = xml.match(/<item\b[\s\S]*?<\/item>/gi) || [];
+    const pick = (b: string, t: string) => {
+      const m = b.match(new RegExp(`<${t}[^>]*>([\\s\\S]*?)</${t}>`, "i"));
+      return m ? m[1].replace(/<!\[CDATA\[|\]\]>/g, "").replace(/<[^>]+>/g, "").trim() : "";
+    };
+    const offers = items.map((b) => ({
+      advertiserId: pick(b, "mid"),
+      advertiser: pick(b, "merchantname"),
+      title: pick(b, "productname") || "Offer",
+      description: (b.match(/<short>([\s\S]*?)<\/short>/i)?.[1] || pick(b, "description")).replace(/<[^>]+>/g, "").slice(0, 220),
+      imageUrl: pick(b, "imageurl"),
+      deepLink: pick(b, "linkurl"),
+      category: pick(b, "category"),
+      payoutNote: pick(b, "price") ? `$${pick(b, "price")}` : "",
+    })).filter((o) => o.deepLink);
+    if (offers.length) return offers;
+
+    // Fallback: coupon/deal API (text offers, tracked click url — no image).
+    const cr = await authed(`/coupon/1.0?${new URLSearchParams({ keyword: keyword || "" }).toString()}`);
+    const d = await cr.json().catch(() => null);
     const links = d?.coupons?.link || d?.link || [];
-    const arr = Array.isArray(links) ? links : [links].filter(Boolean);
-    return arr.map((x: Record<string, unknown>) => ({
+    const carr = Array.isArray(links) ? links : [links].filter(Boolean);
+    return carr.map((x: Record<string, unknown>) => ({
       advertiserId: String(x.advertiserid ?? x.mid ?? ""),
       advertiser: String(x.advertisername ?? x.merchantname ?? ""),
-      title: String(x.offerdescription ?? x.couponrestriction ?? x.categories ?? "Offer"),
+      title: String(x.offerdescription ?? x.couponrestriction ?? "Offer"),
       description: String(x.offerdescription ?? ""),
       imageUrl: "",
       deepLink: String(x.clickurl ?? ""),
       category: String((x.categories as { category?: string[] })?.category?.[0] ?? x.categories ?? ""),
       payoutNote: "",
-    }));
+    })).filter((o) => o.deepLink);
   } catch { return []; }
 }
 
