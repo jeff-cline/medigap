@@ -868,3 +868,76 @@ model TvSpot {
 
   @@index([status])
 }
+
+// ── medig.app — Rakuten-monetized lead/offer landers on the Core ──────────────
+// A Rakuten Advertising offer we cache + curate. Only `approved` ones show publicly.
+model RakOffer {
+  id           String   @id @default(cuid())
+  advertiserId String   @default("")
+  advertiser   String   @default("")
+  title        String
+  description  String   @default("")
+  imageUrl     String   @default("")
+  deepLink     String   @default("") // raw Rakuten affiliate deep link
+  category     String   @default("")
+  keywords     String   @default("[]") // JSON tags → match to landers
+  payoutNote   String   @default("") // commission/EPC description
+  approved     Boolean  @default(false) // only approved offers render publicly
+  active       Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  @@index([approved, active])
+}
+
+// A keyword lander (medig.app/<slug>) tied to a money word. Toll-free top + offers + toll-free bottom.
+model RakPage {
+  id        String   @id @default(cuid())
+  slug      String   @unique // medicare-insurance
+  moneyWord String   @default("") // MEDICARE INSURANCE
+  title     String
+  headline  String   @default("")
+  intro     String   @default("") // optimization content (top)
+  outro     String   @default("") // optimization content (bottom)
+  offerIds  String   @default("[]") // JSON RakOffer ids to feature (empty = auto-match by keyword)
+  active    Boolean  @default(true)
+  views     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([active])
+}
+
+// Every click: kind "view" (lander page view / inbound) or "out" (offer click-out / outbound to Rakuten).
+model RakClick {
+  id      String   @id @default(cuid())
+  kind    String // view | out
+  slug    String   @default("")
+  offerId String   @default("")
+  subId   String   @default("") // u1 tracking id we send to Rakuten → maps events back
+  ref     String   @default("") // referrer / sms campaign tag
+  ip      String   @default("")
+  ua      String   @default("")
+  at      DateTime @default(now())
+
+  @@index([kind, at])
+  @@index([slug])
+  @@index([offerId])
+}
+
+// A monetization event pulled from Rakuten Advanced Reports, attributed back via subId.
+model RakEvent {
+  id              String   @id @default(cuid())
+  subId           String   @default("") // → RakClick.subId → slug/offer
+  slug            String   @default("")
+  offerId         String   @default("")
+  orderId         String   @default("")
+  saleCents       Int      @default(0)
+  commissionCents Int      @default(0)
+  status          String   @default("pending") // pending|approved|reversed
+  eventAt         DateTime @default(now())
+  importedAt      DateTime @default(now())
+
+  @@unique([orderId, offerId])
+  @@index([slug])
+  @@index([offerId])
+}

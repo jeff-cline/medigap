@@ -175,12 +175,25 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ key: strin
       ok = r.ok; message = ok ? "RunwayML connected. Video & graphics ready." : `RunwayML rejected the key (HTTP ${r.code}).`;
       break;
     }
+    case "rakuten": {
+      const miss = need("clientId", "clientSecret");
+      if (miss.length) { message = `Missing: ${miss.join(", ")}`; break; }
+      const basic = b64(`${cfg.clientId}:${cfg.clientSecret}`);
+      const body = new URLSearchParams({ grant_type: "client_credentials", scope: cfg.sid || "0" }).toString();
+      const r = await ping("https://api.linksynergy.com/token", { method: "POST", headers: { Authorization: `Basic ${basic}`, "Content-Type": "application/x-www-form-urlencoded" }, body });
+      let hasToken = false; try { hasToken = !!JSON.parse(r.body).access_token; } catch {}
+      ok = r.ok && hasToken;
+      message = ok
+        ? (cfg.sid ? "Rakuten connected — token generated & scoped to your account. Offers/reporting ready." : "Rakuten keys valid & token generated — add your Account SID so offers/reports are scoped to YOUR account.")
+        : `Rakuten rejected the credentials (HTTP ${r.code}).`;
+      break;
+    }
     case "affiliate": { ok = !need("apiKey").length; message = ok ? "Keys saved. Exit-traffic offers armed." : "Missing: apiKey"; break; }
     default: { message = "No test available for this integration."; }
   }
 
   // For providers we can only field-check, treat success as "saved" (amber→ok); live-pinged ones are "verified".
-  const liveTested = ["twilio", "groq", "xai", "claude", "elevenlabs", "syncso", "fb_social", "stripe", "klaviyo", "facebook", "predictivedata", "dataforseo", "zapmail", "google_workspace", "runway"].includes(key);
+  const liveTested = ["twilio", "groq", "xai", "claude", "elevenlabs", "syncso", "fb_social", "stripe", "klaviyo", "facebook", "predictivedata", "dataforseo", "zapmail", "google_workspace", "runway", "rakuten"].includes(key);
   const status = ok ? (liveTested ? "verified" : "saved") : (Object.keys(cfg).length ? "failed" : "unconfigured");
   await db.integration.upsert({
     where: { key },

@@ -130,6 +130,22 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
     fields: [{ name: "network", label: "Network Name", placeholder: "MediaAlpha" }, { name: "affiliateCode", label: "Affiliate Code" }, { name: "apiKey", label: "API Key", type: "password" }, { name: "postbackUrl", label: "Postback / Click-Value URL", placeholder: "https://…" }],
   },
   {
+    phase: "Scale & arbitrage", key: "rakuten", label: "Rakuten Advertising — medig.app offers",
+    blurb: "Powers the medig.app offer landers: pulls approved advertiser offers, generates tracked deep links, and imports commissions for the reporting engine.",
+    dataFlow: "keyword landers → tracked click-outs → Rakuten transactions → revenue reporting",
+    steps: [
+      "In the Rakuten Advertising portal → Tools → API Access, copy your Client ID and Client Secret.",
+      "Find your Account SID (the token 'scope') — Rakuten portal → Account / Publisher settings, shown as 'SID' or 'Site ID' (a numeric account id). Paste it as SID below.",
+      "Save + Test connection — the Core auto-generates the OAuth token from these (no manual token needed; it refreshes hourly).",
+      "Then manage offers + landers under the left-nav 'Medig.app' tab.",
+    ],
+    fields: [
+      { name: "clientId", label: "Client ID" },
+      { name: "clientSecret", label: "Client Secret", type: "password" },
+      { name: "sid", label: "Account SID (token scope — numeric)", placeholder: "e.g. 1234567" },
+    ],
+  },
+  {
     phase: "Scale & arbitrage", key: "runway", label: "RunwayML — AI Video & Graphics",
     blurb: "Generates social-media video/graphics AND powers the TV Studio 'look prompt' — restyle a spot's background/feel from one prompt (video-to-video).",
     dataFlow: "AI-generated video/image assets → media kits + TV-commercial look restyling",

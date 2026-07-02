@@ -16,6 +16,7 @@ export const LEFT_NAV: [string, string, string][] = [
   ["AI Spend", "/dashboard/ai-spend", "💰"],
   ["Voiceover Studio", "/voice", "🎙️"],
   ["TV Commercials", "/dashboard/tv", "📺"],
+  ["Medig.app", "/dashboard/medigapp", "📱"],
   ["Communications", "/dashboard/communications", "✉️"],
   ["Coupons", "/dashboard/coupons", "🎟️"],
   ["Marketing Sites", "/dashboard/sites", "🌐"],
