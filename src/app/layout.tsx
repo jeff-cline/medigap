@@ -11,8 +11,11 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 // White-label the page <title>/description per hostname so a launched marketing
 // site (e.g. parentingupward.org) shows its own branding in the browser tab and
 // link previews — not the flagship medigap.plus name.
-// Search-engine site verification (inherits to every page). Bing/Microsoft for 1-800-medigap.com.
-const verification: Metadata["verification"] = { other: { "msvalidate.01": "D36F7E15FF2EF906474C38F156CB9E36" } };
+// Search-engine + service site verification (inherits to every page) for 1-800-medigap.com.
+const verification: Metadata["verification"] = { other: {
+  "msvalidate.01": "D36F7E15FF2EF906474C38F156CB9E36", // Bing/Microsoft
+  "fo-verify": "839e9313-acfc-43b9-9239-18cf69d333a3",
+} };
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getCurrentSite();
