@@ -34,6 +34,17 @@ function mapOffer(o: { id: string; advertiser: string; title: string; descriptio
   return { id: o.id, advertiser: o.advertiser, title: o.title, description: o.description, imageUrl: o.imageUrl, deepLink: o.deepLink, category: o.category, payoutNote: o.payoutNote };
 }
 
+/** Approved+active offers best-matching a keyword phrase (else the top approved offers). */
+export async function offersForKeyword(keyword: string, limit = 12): Promise<Offer[]> {
+  const kw = keyword.toLowerCase().split(/\s+/).filter(Boolean);
+  const all = await db.rakOffer.findMany({ where: { active: true, approved: true }, orderBy: { sortOrder: "asc" } });
+  const scored = all
+    .map((o) => ({ o, score: kw.reduce((s, w) => s + ((`${o.title} ${o.description} ${o.category} ${o.keywords}`.toLowerCase().includes(w)) ? 1 : 0), 0) }))
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score);
+  return (scored.length ? scored.map((x) => x.o) : all).slice(0, limit).map(mapOffer);
+}
+
 /** The reporting engine: clicks out, views in, revenue, best pages, best offers. */
 export async function rakReport() {
   const [views, outs, events, pages, offers] = await Promise.all([

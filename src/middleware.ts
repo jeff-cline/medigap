@@ -42,9 +42,10 @@ export function middleware(req: NextRequest) {
   }
 
   // el.ag — same medig.app engine, but its HOMEPAGE is the /directory; keywords sit directly
-  // after the root (el.ag/medicare-insurance → the lander).
+  // after the root (el.ag/medicare-insurance → the lander). It's a full SEO/AEO site, so its
+  // sitemap.xml / robots.txt / answers / llms.txt serve the medigapp versions too.
   if (host === "el.ag" || host === "www.el.ag") {
-    if (!RESERVED.test(path)) {
+    if (!/^\/(login|change-password|dashboard|_next|favicon)/i.test(path)) {
       const url = req.nextUrl.clone();
       url.pathname = path === "/" ? "/medigapp/directory" : `/medigapp${path}`;
       return NextResponse.rewrite(url);
