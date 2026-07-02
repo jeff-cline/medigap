@@ -32,11 +32,21 @@ export function middleware(req: NextRequest) {
 
   // medig.app — Rakuten-monetized lead/offer landers on the Core. Public paths serve the
   // /medigapp segment; shared Core routes (login, dashboard, api, tracking) pass through.
+  const RESERVED = /^\/(login|change-password|dashboard|r|robots|sitemap|_next|favicon)/i;
   if (host === "medig.app" || host === "www.medig.app") {
-    const reserved = /^\/(login|change-password|dashboard|r|robots|sitemap|_next|favicon)/i.test(path);
-    if (!reserved) {
+    if (!RESERVED.test(path)) {
       const url = req.nextUrl.clone();
       url.pathname = path === "/" ? "/medigapp" : `/medigapp${path}`;
+      return NextResponse.rewrite(url);
+    }
+  }
+
+  // el.ag — same medig.app engine, but its HOMEPAGE is the /directory; keywords sit directly
+  // after the root (el.ag/medicare-insurance → the lander).
+  if (host === "el.ag" || host === "www.el.ag") {
+    if (!RESERVED.test(path)) {
+      const url = req.nextUrl.clone();
+      url.pathname = path === "/" ? "/medigapp/directory" : `/medigapp${path}`;
       return NextResponse.rewrite(url);
     }
   }
