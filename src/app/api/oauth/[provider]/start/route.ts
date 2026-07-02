@@ -34,7 +34,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ provider: s
   auth.searchParams.set("client_id", clientId);
   auth.searchParams.set("redirect_uri", callbackUrl(origin, provider));
   auth.searchParams.set("response_type", "code");
-  auth.searchParams.set("scope", p.scope);
+  auth.searchParams.set("scope", config.scope || p.scope); // per-integration override (add insights/IG scopes once activated in Meta)
   auth.searchParams.set("state", session.uid);
   for (const [k, v] of Object.entries(p.extraAuthParams || {})) auth.searchParams.set(k, v);
   return NextResponse.redirect(auth.toString());

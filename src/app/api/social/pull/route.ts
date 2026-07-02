@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import { pullFacebook } from "@/lib/social";
+import { pullFacebook, fbConfig } from "@/lib/social";
 
 // God: capture a fresh metrics snapshot for every connected social account.
 // Also handles the "Clear preview data" form action (deletes the sample snapshots).
@@ -18,13 +18,15 @@ export async function POST(req: Request) {
   }
 
   const conns = await db.socialConnection.findMany({ where: { platform: "facebook" }, select: { userId: true } });
-  if (conns.length === 0) return NextResponse.json({ error: "No Facebook connection yet — connect first." }, { status: 400 });
+  // OAuth-connected users, else a pasted System User token pulls the business portfolio directly.
+  const targets = conns.length ? conns.map((c) => c.userId) : ((await fbConfig()).accessToken ? ["system"] : []);
+  if (targets.length === 0) return NextResponse.json({ error: "No Facebook connection yet — connect via Facebook, or paste a System User token on Integrations → Facebook (Doublewide)." }, { status: 400 });
 
   let captured = 0; const errors: string[] = [];
-  for (const c of conns) {
-    const r = await pullFacebook(c.userId);
+  for (const uid of targets) {
+    const r = await pullFacebook(uid);
     captured += r.captured;
     if (!r.ok && r.error) errors.push(r.error);
   }
-  return NextResponse.json({ ok: true, captured, connections: conns.length, errors: [...new Set(errors)] });
+  return NextResponse.json({ ok: true, captured, connections: targets.length, errors: [...new Set(errors)] });
 }

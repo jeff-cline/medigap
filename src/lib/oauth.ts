@@ -35,7 +35,10 @@ export const OAUTH_PROVIDERS: Record<string, OAuthProvider> = {
     id: "fb_social", label: "Facebook (Doublewide social)", integrationKey: "fb_social",
     authorizeUrl: "https://www.facebook.com/v19.0/dialog/oauth",
     tokenUrl: "https://graph.facebook.com/v19.0/oauth/access_token",
-    scope: "public_profile,pages_show_list,pages_read_engagement,read_insights,business_management,instagram_basic,instagram_manage_insights",
+    // Default = scopes that work WITHOUT App Review (page list + engagement). Insights/Instagram
+    // scopes (read_insights, instagram_basic, instagram_manage_insights) must be ACTIVATED in the
+    // Meta app first; add them via the fb_social integration `scope` field once approved.
+    scope: "public_profile,pages_show_list,pages_read_engagement,business_management",
     clientIdField: "appId", clientSecretField: "appSecret",
   },
   stripe: {

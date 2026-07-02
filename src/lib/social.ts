@@ -13,7 +13,7 @@ export async function fbConfig() {
   const row = await db.integration.findUnique({ where: { key: "fb_social" } });
   let c: Record<string, string> = {};
   try { c = row ? JSON.parse(row.config) : {}; } catch {}
-  return { appId: c.appId || "", appSecret: c.appSecret || "", businessId: c.businessId || "" };
+  return { appId: c.appId || "", appSecret: c.appSecret || "", businessId: c.businessId || "", accessToken: c.accessToken || "" };
 }
 
 /**
@@ -23,23 +23,26 @@ export async function fbConfig() {
  */
 export async function pullFacebook(userId: string): Promise<{ ok: boolean; captured: number; error?: string }> {
   const conn = await db.socialConnection.findUnique({ where: { userId_platform: { userId, platform: "facebook" } } });
-  if (!conn || !conn.accessToken) return { ok: false, captured: 0, error: "Not connected" };
-  const { businessId } = await fbConfig();
+  const { businessId, accessToken: sysToken } = await fbConfig();
+  // Use the per-user OAuth token if connected, else a pasted System User / long-lived token
+  // (Business-owned pages → real data + reports with NO OAuth and NO App Review).
+  const rootToken = conn?.accessToken || sysToken;
+  if (!rootToken) return { ok: false, captured: 0, error: "Not connected — connect via Facebook, or paste a System User token on Integrations." };
 
   // Gather pages: prefer the Business portfolio (whole org), else the connection's stored pages.
   let pages: FbPage[] = [];
   if (businessId) {
-    const owned = await getJson(`${GRAPH}/${businessId}/owned_pages?fields=id,name,access_token,followers_count&limit=200&access_token=${conn.accessToken}`);
+    const owned = await getJson(`${GRAPH}/${businessId}/owned_pages?fields=id,name,access_token,followers_count&limit=200&access_token=${rootToken}`);
     if (Array.isArray(owned?.data)) pages = owned.data.map((p: Record<string, unknown>) => ({ id: String(p.id), name: String(p.name || ""), access_token: p.access_token as string, followers: Number(p.followers_count || 0) }));
   }
   if (pages.length === 0) {
-    try { pages = JSON.parse(conn.pages || "[]"); } catch { pages = []; }
+    try { pages = JSON.parse(conn?.pages || "[]"); } catch { pages = []; }
   }
   if (pages.length === 0) return { ok: false, captured: 0, error: "No pages found on this connection" };
 
   let captured = 0;
   for (const pg of pages) {
-    const token = pg.access_token || conn.accessToken;
+    const token = pg.access_token || rootToken;
     // followers
     const meta = await getJson(`${GRAPH}/${pg.id}?fields=name,followers_count,fan_count&access_token=${token}`);
     const followers = Number(meta?.followers_count ?? meta?.fan_count ?? pg.followers ?? 0);
