@@ -61,6 +61,15 @@ export function callbackUrl(origin: string, provider: string) {
   return `${origin}/api/oauth/${provider}/callback`;
 }
 
+// The PUBLIC origin from the proxy's Host header — NOT req.url (which Next resolves to the
+// internal 127.0.0.1:3020 behind nginx, breaking OAuth redirects to localhost).
+export function publicOrigin(req: { headers: Headers }): string {
+  const raw = req.headers.get("x-forwarded-host") || req.headers.get("host") || "medigap.plus";
+  const host = raw.split(",")[0].trim();
+  const isLocal = host.startsWith("localhost") || host.startsWith("127.");
+  return `${isLocal ? "http" : "https"}://${host}`;
+}
+
 // Per-USER social providers — anyone signed in can connect their own account (god, or a creator,
 // or god impersonating a creator). The token is stored per user in SocialConnection, not globally.
 export const SOCIAL_PROVIDERS = new Set(["fb_social"]);

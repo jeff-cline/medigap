@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import { OAUTH_PROVIDERS, callbackUrl, isSocialProvider } from "@/lib/oauth";
+import { OAUTH_PROVIDERS, callbackUrl, isSocialProvider, publicOrigin } from "@/lib/oauth";
 
 // Begin an OAuth authorization. Requires the app's client id to be saved in the
 // provider's Integration config first; otherwise returns a clear instruction.
@@ -23,13 +23,13 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ provider: s
   if (!clientId) {
     // App not configured yet. God → integrations to add the App ID/Secret; creator → friendly note.
     const url = isSocialProvider(provider)
-      ? new URL("/creator?connect=notready", req.url)
-      : new URL("/dashboard/integrations", req.url);
+      ? new URL("/creator?connect=notready", publicOrigin(req))
+      : new URL("/dashboard/integrations", publicOrigin(req));
     if (!isSocialProvider(provider)) url.searchParams.set("needs", provider);
     return NextResponse.redirect(url);
   }
 
-  const origin = new URL(req.url).origin;
+  const origin = publicOrigin(req);
   const auth = new URL(p.authorizeUrl);
   auth.searchParams.set("client_id", clientId);
   auth.searchParams.set("redirect_uri", callbackUrl(origin, provider));

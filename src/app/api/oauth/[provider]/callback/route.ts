@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { OAUTH_PROVIDERS, callbackUrl, isSocialProvider, socialPlatform } from "@/lib/oauth";
+import { OAUTH_PROVIDERS, callbackUrl, isSocialProvider, socialPlatform, publicOrigin } from "@/lib/oauth";
 
 // Exchange the auth code for tokens and persist the connection (global for ads/billing,
 // per-user for Doublewide social).
@@ -11,7 +11,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ provider: s
   const state = req.nextUrl.searchParams.get("state") || ""; // the connecting user's id
   const social = isSocialProvider(provider);
   const done = (status: string) => {
-    const url = new URL(social ? "/creator" : "/dashboard/integrations", req.url);
+    const url = new URL(social ? "/creator" : "/dashboard/integrations", publicOrigin(req));
     url.searchParams.set(social ? "fb" : "oauth", social ? status : `${provider}:${status}`);
     return NextResponse.redirect(url);
   };
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ provider: s
   if (!clientId || !clientSecret) return done("error");
 
   try {
-    const origin = new URL(req.url).origin;
+    const origin = publicOrigin(req);
     const body = new URLSearchParams({
       client_id: clientId, client_secret: clientSecret, code,
       grant_type: "authorization_code", redirect_uri: callbackUrl(origin, provider),
