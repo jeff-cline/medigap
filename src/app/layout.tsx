@@ -20,6 +20,12 @@ const verification: Metadata["verification"] = { other: {
 } };
 
 export async function generateMetadata(): Promise<Metadata> {
+  const host = (await headers()).get("host") || "";
+  const adsPub = (await adsenseEnabledForHost(host)) ? await adsensePubIdForHost(host) : "";
+  // google-adsense-account meta = the static verification signal the AdSense crawler reads.
+  const ver: Metadata["verification"] = adsPub
+    ? { other: { ...(verification!.other as Record<string, string>), "google-adsense-account": adsPub } }
+    : verification;
   const site = await getCurrentSite();
   if (!site) {
     return {
@@ -30,12 +36,12 @@ export async function generateMetadata(): Promise<Metadata> {
         title: "medigap.plus — The Senior Marketing Network",
         description: "One network for every over-65 product. Call 1-800-MEDIGAP.",
       },
-      verification,
+      verification: ver,
     };
   }
   const title = site.name;
   const description = site.heroHeadline || `${site.name} — caring, licensed specialists for every senior need. Call 1-800-MEDIGAP.`;
-  return { title, description, openGraph: { title, description }, verification };
+  return { title, description, openGraph: { title, description }, verification: ver };
 }
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
