@@ -15,8 +15,9 @@ export default async function VOS({ searchParams }: { searchParams: Promise<{ e?
       <div style={{ background: "#0a1733", minHeight: "100vh" }} className="text-white">
         <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
           <div className="font-extrabold tracking-tight text-lg">VOS <span>🚀</span> <span className="text-white/40 text-xs font-normal">Voter Operating System</span></div>
-          <div className="flex items-center gap-3">
-            <a href={PDF} download className="rounded-full bg-[#b8901f] px-4 py-1.5 text-sm font-bold text-[#1a1206]">⤓ Download PDF</a>
+          <div className="flex items-center gap-2">
+            <a href="/vos/phd" className="rounded-full border border-white/20 px-4 py-1.5 text-sm font-semibold">Doctoral Thesis →</a>
+            <a href={PDF} download className="rounded-full bg-[#b8901f] px-4 py-1.5 text-sm font-bold text-[#1a1206]">⤓ Download</a>
             <a href={PDF} target="_blank" className="rounded-full border border-white/20 px-4 py-1.5 text-sm font-semibold">Open ↗</a>
           </div>
         </div>
