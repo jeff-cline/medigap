@@ -40,6 +40,11 @@ export default async function AdsenseDashboard() {
               <a href="/api/oauth/adsense/start" className="btn btn-brand text-sm">Connect Google →</a>
             </div>
           </div>
+          <div className="mt-3 pt-3 border-t border-[var(--border)] text-xs text-[var(--muted)]">
+            In your Google Cloud OAuth client, add this <b>exact</b> Authorized redirect URI (Credentials → your OAuth client → Authorized redirect URIs):
+            <div className="mt-1"><code className="rounded bg-[var(--panel2)] border border-[var(--border)] px-2 py-1 select-all text-[var(--ink)]">https://medigap.plus/api/oauth/adsense/callback</code></div>
+            <div className="mt-1">Connect from <b>medigap.plus</b> (not www or another site). No trailing slash, https, and use the same OAuth client whose ID/Secret you saved.</div>
+          </div>
         </Card>
       )}
 

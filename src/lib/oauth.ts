@@ -73,7 +73,8 @@ export function callbackUrl(origin: string, provider: string) {
 // internal 127.0.0.1:3020 behind nginx, breaking OAuth redirects to localhost).
 export function publicOrigin(req: { headers: Headers }): string {
   const raw = req.headers.get("x-forwarded-host") || req.headers.get("host") || "medigap.plus";
-  const host = raw.split(",")[0].trim();
+  // Canonicalize to non-www so OAuth redirect_uri always matches one whitelisted value.
+  const host = raw.split(",")[0].trim().replace(/^www\./, "");
   const isLocal = host.startsWith("localhost") || host.startsWith("127.");
   return `${isLocal ? "http" : "https"}://${host}`;
 }
