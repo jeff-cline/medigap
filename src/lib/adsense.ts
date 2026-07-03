@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 const DEFAULT_PUB = "ca-pub-7355906314074414"; // provided; overridable in the ADSENSE integration
 const API = "https://adsense.googleapis.com/v2";
 
-export type AdsenseCfg = { pubId: string; clientId: string; clientSecret: string; refreshToken: string; accessToken: string; enabledHosts: string[] };
+export type AdsenseCfg = { pubId: string; clientId: string; clientSecret: string; refreshToken: string; accessToken: string; enabledHosts: string[]; sitePubs: Record<string, string> };
 
 // The three sites turned ON by default; everything else on the Core is OFF until toggled.
 export const ADSENSE_DEFAULT_ON = ["experientialmarketing.ai", "el.ag", "medigap.plus"];
@@ -19,7 +19,14 @@ export const adsenseCfg = cache(async (): Promise<AdsenseCfg> => {
   try { c = row ? JSON.parse(row.config) : {}; } catch {}
   const s = (k: string) => (typeof c[k] === "string" ? (c[k] as string) : "");
   const enabledHosts = Array.isArray(c.enabledHosts) ? (c.enabledHosts as string[]) : ADSENSE_DEFAULT_ON;
-  return { pubId: s("pubId") || DEFAULT_PUB, clientId: s("clientId"), clientSecret: s("clientSecret"), refreshToken: s("refreshToken"), accessToken: s("accessToken"), enabledHosts };
+  const sitePubs = (c.sitePubs && typeof c.sitePubs === "object") ? (c.sitePubs as Record<string, string>) : {};
+  return { pubId: s("pubId") || DEFAULT_PUB, clientId: s("clientId"), clientSecret: s("clientSecret"), refreshToken: s("refreshToken"), accessToken: s("accessToken"), enabledHosts, sitePubs };
+});
+
+/** The publisher id to serve for a given host: its per-site pub id, else the global default. */
+export const adsensePubIdForHost = cache(async (host: string): Promise<string> => {
+  const { sitePubs, pubId } = await adsenseCfg();
+  return sitePubs[norm(host)] || pubId || DEFAULT_PUB;
 });
 
 /** Is AdSense turned ON for this host? (checked by the root layout before injecting the script) */
@@ -29,13 +36,14 @@ export const adsenseEnabledForHost = cache(async (host: string): Promise<boolean
 });
 
 /** Every host on the Core (static flagships + Site rows), with its current on/off state — for the toggle list. */
-export async function adsenseSiteList(): Promise<{ host: string; name: string; on: boolean }[]> {
-  const [{ enabledHosts }, sites] = await Promise.all([adsenseCfg(), db.site.findMany({ select: { hostname: true, name: true } }).catch(() => [])]);
-  const on = new Set(enabledHosts.map(norm));
+export async function adsenseSiteList(): Promise<{ host: string; name: string; on: boolean; pubId: string; usingDefault: boolean }[]> {
+  const [cfg, sites] = await Promise.all([adsenseCfg(), db.site.findMany({ select: { hostname: true, name: true } }).catch(() => [])]);
+  const on = new Set(cfg.enabledHosts.map(norm));
   const map = new Map<string, string>();
   for (const h of CORE_HOSTS_STATIC) map.set(norm(h), h);
   for (const s of sites) map.set(norm(s.hostname), s.name || s.hostname);
-  return [...map.entries()].map(([host, name]) => ({ host, name: name === host ? host : name, on: on.has(host) })).sort((a, b) => Number(b.on) - Number(a.on) || a.host.localeCompare(b.host));
+  return [...map.entries()].map(([host, name]) => ({ host, name: name === host ? host : name, on: on.has(host), pubId: cfg.sitePubs[host] || "", usingDefault: !cfg.sitePubs[host] }))
+    .sort((a, b) => Number(b.on) - Number(a.on) || a.host.localeCompare(b.host));
 }
 
 // The <script> publisher id (public). Falls back to the provided default.

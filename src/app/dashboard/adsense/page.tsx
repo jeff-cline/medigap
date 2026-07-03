@@ -63,9 +63,9 @@ export default async function AdsenseDashboard() {
         </>
       )}
 
-      <Section title="AdSense on/off by site" desc="Turn the AdSense script on or off per Core site. Changes take effect immediately.">
-        <AdsenseToggles sites={sites} />
-        <p className="text-xs text-[var(--muted)] mt-3">Green = the AdSense script loads on that host. New white-label sites default to OFF until turned on here.</p>
+      <Section title="AdSense by site — publisher ID + on/off" desc="Set each site's AdSense publisher ID (blank = use the default) and toggle the script on or off. Changes take effect immediately.">
+        <AdsenseToggles sites={sites} defaultPub={cfg.pubId} />
+        <p className="text-xs text-[var(--muted)] mt-3">Green = the AdSense script loads on that host, using its own publisher ID if set (otherwise the default <b>{cfg.pubId}</b>). New white-label sites default to OFF until turned on here.</p>
       </Section>
     </>
   );

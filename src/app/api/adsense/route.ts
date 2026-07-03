@@ -16,13 +16,24 @@ export async function POST(req: NextRequest) {
   try { cfg = row ? JSON.parse(row.config) : {}; } catch {}
   const cur: string[] = Array.isArray(cfg.enabledHosts) ? (cfg.enabledHosts as string[]) : ADSENSE_DEFAULT_ON;
   const set = new Set(cur.map((h) => h.replace(/^www\./, "").toLowerCase()));
-  if (b.on) set.add(host); else set.delete(host);
+
+  // on/off toggle
+  if (b.on !== undefined) { if (b.on) set.add(host); else set.delete(host); }
+
+  // per-site publisher id (blank clears → falls back to the global default)
+  const sitePubs: Record<string, string> = (cfg.sitePubs && typeof cfg.sitePubs === "object") ? (cfg.sitePubs as Record<string, string>) : {};
+  if (b.pubId !== undefined) {
+    const p = String(b.pubId || "").trim();
+    if (p) sitePubs[host] = p; else delete sitePubs[host];
+  }
+
   cfg.enabledHosts = [...set];
+  cfg.sitePubs = sitePubs;
 
   await db.integration.upsert({
     where: { key: "adsense" },
     update: { config: JSON.stringify(cfg) },
     create: { key: "adsense", label: "Google AdSense", config: JSON.stringify(cfg), connected: false, status: "" },
   });
-  return NextResponse.json({ ok: true, on: set.has(host), enabledHosts: [...set] });
+  return NextResponse.json({ ok: true, on: set.has(host), pubId: sitePubs[host] || "", enabledHosts: [...set] });
 }

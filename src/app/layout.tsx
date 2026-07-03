@@ -6,7 +6,7 @@ import "./globals.css";
 import { Suspense } from "react";
 import TrackingPixels from "@/components/TrackingPixels";
 import { getCurrentSite } from "@/lib/site";
-import { adsenseEnabledForHost, adsensePubId } from "@/lib/adsense";
+import { adsenseEnabledForHost, adsensePubIdForHost } from "@/lib/adsense";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 
@@ -41,7 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const host = (await headers()).get("host") || "";
   const showAds = await adsenseEnabledForHost(host);
-  const pubId = showAds ? await adsensePubId() : "";
+  const pubId = showAds ? await adsensePubIdForHost(host) : "";
   return (
     <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
