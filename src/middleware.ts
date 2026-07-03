@@ -44,7 +44,8 @@ export function middleware(req: NextRequest) {
   // experientialmarketing.ai (XM) — a standalone partner brand on the Core: public paths serve
   // the /xm segment; shared Core routes (login, dashboard, api, vos) pass through.
   if (host === "experientialmarketing.ai" || host === "www.experientialmarketing.ai") {
-    if (!RESERVED.test(path)) {
+    // Minimal reserved set so XM serves its OWN sitemap.xml / robots.txt / llms.txt / answers.
+    if (!/^\/(login|change-password|dashboard|vos|_next|favicon)/i.test(path)) {
       const url = req.nextUrl.clone();
       url.pathname = path === "/" ? "/xm" : `/xm${path}`;
       return NextResponse.rewrite(url);

@@ -23,7 +23,7 @@ export default async function XmHome() {
     <div style={xmVars} className="bg-black text-white">
       {/* HERO */}
       <section className="relative min-h-[86vh] flex items-center overflow-hidden">
-        {hero && /* eslint-disable-next-line @next/next/no-img-element */ <img src={hero} alt="Experiential marketing brand activation" className="absolute inset-0 w-full h-full object-cover opacity-40" />}
+        {hero && /* eslint-disable-next-line @next/next/no-img-element */ <img src={hero} alt="Experiential marketing brand activation event for top brands nationwide | XM Marketing image" className="absolute inset-0 w-full h-full object-cover opacity-40" />}
         <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.85))" }} />
         <div className="relative mx-auto max-w-6xl px-6 py-20">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-widest">
@@ -57,7 +57,7 @@ export default async function XmHome() {
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {featured.map((s, i) => (
             <a key={s.slug} href={`/${s.slug}`} className="group relative overflow-hidden rounded-2xl border border-white/10 aspect-[4/3]">
-              {imgs[i] && /* eslint-disable-next-line @next/next/no-img-element */ <img src={imgs[i]} alt={s.name} className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition" />}
+              {imgs[i] && /* eslint-disable-next-line @next/next/no-img-element */ <img src={imgs[i]} alt={`${s.name} — experiential marketing for top brands | XM Marketing image`} className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition" />}
               <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent, rgba(0,0,0,.9))" }} />
               <div className="absolute bottom-0 p-5">
                 <div className="text-xl font-black">{s.name}</div>

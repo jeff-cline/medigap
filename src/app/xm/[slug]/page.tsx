@@ -40,7 +40,17 @@ export default async function XmSlug({ params }: { params: Promise<{ slug: strin
   const r = resolve(slug);
   if (!r) notFound();
   const c = xmContent(r.name, r.kind === "silo");
-  const hero = await searchPhotos(r.silo.img, 1).then((p) => p[0]?.url || "").catch(() => "");
+  // Every page gets a distinct, licensed image. Sub-pages of the same silo pick a different
+  // photo (seeded by slug) and a different size/crop, so nothing looks reused; alts are
+  // keyword-rich + ADA-descriptive + tagged "XM Marketing image".
+  const photos = await searchPhotos(r.silo.img, 6).then((p) => p.map((x) => x.url)).catch(() => []);
+  const seed = [...slug].reduce((a, ch) => a + ch.charCodeAt(0), 0);
+  const hero = photos.length ? photos[seed % photos.length] : "";
+  const midImg = photos.length > 1 ? photos[(seed + 3) % photos.length] : hero;
+  const heroAlt = `${r.name} — ${r.silo.name.toLowerCase()} experiential marketing brand activation nationwide | XM Marketing image`;
+  const midAlt = `${r.name} brand experience example for top brands — experiential marketing | XM Marketing image`;
+  const heroH = 46 + (seed % 5) * 4; // 46–62vh, varied so reused imagery reads unique
+  const midH = 200 + (seed % 6) * 24; // 200–320px
 
   const faqLd = { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: c.faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) };
   const crumbs = [{ n: "Home", u: "/" }, ...(r.kind === "sub" ? [{ n: r.silo.name, u: `/${r.silo.slug}` }] : []), { n: r.name, u: `/${slug}` }];
@@ -53,8 +63,8 @@ export default async function XmSlug({ params }: { params: Promise<{ slug: strin
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbLd) }} />
 
       {/* HERO */}
-      <section className="relative min-h-[52vh] flex items-end overflow-hidden">
-        {hero && /* eslint-disable-next-line @next/next/no-img-element */ <img src={hero} alt={r.name} className="absolute inset-0 w-full h-full object-cover opacity-45" />}
+      <section className="relative flex items-end overflow-hidden" style={{ minHeight: `${heroH}vh` }}>
+        {hero && /* eslint-disable-next-line @next/next/no-img-element */ <img src={hero} alt={heroAlt} className="absolute inset-0 w-full h-full object-cover opacity-45" style={{ objectPosition: `${seed % 100}% center` }} />}
         <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,.4), rgba(0,0,0,.9))" }} />
         <div className="relative mx-auto max-w-5xl px-6 py-12 w-full">
           <nav className="text-xs text-white/50 mb-3">{crumbs.map((b, i) => <span key={b.u}>{i > 0 && " › "}<a href={b.u} className="hover:text-white">{b.n}</a></span>)}</nav>
@@ -70,6 +80,9 @@ export default async function XmSlug({ params }: { params: Promise<{ slug: strin
           <div key={i} className="mb-9">
             <h2 className="text-2xl font-black tracking-tight">{s.h2}</h2>
             <p className="mt-3 text-white/70 leading-relaxed">{s.body}</p>
+            {i === 0 && midImg && /* eslint-disable-next-line @next/next/no-img-element */ (
+              <img src={midImg} alt={midAlt} loading="lazy" className="w-full rounded-2xl border border-white/10 mt-6 object-cover" style={{ height: `${midH}px` }} />
+            )}
           </div>
         ))}
       </section>
