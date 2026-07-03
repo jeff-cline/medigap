@@ -41,6 +41,16 @@ export function middleware(req: NextRequest) {
     }
   }
 
+  // experientialmarketing.ai (XM) — a standalone partner brand on the Core: public paths serve
+  // the /xm segment; shared Core routes (login, dashboard, api, vos) pass through.
+  if (host === "experientialmarketing.ai" || host === "www.experientialmarketing.ai") {
+    if (!RESERVED.test(path)) {
+      const url = req.nextUrl.clone();
+      url.pathname = path === "/" ? "/xm" : `/xm${path}`;
+      return NextResponse.rewrite(url);
+    }
+  }
+
   // el.ag — same medig.app engine, but its HOMEPAGE is the /directory; keywords sit directly
   // after the root (el.ag/medicare-insurance → the lander). It's a full SEO/AEO site, so its
   // sitemap.xml / robots.txt / answers / llms.txt serve the medigapp versions too.
