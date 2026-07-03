@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import Script from "next/script";
+import { headers } from "next/headers";
 import "./globals.css";
 import { Suspense } from "react";
 import TrackingPixels from "@/components/TrackingPixels";
 import { getCurrentSite } from "@/lib/site";
+import { adsenseEnabledForHost, adsensePubId } from "@/lib/adsense";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 
@@ -36,10 +38,17 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title, description, openGraph: { title, description }, verification };
 }
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const host = (await headers()).get("host") || "";
+  const showAds = await adsenseEnabledForHost(host);
+  const pubId = showAds ? await adsensePubId() : "";
   return (
     <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
+        {showAds && pubId && (
+          <Script id="adsbygoogle-init" async strategy="afterInteractive" crossOrigin="anonymous"
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${pubId}`} />
+        )}
         {/* PredictiveData visitor pixel — global, identifies/enriches visitors into the Core CRM. */}
         <Script id="predictivedata-pixel" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html:
           `(function(s, p, i, c, e) {

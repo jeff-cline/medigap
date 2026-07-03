@@ -22,6 +22,14 @@ export const OAUTH_PROVIDERS: Record<string, OAuthProvider> = {
     clientIdField: "clientId", clientSecretField: "clientSecret",
     extraAuthParams: { access_type: "offline", prompt: "consent" },
   },
+  adsense: {
+    id: "adsense", label: "Google AdSense", integrationKey: "adsense",
+    authorizeUrl: "https://accounts.google.com/o/oauth2/v2/auth",
+    tokenUrl: "https://oauth2.googleapis.com/token",
+    scope: "https://www.googleapis.com/auth/adsense.readonly",
+    clientIdField: "clientId", clientSecretField: "clientSecret",
+    extraAuthParams: { access_type: "offline", prompt: "consent", include_granted_scopes: "true" },
+  },
   facebook: {
     id: "facebook", label: "Meta / Facebook", integrationKey: "facebook",
     authorizeUrl: "https://www.facebook.com/v19.0/dialog/oauth",

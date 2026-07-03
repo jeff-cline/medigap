@@ -102,6 +102,23 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
     fields: [{ name: "appId", label: "App ID" }, { name: "appSecret", label: "App Secret", type: "password" }, { name: "adAccountId", label: "Ad Account ID", placeholder: "act_xxx" }, { name: "pixelId", label: "Pixel ID" }],
   },
   {
+    phase: "Paid acquisition", key: "adsense", label: "Google AdSense — monetization + reporting", oauth: true,
+    blurb: "Serves AdSense on your Core sites (per-site on/off under the AdSense tab) and pulls earnings into the Core so you can run revenue reports.",
+    dataFlow: "AdSense earnings / clicks / RPM by day & domain → Core AdSense dashboard",
+    steps: [
+      "Publisher ID is prefilled (ca-pub-7355906314074414) — change only if you use a different AdSense account.",
+      "For reporting: Google Cloud Console → create an OAuth Client (Web), enable the AdSense Management API, add this app's callback as a redirect URI, paste the Client ID + Secret below.",
+      "Save, then Connect to authorize read-only reporting (or paste a Refresh Token directly).",
+      "Toggle which Core sites show AdSense under the left-nav AdSense tab.",
+    ],
+    fields: [
+      { name: "pubId", label: "Publisher ID", placeholder: "ca-pub-7355906314074414" },
+      { name: "clientId", label: "OAuth Client ID (for reporting)" },
+      { name: "clientSecret", label: "OAuth Client Secret", type: "password" },
+      { name: "refreshToken", label: "Refresh Token (optional — if not using Connect)", type: "password" },
+    ],
+  },
+  {
     phase: "Social media", key: "fb_social", label: "Facebook / Meta — Social Accounts (Doublewide)", oauth: true,
     blurb: "Connect a business portfolio of Facebook Pages (and Instagram via Meta Graph) to pull impressions, engagement and trending posts into the Core — and run lead forms that attribute back to the creator.",
     dataFlow: "social metrics + lead-form submissions → Core dashboard & CRM (creator-attributed)",

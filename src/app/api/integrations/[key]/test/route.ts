@@ -188,12 +188,19 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ key: strin
         : `Rakuten rejected the credentials (HTTP ${r.code}).`;
       break;
     }
+    case "adsense": {
+      const pub = cfg.pubId || "ca-pub-7355906314074414";
+      const hasReporting = !!(cfg.clientId && cfg.clientSecret);
+      ok = true;
+      message = `AdSense script ready (${pub}). ${hasReporting ? "Reporting keys saved — Connect Google to authorize, then open the AdSense tab." : "Add OAuth Client ID/Secret to enable earnings reporting."}`;
+      break;
+    }
     case "affiliate": { ok = !need("apiKey").length; message = ok ? "Keys saved. Exit-traffic offers armed." : "Missing: apiKey"; break; }
     default: { message = "No test available for this integration."; }
   }
 
   // For providers we can only field-check, treat success as "saved" (amber→ok); live-pinged ones are "verified".
-  const liveTested = ["twilio", "groq", "xai", "claude", "elevenlabs", "syncso", "fb_social", "stripe", "klaviyo", "facebook", "predictivedata", "dataforseo", "zapmail", "google_workspace", "runway", "rakuten"].includes(key);
+  const liveTested = ["twilio", "groq", "xai", "claude", "elevenlabs", "syncso", "fb_social", "stripe", "klaviyo", "facebook", "predictivedata", "dataforseo", "zapmail", "google_workspace", "runway", "rakuten", "adsense"].includes(key);
   const status = ok ? (liveTested ? "verified" : "saved") : (Object.keys(cfg).length ? "failed" : "unconfigured");
   await db.integration.upsert({
     where: { key },
