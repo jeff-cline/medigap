@@ -41,6 +41,15 @@ export function middleware(req: NextRequest) {
     }
   }
 
+  // exitoptimization.com — SEO/AEO lead-gen site on the Core (serves the /exit segment).
+  if (host === "exitoptimization.com" || host === "www.exitoptimization.com") {
+    if (!/^\/(login|change-password|dashboard|vos|ads\.txt|_next|favicon)/i.test(path)) {
+      const url = req.nextUrl.clone();
+      url.pathname = path === "/" ? "/exit" : `/exit${path}`;
+      return NextResponse.rewrite(url);
+    }
+  }
+
   // experientialmarketing.ai (XM) — a standalone partner brand on the Core: public paths serve
   // the /xm segment; shared Core routes (login, dashboard, api, vos) pass through.
   if (host === "experientialmarketing.ai" || host === "www.experientialmarketing.ai") {
