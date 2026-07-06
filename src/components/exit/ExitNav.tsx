@@ -32,6 +32,7 @@ export default function ExitNav() {
           ))}
           <a href="/how-we-work" className="px-3 py-2 font-semibold text-slate-200 hover:text-white">How we work</a>
           <a href="/faq" className="px-3 py-2 font-semibold text-slate-200 hover:text-white">FAQ</a>
+          <a href="/login" className="px-3 py-2 font-semibold text-slate-200 hover:text-white">Log in</a>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -55,7 +56,7 @@ export default function ExitNav() {
               </div>
             </div>
           ))}
-          <div className="flex gap-3 pt-1"><a href="/how-we-work" className="text-slate-200 text-sm">How we work</a><a href="/faq" className="text-slate-200 text-sm">FAQ</a></div>
+          <div className="flex gap-3 pt-1"><a href="/how-we-work" className="text-slate-200 text-sm">How we work</a><a href="/faq" className="text-slate-200 text-sm">FAQ</a><a href="/login" className="text-slate-200 text-sm">Log in</a></div>
           <a href="/business-valuation-calculators" className="block text-center rounded-md border px-4 py-2.5 text-sm font-bold" style={{ borderColor: O, color: EXIT.colors.orange3 }}>Access business calculators</a>
           <a href="/book" className="block text-center rounded-md px-4 py-2.5 text-sm font-bold" style={{ background: O, color: EXIT.colors.bg }}>Book a free consultation</a>
         </div>

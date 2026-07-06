@@ -32,7 +32,7 @@ export default function ExitLeadForm({ compact = false }: { compact?: boolean })
         <input placeholder="Annual revenue (optional)" value={f.revenue} onChange={(e) => setF({ ...f, revenue: e.target.value })} className={`${inp} sm:col-span-2`} />
       </div>
       {err && <div className="mt-2 text-sm text-red-400">{err}</div>}
-      <button onClick={submit} disabled={busy} className="mt-3 w-full rounded-md px-5 py-3 font-bold" style={{ background: EXIT.colors.orange, color: EXIT.colors.bg }}>{busy ? "Sending…" : "Book a free consultation →"}</button>
+      <button onClick={submit} disabled={busy} className="mt-3 w-full rounded-md px-5 py-3 font-bold" style={{ background: EXIT.colors.orange, color: EXIT.colors.bg }}>{busy ? "Sending…" : "Get white paper and assessment →"}</button>
       <p className="mt-2 text-[11px] text-slate-500 text-center">Free · No pressure · We'll show you how to multiply your exit.</p>
     </div>
   );

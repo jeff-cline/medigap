@@ -26,6 +26,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const ver: Metadata["verification"] = adsPub
     ? { other: { ...(verification!.other as Record<string, string>), "google-adsense-account": adsPub } }
     : verification;
+  // 🚀 favicon for exitoptimization.com (R0cketShip brand).
+  const icons: Metadata["icons"] = host.includes("exitoptimization")
+    ? { icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9A%80%3C/text%3E%3C/svg%3E" }
+    : undefined;
   const site = await getCurrentSite();
   if (!site) {
     return {
@@ -37,11 +41,12 @@ export async function generateMetadata(): Promise<Metadata> {
         description: "One network for every over-65 product. Call 1-800-MEDIGAP.",
       },
       verification: ver,
+      icons,
     };
   }
   const title = site.name;
   const description = site.heroHeadline || `${site.name} — caring, licensed specialists for every senior need. Call 1-800-MEDIGAP.`;
-  return { title, description, openGraph: { title, description }, verification: ver };
+  return { title, description, openGraph: { title, description }, verification: ver, icons };
 }
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
