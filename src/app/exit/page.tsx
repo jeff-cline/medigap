@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { EXIT, EXIT_WAYS, exitVars } from "@/lib/exit";
 import { EXIT_MONEY, exitGroups } from "@/lib/exit-taxonomy";
 import ExitLeadForm from "@/components/exit/ExitLeadForm";
+import ExitNav from "@/components/exit/ExitNav";
 import { BookButton, CtaBand } from "@/components/exit/ExitCTA";
 import ExitFooter from "@/components/exit/ExitFooter";
 
@@ -17,6 +18,7 @@ export default function ExitHome() {
   return (
     <div style={exitVars} className="text-white" >
       <div style={{ background: EXIT.colors.bg }}>
+        <ExitNav />
         {/* HERO */}
         <section className="relative overflow-hidden">
           <div className="absolute inset-0" style={{ background: "radial-gradient(900px 500px at 80% -10%, #f9731622, transparent 60%)" }} />

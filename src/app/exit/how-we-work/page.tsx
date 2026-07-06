@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { EXIT, EXIT_WAYS, exitVars } from "@/lib/exit";
 import ExitLeadForm from "@/components/exit/ExitLeadForm";
+import ExitNav from "@/components/exit/ExitNav";
 import { BookButton, CtaBand } from "@/components/exit/ExitCTA";
 import ExitFooter from "@/components/exit/ExitFooter";
 
@@ -20,6 +21,7 @@ export default function HowWeWork() {
   ];
   return (
     <div style={exitVars} className="text-white"><div style={{ background: EXIT.colors.bg }}>
+      <ExitNav />
       <section className="mx-auto max-w-5xl px-6 py-16">
         <div className="text-xs font-bold uppercase tracking-widest" style={{ color: EXIT.colors.orange3 }}>How we work</div>
         <h1 className="mt-2 text-5xl font-black tracking-tight">Three ways to work with us.</h1>

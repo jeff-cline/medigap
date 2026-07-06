@@ -5,6 +5,7 @@ import { exitMoney, exitSub, EXIT_MONEY } from "@/lib/exit-taxonomy";
 import { exitContent } from "@/lib/exit-content";
 import { searchPhotos } from "@/lib/pexels";
 import ExitLeadForm from "@/components/exit/ExitLeadForm";
+import ExitNav from "@/components/exit/ExitNav";
 import { BookButton, CtaBand } from "@/components/exit/ExitCTA";
 import ExitFooter from "@/components/exit/ExitFooter";
 
@@ -47,6 +48,7 @@ export default async function ExitSlug({ params }: { params: Promise<{ slug: str
   return (
     <div style={exitVars} className="text-white">
       <div style={{ background: EXIT.colors.bg }}>
+        <ExitNav />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbLd) }} />
 

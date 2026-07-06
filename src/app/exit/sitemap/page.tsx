@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { EXIT, exitVars } from "@/lib/exit";
 import { EXIT_MONEY, exitGroups } from "@/lib/exit-taxonomy";
+import ExitNav from "@/components/exit/ExitNav";
 import ExitFooter from "@/components/exit/ExitFooter";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +10,7 @@ export const metadata: Metadata = { title: `Sitemap | ${EXIT.brand}`, descriptio
 export default function HtmlSitemap() {
   return (
     <div style={exitVars} className="text-white"><div style={{ background: EXIT.colors.bg }}>
+      <ExitNav />
       <section className="mx-auto max-w-5xl px-6 py-16">
         <h1 className="text-4xl font-black tracking-tight">Sitemap</h1>
         <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-sm">

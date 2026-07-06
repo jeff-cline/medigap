@@ -3,6 +3,7 @@ import { EXIT, exitVars } from "@/lib/exit";
 import { EXIT_MONEY } from "@/lib/exit-taxonomy";
 import { exitContent } from "@/lib/exit-content";
 import { CtaBand } from "@/components/exit/ExitCTA";
+import ExitNav from "@/components/exit/ExitNav";
 import ExitFooter from "@/components/exit/ExitFooter";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,7 @@ export default function ExitFaq() {
   return (
     <div style={exitVars} className="text-white"><div style={{ background: EXIT.colors.bg }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+      <ExitNav />
       <section className="mx-auto max-w-4xl px-6 py-16">
         <div className="text-xs font-bold uppercase tracking-widest" style={{ color: EXIT.colors.orange3 }}>Answer Engine · AEO</div>
         <h1 className="mt-2 text-5xl font-black tracking-tight">Exit optimization — answered.</h1>

@@ -5,7 +5,7 @@ import { EXIT } from "@/lib/exit";
 export function BookButton({ label = "Book a free consultation", size = "md" }: { label?: string; size?: "sm" | "md" | "lg" }) {
   const pad = size === "lg" ? "px-8 py-4 text-base" : size === "sm" ? "px-4 py-2 text-sm" : "px-6 py-3 text-sm";
   return (
-    <a href={EXIT.calendly} target="_blank" rel="noopener"
+    <a href="/book"
       className={`inline-flex items-center gap-2 rounded-md font-bold ${pad}`}
       style={{ background: EXIT.colors.orange, color: EXIT.colors.bg }}>
       {label} <span aria-hidden>→</span>
