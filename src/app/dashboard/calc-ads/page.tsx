@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { Stat, Section } from "@/components/ui";
 import { num } from "@/lib/format";
 import CalcAdsAdmin from "@/components/CalcAdsAdmin";
+import { partnerSignupOn } from "@/app/api/exit/partner-signup/route";
 
 export const dynamic = "force-dynamic";
 
@@ -12,11 +13,12 @@ export default async function CalcAdsDashboard() {
   if (!s) redirect("/login");
   if (!(s.role === "god" || s.impersonatorUid)) redirect("/dashboard");
 
-  const [partners, adRows, clicks, accounts] = await Promise.all([
+  const [partners, adRows, clicks, accounts, signupOn] = await Promise.all([
     db.calcPartner.findMany({ orderBy: { createdAt: "desc" } }),
     db.calcAd.findMany({ include: { partner: true, _count: { select: { clicks: true } } }, orderBy: { sortOrder: "asc" } }),
     db.calcAdClick.count(),
     db.user.count({ where: { source: { contains: "exitoptimization calculators" } } }),
+    partnerSignupOn(),
   ]);
   const ads = adRows.map((a) => ({ id: a.id, partnerId: a.partnerId, partnerName: a.partner.name, title: a.title, description: a.description, imageUrl: a.imageUrl, ctaLabel: a.ctaLabel, ctaUrl: a.ctaUrl, category: a.category, sortOrder: a.sortOrder, active: a.active, clicks: a._count.clicks }));
 
@@ -33,7 +35,7 @@ export default async function CalcAdsDashboard() {
         <Stat label="Calculator accounts" value={num(accounts)} tone="up" />
       </div>
       <Section title="Manage partners & ads" desc="Create partners, build ad blocks (upload an image), and arrange the layout.">
-        <CalcAdsAdmin partners={partners.map((p) => ({ id: p.id, name: p.name, category: p.category }))} ads={ads} />
+        <CalcAdsAdmin partners={partners.map((p) => ({ id: p.id, name: p.name, category: p.category }))} ads={ads} signupOn={signupOn} />
       </Section>
     </>
   );

@@ -1002,3 +1002,13 @@ model CalcResult {
 
   @@index([userId])
 }
+
+// Weekly drip email templates for exitoptimization.com customers (rotate one every 10 weeks).
+model CalcEmail {
+  id          String   @id @default(cuid())
+  weekIndex   Int      @unique // 0-9 — which week in the 10-week rotation
+  subject     String
+  storyHeader String   @default("") // editable business-story intro (HTML)
+  active      Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
+}

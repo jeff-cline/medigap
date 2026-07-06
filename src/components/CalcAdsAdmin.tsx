@@ -8,8 +8,9 @@ const CATS = [["service", "Service partner"], ["advertiser", "Advertiser"], ["ad
 
 async function api(body: Record<string, unknown>) { return fetch("/api/calc/ads", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.json()).catch(() => ({})); }
 
-export default function CalcAdsAdmin({ partners, ads }: { partners: Partner[]; ads: Ad[] }) {
+export default function CalcAdsAdmin({ partners, ads, signupOn = true }: { partners: Partner[]; ads: Ad[]; signupOn?: boolean }) {
   const router = useRouter();
+  const [signup, setSignup] = useState(signupOn);
   const [pName, setPName] = useState(""); const [pCat, setPCat] = useState("advertiser");
   const [ad, setAd] = useState({ partnerId: partners[0]?.id || "", title: "", description: "", imageUrl: "", ctaLabel: "Learn more", ctaUrl: "", category: "advertiser" });
   const [busy, setBusy] = useState(""); const [msg, setMsg] = useState("");
@@ -18,8 +19,16 @@ export default function CalcAdsAdmin({ partners, ads }: { partners: Partner[]; a
   async function run(body: Record<string, unknown>, tag: string) { setBusy(tag); const r = await api(body); setBusy(""); if (r.error) setMsg(r.error); router.refresh(); }
   async function upload(file: File) { setBusy("up"); const fd = new FormData(); fd.append("file", file); const r = await fetch("/api/upload", { method: "POST", body: fd }).then((x) => x.json()).catch(() => ({})); setBusy(""); if (r.url) setAd((a) => ({ ...a, imageUrl: r.url })); }
 
+  async function toggleSignup() { const next = !signup; setSignup(next); await api({ action: "setPartnerSignup", on: next }); }
+
   return (
     <div className="space-y-6">
+      {/* partner self-signup on/off */}
+      <div className="card p-4 flex items-center justify-between">
+        <div><div className="font-semibold">Partner self-signup</div><div className="text-xs text-[var(--muted)]">Let businesses create their own partner account + ad at exitoptimization.com/become-a-partner.</div></div>
+        <button onClick={toggleSignup} className={`relative h-6 w-11 rounded-full ${signup ? "bg-[var(--brand2,#16a34a)]" : "bg-[var(--border)]"}`}><span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${signup ? "left-[22px]" : "left-0.5"}`} /></button>
+      </div>
+
       {/* create partner */}
       <div className="card p-5">
         <div className="font-semibold mb-2">➕ Add a partner</div>

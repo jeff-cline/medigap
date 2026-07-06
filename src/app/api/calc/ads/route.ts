@@ -44,6 +44,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
     if (a === "deleteAd") { await db.calcAd.delete({ where: { id: String(b.id) } }); return NextResponse.json({ ok: true }); }
+    if (a === "setPartnerSignup") {
+      const row = await db.integration.findUnique({ where: { key: "exit" } });
+      let cfg: Record<string, unknown> = {}; try { cfg = row ? JSON.parse(row.config) : {}; } catch {}
+      cfg.partnerSignup = b.on ? "on" : "off";
+      await db.integration.upsert({ where: { key: "exit" }, update: { config: JSON.stringify(cfg) }, create: { key: "exit", label: "Exit Optimization", config: JSON.stringify(cfg), connected: true, status: "" } });
+      return NextResponse.json({ ok: true, on: !!b.on });
+    }
     return NextResponse.json({ error: "unknown action" }, { status: 400 });
   } catch (e) { return NextResponse.json({ error: String(e).slice(0, 200) }, { status: 200 }); }
 }

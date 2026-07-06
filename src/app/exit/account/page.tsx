@@ -7,6 +7,7 @@ import { CALCULATORS } from "@/lib/calculators";
 import { searchPhotos } from "@/lib/pexels";
 import ExitNav from "@/components/exit/ExitNav";
 import CalculatorSuite from "@/components/exit/CalculatorSuite";
+import PartnerPanel from "@/components/exit/PartnerPanel";
 import ExitFooter from "@/components/exit/ExitFooter";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +18,26 @@ const CATS: [string, string][] = [["service", "Service partners"], ["advertiser"
 export default async function Account() {
   const s = await getSession();
   if (!s) redirect("/login");
+
+  // Partner admins get their ad-management + leads panel instead of the calculators.
+  if (s.role === "adpartner") {
+    const partner = await db.calcPartner.findFirst({ where: { ownerId: s.uid } });
+    const pAds = partner ? await db.calcAd.findMany({ where: { partnerId: partner.id }, include: { _count: { select: { clicks: true } } }, orderBy: { sortOrder: "asc" } }) : [];
+    const clickRows = partner ? await db.calcAdClick.findMany({ where: { partnerId: partner.id }, orderBy: { at: "desc" }, take: 200 }) : [];
+    const adTitle = new Map(pAds.map((a) => [a.id, a.title]));
+    return (
+      <div style={exitVars} className="text-white"><div style={{ background: EXIT.colors.bg }}>
+        <ExitNav />
+        <section className="mx-auto max-w-5xl px-6 py-10">
+          <div className="text-xs font-bold uppercase tracking-widest" style={{ color: EXIT.colors.orange3 }}>Partner dashboard</div>
+          <h1 className="mt-1 text-4xl font-black tracking-tight">{partner?.name || "Your business"}</h1>
+          <p className="mt-2 text-slate-300">Manage your ad, upload an image, and see the leads your ad generates.</p>
+          <div className="mt-6"><PartnerPanel partnerName={partner?.name || ""} ads={pAds.map((a) => ({ id: a.id, title: a.title, description: a.description, imageUrl: a.imageUrl, ctaLabel: a.ctaLabel, ctaUrl: a.ctaUrl, active: a.active, clicks: a._count.clicks }))} leads={clickRows.map((c) => ({ name: c.name, email: c.email, phone: c.phone, at: c.at.toISOString(), adTitle: adTitle.get(c.adId) || "" }))} /></div>
+        </section>
+        <ExitFooter />
+      </div></div>
+    );
+  }
 
   const [imgs, ads] = await Promise.all([
     Promise.all(CALCULATORS.map((c) => searchPhotos(c.img, 1).then((p) => p[0]?.url || "").catch(() => ""))),
