@@ -18,6 +18,7 @@ export const LEFT_NAV: [string, string, string][] = [
   ["TV Commercials", "/dashboard/tv", "📺"],
   ["Medig.app", "/dashboard/medigapp", "📱"],
   ["AdSense", "/dashboard/adsense", "🟢"],
+  ["Calc Ad Network", "/dashboard/calc-ads", "🧮"],
   ["Communications", "/dashboard/communications", "✉️"],
   ["Coupons", "/dashboard/coupons", "🎟️"],
   ["Marketing Sites", "/dashboard/sites", "🌐"],

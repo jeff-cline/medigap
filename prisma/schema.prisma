@@ -872,20 +872,20 @@ model TvSpot {
 // ── medig.app — Rakuten-monetized lead/offer landers on the Core ──────────────
 // A Rakuten Advertising offer we cache + curate. Only `approved` ones show publicly.
 model RakOffer {
-  id           String   @id @default(cuid())
-  advertiserId String   @default("")
-  advertiser   String   @default("")
+  id           String    @id @default(cuid())
+  advertiserId String    @default("")
+  advertiser   String    @default("")
   title        String
-  description  String   @default("")
-  imageUrl     String   @default("")
-  deepLink     String   @default("") // raw Rakuten affiliate deep link
-  category     String   @default("")
-  keywords     String   @default("[]") // JSON tags → match to landers
-  payoutNote   String   @default("") // commission/EPC description
-  approved     Boolean  @default(false) // only approved offers render publicly
-  active       Boolean  @default(true)
-  sortOrder    Int      @default(0)
-  createdAt    DateTime @default(now())
+  description  String    @default("")
+  imageUrl     String    @default("")
+  deepLink     String    @default("") // raw Rakuten affiliate deep link
+  category     String    @default("")
+  keywords     String    @default("[]") // JSON tags → match to landers
+  payoutNote   String    @default("") // commission/EPC description
+  approved     Boolean   @default(false) // only approved offers render publicly
+  active       Boolean   @default(true)
+  sortOrder    Int       @default(0)
+  createdAt    DateTime  @default(now())
   refreshedAt  DateTime? // last time seen in a Rakuten pull (freshness)
 
   @@index([approved, active])
@@ -941,4 +941,64 @@ model RakEvent {
   @@unique([orderId, offerId])
   @@index([slug])
   @@index([offerId])
+}
+
+// ── exitoptimization.com — calculators + partner ad network ───────────────────
+// A partner whose ads run inside the customer calculator backend (one-for-many ad platform).
+model CalcPartner {
+  id           String   @id @default(cuid())
+  name         String
+  category     String   @default("advertiser") // service | advertiser | adjacent
+  logoUrl      String   @default("")
+  contactEmail String   @default("")
+  ownerId      String? // partner-admin user (sees their clicks/leads)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  ads          CalcAd[]
+}
+
+// An ad block: image, title, description, tracked CTA → partner site.
+model CalcAd {
+  id          String        @id @default(cuid())
+  partnerId   String
+  partner     CalcPartner   @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  title       String
+  description String        @default("")
+  imageUrl    String        @default("")
+  ctaLabel    String        @default("Learn more")
+  ctaUrl      String
+  category    String        @default("advertiser") // service | advertiser | adjacent
+  sortOrder   Int           @default(0)
+  active      Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  clicks      CalcAdClick[]
+}
+
+// Every click = a lead for that partner (customer info captured at the lock gate).
+model CalcAdClick {
+  id        String   @id @default(cuid())
+  adId      String
+  ad        CalcAd   @relation(fields: [adId], references: [id], onDelete: Cascade)
+  partnerId String
+  userId    String   @default("")
+  name      String   @default("")
+  email     String   @default("")
+  phone     String   @default("")
+  company   String   @default("")
+  at        DateTime @default(now())
+
+  @@index([partnerId])
+  @@index([adId])
+}
+
+// A saved calculator result for a logged-in customer.
+model CalcResult {
+  id        String   @id @default(cuid())
+  userId    String
+  calcSlug  String
+  inputs    String   @default("{}")
+  output    String   @default("{}")
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }

@@ -23,7 +23,7 @@ export function CtaBand() {
         <p className="mt-3 text-slate-300 max-w-xl mx-auto">Book a free consultation. In 30 minutes we'll show you where the value is hiding and how we'd double — even triple — your exit valuation.</p>
         <div className="mt-6 flex flex-wrap gap-3 justify-center">
           <BookButton label="Book a free consultation" size="lg" />
-          <a href="/how-we-work" className="inline-flex items-center rounded-md border px-6 py-3 text-sm font-bold text-white hover:bg-white/5" style={{ borderColor: EXIT.colors.border }}>See the 3 ways we work</a>
+          <a href="/business-valuation-calculators" className="inline-flex items-center rounded-md border px-6 py-3 text-sm font-bold text-white hover:bg-white/5" style={{ borderColor: EXIT.colors.orange, color: EXIT.colors.orange3 }}>Access business calculators</a>
         </div>
         <p className="mt-4 text-xs text-slate-400">Pay to play · We work for equity · We work for backend success — based on the opportunity.</p>
       </div>

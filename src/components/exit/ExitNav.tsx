@@ -35,6 +35,7 @@ export default function ExitNav() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <a href="/business-valuation-calculators" className="hidden lg:inline-flex rounded-md border px-3.5 py-2 text-sm font-bold" style={{ borderColor: O, color: EXIT.colors.orange3 }}>Access business calculators</a>
           <a href="/book" className="hidden sm:inline-flex rounded-md px-4 py-2 text-sm font-bold" style={{ background: O, color: EXIT.colors.bg }}>Book a free consultation</a>
           <button onClick={() => setMobile(!mobile)} className="md:hidden text-white px-2 py-1 border rounded-md" style={{ borderColor: EXIT.colors.border }} aria-label="Menu">☰</button>
         </div>
@@ -55,6 +56,7 @@ export default function ExitNav() {
             </div>
           ))}
           <div className="flex gap-3 pt-1"><a href="/how-we-work" className="text-slate-200 text-sm">How we work</a><a href="/faq" className="text-slate-200 text-sm">FAQ</a></div>
+          <a href="/business-valuation-calculators" className="block text-center rounded-md border px-4 py-2.5 text-sm font-bold" style={{ borderColor: O, color: EXIT.colors.orange3 }}>Access business calculators</a>
           <a href="/book" className="block text-center rounded-md px-4 py-2.5 text-sm font-bold" style={{ background: O, color: EXIT.colors.bg }}>Book a free consultation</a>
         </div>
       )}
