@@ -65,7 +65,7 @@ export async function login(email: string, password: string) {
     role: user.role,
     mustChangePassword: user.mustChangePassword,
   });
-  return { ok: true, mustChangePassword: user.mustChangePassword };
+  return { ok: true, mustChangePassword: user.mustChangePassword, role: user.role };
 }
 
 // God can impersonate anyone — "drill into any account"

@@ -6,5 +6,5 @@ export async function POST(req: NextRequest) {
   if (!email || !password) return NextResponse.json({ error: "Email and password required." }, { status: 400 });
   const res = await login(String(email), String(password));
   if ("error" in res) return NextResponse.json({ error: res.error }, { status: 401 });
-  return NextResponse.json({ ok: true, mustChangePassword: res.mustChangePassword });
+  return NextResponse.json({ ok: true, mustChangePassword: res.mustChangePassword, role: res.role });
 }

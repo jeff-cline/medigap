@@ -20,8 +20,11 @@ export default function LoginPage() {
     const data = await r.json();
     setLoading(false);
     if (!r.ok) { setError(data.error || "Login failed."); return; }
-    // The founder lands straight in his Unified Communications inbox; everyone else → dashboard.
-    const dest = data.mustChangePassword ? "/change-password" : (email.trim().toLowerCase() === "jeff.cline@me.com" ? "/unified" : "/dashboard");
+    // Route by role: partners/customers → their account; founder → inbox; staff → dashboard.
+    const dest = data.mustChangePassword ? "/change-password"
+      : (data.role === "owner" || data.role === "adpartner") ? "/account"
+      : (data.role === "god" || email.trim().toLowerCase() === "jeff.cline@me.com") ? "/unified"
+      : "/dashboard";
     router.push(dest);
   }
 
