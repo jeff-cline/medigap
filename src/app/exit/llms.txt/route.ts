@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     `- [How we work — 3 ways](${b}/how-we-work)`,
     `- [FAQ](${b}/faq)`,
     `- [Sitemap](${b}/sitemap.xml)`,
-    `- [Book a free consultation](${EXIT.calendly})`,
+    `- [Book a free consultation](${b}/book)`,
     ``,
     `Goal on every engagement: multiply the exit multiple. Book a free consultation to increase your valuation.`,
   ];

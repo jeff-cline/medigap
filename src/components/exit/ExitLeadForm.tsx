@@ -19,7 +19,7 @@ export default function ExitLeadForm({ compact = false }: { compact?: boolean })
     if (r.ok) setOk(true); else setErr(r.error || "Something went wrong.");
   }
 
-  if (ok) return <div className="rounded-xl border p-6 text-center" style={{ borderColor: EXIT.colors.border }}><div className="text-3xl">✅</div><div className="mt-2 text-lg font-bold text-white">Request received.</div><p className="text-slate-400 mt-1">We'll reach out shortly — or <a href={EXIT.calendly} target="_blank" className="underline" style={{ color: EXIT.colors.orange3 }}>book a time now</a>.</p></div>;
+  if (ok) return <div className="rounded-xl border p-6 text-center" style={{ borderColor: EXIT.colors.border }}><div className="text-3xl">✅</div><div className="mt-2 text-lg font-bold text-white">Request received.</div><p className="text-slate-400 mt-1">We'll reach out shortly — or <a href="/book" className="underline" style={{ color: EXIT.colors.orange3 }}>book a time now</a>.</p></div>;
 
   return (
     <div className="rounded-xl border p-5" style={{ borderColor: EXIT.colors.border, background: "#0b1220" }}>
