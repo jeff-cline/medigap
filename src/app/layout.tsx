@@ -53,6 +53,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const host = (await headers()).get("host") || "";
   const showAds = await adsenseEnabledForHost(host);
   const pubId = showAds ? await adsensePubIdForHost(host) : "";
+  const pixelId = host.includes("exitoptimization") ? "exit-optimization" : "1-800-medigap";
   return (
     <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
@@ -69,7 +70,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     var k = c.createElement("script"), a = c.getElementsByTagName("script")[0];
     k.async = 1, k.src = p + "?request_id=" + i + "&t=" + t, a.parentNode.insertBefore(k, a);
     s.pixelClientId = i;
-})(window, "https://predictivedata.org/script", "1-800-medigap", document, "script");` }} />
+})(window, "https://predictivedata.org/script", "${pixelId}", document, "script");` }} />
         <Suspense fallback={null}><TrackingPixels /></Suspense>
         {children}
       </body>
