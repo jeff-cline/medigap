@@ -39,6 +39,12 @@ export default async function LeadsPage({
   if (sp.source && sp.source !== "all") where.source = sp.source;
   if (sp.status && sp.status !== "all") where.status = sp.status;
 
+  // Site partners see ONLY leads from the site(s) they own — never anyone else's.
+  if (!god && session?.role === "marketing_partner") {
+    const owned = await db.site.findMany({ where: { ownerId: session.uid }, select: { id: true } });
+    where.siteId = { in: owned.length ? owned.map((o) => o.id) : ["__none__"] };
+  }
+
   const [leads, total, sold, valueAgg] = await Promise.all([
     db.lead.findMany({ where, orderBy: { createdAt: "desc" }, take: 50, include: { calls: { select: { durationSec: true } } } }),
     db.lead.count({ where }),
