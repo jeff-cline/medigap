@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export type KeyRow = { id: string; name: string; keyId: string; scopes: string; active: boolean; callCount: number; lastUsedAt: string | null; createdAt: string };
-const SCOPES = ["lead:create", "lead:read"];
+const SCOPES = ["lead:create", "lead:read", "email:send", "sms:send"];
 
 export default function CoreKeysManager({ keys }: { keys: KeyRow[] }) {
   const router = useRouter();
