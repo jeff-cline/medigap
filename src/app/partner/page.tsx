@@ -36,14 +36,17 @@ export default async function PartnerPortal() {
   const siteName = sites[0]?.name?.replace(/\s*\(XM\)\s*/, "") || "Experiential Marketing";
 
   return (
-    <div style={{ background: "#f6f8fc", minHeight: "100vh", color: "#0f1a2e", fontFamily: "-apple-system,Helvetica Neue,Arial,sans-serif" }}>
-      <header style={{ background: "#0b0b0d", color: "#fff" }}>
+    <div style={{ background: "#0b0b0d", minHeight: "100vh", color: "#fff", fontFamily: "-apple-system,Helvetica Neue,Arial,sans-serif" }}>
+      <header style={{ background: "#0b0b0d", borderBottom: "1px solid #2a2a31" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: 18 }}>{siteName} <span style={{ color: "#e11d2a" }}>· Projects &amp; CRM</span></div>
-            <div style={{ fontSize: 12, color: "#93a2bd" }}>{isGod ? "God view" : "Your leads, projects, and notes"}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 30, lineHeight: 1 }}>🚀</span>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 18, color: "#f97316" }}>{siteName} <span style={{ color: "#e11d2a" }}>· Projects &amp; CRM</span></div>
+              <div style={{ fontSize: 12, color: "#9a9aa5" }}>{isGod ? "God view" : "Your leads, projects, and notes"}</div>
+            </div>
           </div>
-          <a href="/api/auth/logout" style={{ color: "#cbd5e1", fontSize: 13, textDecoration: "none", border: "1px solid #33415c", borderRadius: 8, padding: "6px 12px" }}>Log out</a>
+          <a href="/api/auth/logout" style={{ color: "#9a9aa5", fontSize: 13, textDecoration: "none", border: "1px solid #2a2a31", borderRadius: 8, padding: "6px 12px" }}>Log out</a>
         </div>
       </header>
       <main style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}>
