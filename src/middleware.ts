@@ -32,7 +32,7 @@ export function middleware(req: NextRequest) {
 
   // medig.app — Rakuten-monetized lead/offer landers on the Core. Public paths serve the
   // /medigapp segment; shared Core routes (login, dashboard, api, tracking) pass through.
-  const RESERVED = /^\/(login|change-password|dashboard|unified|vos|r|robots|sitemap|ads\.txt|_next|favicon)/i;
+  const RESERVED = /^\/(login|change-password|dashboard|unified|partner|agent|advertiser|investor|vos|r|robots|sitemap|ads\.txt|_next|favicon)/i;
   if (host === "medig.app" || host === "www.medig.app") {
     if (!RESERVED.test(path)) {
       const url = req.nextUrl.clone();
@@ -43,7 +43,7 @@ export function middleware(req: NextRequest) {
 
   // exitoptimization.com — SEO/AEO lead-gen site on the Core (serves the /exit segment).
   if (host === "exitoptimization.com" || host === "www.exitoptimization.com") {
-    if (!/^\/(login|change-password|dashboard|unified|vos|ads\.txt|_next|favicon)/i.test(path)) {
+    if (!/^\/(login|change-password|dashboard|unified|partner|agent|advertiser|investor|vos|ads\.txt|_next|favicon)/i.test(path)) {
       const url = req.nextUrl.clone();
       url.pathname = path === "/" ? "/exit" : `/exit${path}`;
       return NextResponse.rewrite(url);
@@ -54,7 +54,7 @@ export function middleware(req: NextRequest) {
   // the /xm segment; shared Core routes (login, dashboard, api, vos) pass through.
   if (host === "experientialmarketing.ai" || host === "www.experientialmarketing.ai") {
     // Minimal reserved set so XM serves its OWN sitemap.xml / robots.txt / llms.txt / answers.
-    if (!/^\/(login|change-password|dashboard|unified|vos|ads\.txt|_next|favicon)/i.test(path)) {
+    if (!/^\/(login|change-password|dashboard|unified|partner|agent|advertiser|investor|vos|ads\.txt|_next|favicon)/i.test(path)) {
       const url = req.nextUrl.clone();
       url.pathname = path === "/" ? "/xm" : `/xm${path}`;
       return NextResponse.rewrite(url);
@@ -65,7 +65,7 @@ export function middleware(req: NextRequest) {
   // after the root (el.ag/medicare-insurance → the lander). It's a full SEO/AEO site, so its
   // sitemap.xml / robots.txt / answers / llms.txt serve the medigapp versions too.
   if (host === "el.ag" || host === "www.el.ag") {
-    if (!/^\/(login|change-password|dashboard|unified|vos|ads\.txt|_next|favicon)/i.test(path)) {
+    if (!/^\/(login|change-password|dashboard|unified|partner|agent|advertiser|investor|vos|ads\.txt|_next|favicon)/i.test(path)) {
       const url = req.nextUrl.clone();
       url.pathname = path === "/" ? "/medigapp/directory" : `/medigapp${path}`;
       return NextResponse.rewrite(url);

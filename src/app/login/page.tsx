@@ -23,7 +23,7 @@ export default function LoginPage() {
     // Route by role: partners/customers → their account; founder → inbox; staff → dashboard.
     const dest = data.mustChangePassword ? "/change-password"
       : (data.role === "owner" || data.role === "adpartner") ? "/account"
-      : data.role === "marketing_partner" ? "/dashboard/leads"
+      : data.role === "marketing_partner" ? "/partner"
       : (data.role === "god" || email.trim().toLowerCase() === "jeff.cline@me.com") ? "/unified"
       : "/dashboard";
     router.push(dest);
