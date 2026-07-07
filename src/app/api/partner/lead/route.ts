@@ -5,6 +5,8 @@ import { sendEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 const GOD = "jeff.cline@me.com";
+// CRM project-update notifications for this JV go to both Jeff and the Savage XM partner.
+const NOTIFY = "jeff.cline@me.com, s@savagexm.com";
 
 async function canAccess(s: Awaited<ReturnType<typeof getSession>>, leadId: string) {
   if (!s) return false;
@@ -18,7 +20,7 @@ async function canAccess(s: Awaited<ReturnType<typeof getSession>>, leadId: stri
 
 async function notifyGod(byEmail: string, leadName: string, what: string) {
   if (byEmail === GOD) return; // don't email god about god's own edits
-  await sendEmail(GOD, "Experiential Marketing — project update", `${byEmail} updated the project for <b>${leadName || "a client"}</b>:<br>${what}<br><br>Log in to review: https://experientialmarketing.ai/partner`, "zapmail", { text: `${byEmail} updated ${leadName}: ${what}` }).catch(() => {});
+  await sendEmail(NOTIFY, "Experiential Marketing — project update", `${byEmail} updated the project for <b>${leadName || "a client"}</b>:<br>${what}<br><br>Log in to review: https://experientialmarketing.ai/partner`, "zapmail", { text: `${byEmail} updated ${leadName}: ${what}` }).catch(() => {});
 }
 
 export async function POST(req: NextRequest) {
