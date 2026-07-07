@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { Card, Stat, Section, Badge, Stars } from "@/components/ui";
 import AgentAccount from "@/components/portal/AgentAccount";
 import UpgradeBuy from "@/components/portal/UpgradeBuy";
@@ -15,6 +16,8 @@ const SCOPE_LABEL: Record<string, string> = { zip: "ZIP", city: "City", state: "
 
 export default async function AgentPortal() {
   const session = await getSession();
+  // JV site partners have their own project CRM — never the call-auction portal.
+  if (session?.role === "marketing_partner") redirect("/partner");
   if (!session) {
     return (
       <Card>

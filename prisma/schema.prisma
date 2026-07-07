@@ -1012,3 +1012,15 @@ model CalcEmail {
   active      Boolean  @default(true)
   updatedAt   DateTime @updatedAt
 }
+
+// experientialmarketing.ai JV — per-lead project tracking (estimate, dates, expectations, stage).
+model JvProject {
+  id                 String   @id @default(cuid())
+  leadId             String   @unique
+  estimate           String   @default("") // estimate given
+  dateExpected       String   @default("") // date expected
+  dateDelivered      String   @default("") // date delivered
+  clientExpectations String   @default("") // client note expectations
+  stage              String   @default("new") // new | quoted | in_production | delivered | closed
+  updatedAt          DateTime @updatedAt
+}

@@ -27,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ? { other: { ...(verification!.other as Record<string, string>), "google-adsense-account": adsPub } }
     : verification;
   // 🚀 favicon for exitoptimization.com (R0cketShip brand).
-  const icons: Metadata["icons"] = host.includes("exitoptimization")
+  const icons: Metadata["icons"] = (host.includes("exitoptimization") || host.includes("experientialmarketing"))
     ? { icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9A%80%3C/text%3E%3C/svg%3E" }
     : undefined;
   const site = await getCurrentSite();
