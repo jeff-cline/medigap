@@ -41,6 +41,15 @@ export function middleware(req: NextRequest) {
     }
   }
 
+  // healthinsuranceapplication.com — programmatic SEO/AEO application repository (/hia segment).
+  if (host === "healthinsuranceapplication.com" || host === "www.healthinsuranceapplication.com") {
+    if (!/^\/(login|change-password|dashboard|unified|partner|agent|advertiser|investor|vos|ads\.txt|_next|favicon)/i.test(path)) {
+      const url = req.nextUrl.clone();
+      url.pathname = path === "/" ? "/hia" : `/hia${path}`;
+      return NextResponse.rewrite(url);
+    }
+  }
+
   // exitoptimization.com — SEO/AEO lead-gen site on the Core (serves the /exit segment).
   if (host === "exitoptimization.com" || host === "www.exitoptimization.com") {
     if (!/^\/(login|change-password|dashboard|unified|partner|agent|advertiser|investor|vos|ads\.txt|_next|favicon)/i.test(path)) {
