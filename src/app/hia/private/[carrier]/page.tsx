@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { HIA } from "@/lib/health";
+import { notFound, redirect } from "next/navigation";
+import { HIA, STATES, slugify } from "@/lib/health";
 import { hiaMeta, webPageLd, breadcrumbLd, collectionLd, ldScript } from "@/lib/health-meta";
 import { carrierBySlug, allCarriers } from "@/lib/health-data";
 import HiaShell, { FaqBlock } from "@/components/hia/HiaShell";
@@ -18,7 +18,11 @@ export async function generateMetadata({ params }: { params: Promise<{ carrier: 
 export default async function CarrierPage({ params }: { params: Promise<{ carrier: string }> }) {
   const { carrier } = await params;
   const c = carrierBySlug(carrier);
-  if (!c) notFound();
+  if (!c) {
+    // Forgiving: /private/<state> → the state's apply page (states live under /apply).
+    if (STATES.some((s) => slugify(s.name) === carrier)) redirect(`/apply/${carrier}`);
+    notFound();
+  }
   const related = allCarriers().filter((x) => x.slug !== c.slug).slice(0, 8);
   const faqs = [
     { q: `Where can I find ${c.carrier_name} health insurance application forms?`, a: `This page links to publicly available ${c.carrier_name} applications and enrollment forms. Select an application below to view details and the official source.` },
