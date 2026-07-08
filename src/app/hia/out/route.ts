@@ -5,7 +5,9 @@ export const dynamic = "force-dynamic";
 // Outbound link to a public carrier resource. If the target is missing or no longer reachable,
 // 301 back to the homepage (per spec — dead PDFs never dead-end).
 export async function GET(req: NextRequest) {
-  const home = new URL("/", req.url).toString();
+  const host = (req.headers.get("host") || "healthinsuranceapplication.com").split(":")[0];
+  const proto = req.headers.get("x-forwarded-proto") || "https";
+  const home = `${proto}://${host}/`;
   const u = req.nextUrl.searchParams.get("u") || "";
   if (!u || !/^https?:\/\//i.test(u)) return NextResponse.redirect(home, 301);
   try {
