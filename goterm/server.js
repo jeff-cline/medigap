@@ -197,7 +197,21 @@ server.on("upgrade", (req, socket, head) => {
 
 // A busy run that goes quiet for IDLE_MS, having been busy at least MIN_BUSY_MS, is "finished".
 const IDLE_MS = 8000, MIN_BUSY_MS = 40000;
-const AUTH_RE = /https:\/\/(?:[a-z0-9.-]*\.)?(?:claude\.(?:ai|com)|anthropic\.com)\/[^\s"'<>]+/i;
+// Claude prints the sign-in URL hard-wrapped across lines; stitch the pieces back into one URL.
+function extractAuthUrl(text) {
+  const lines = String(text).split("\n").map((l) => l.replace(/\s+$/, ""));
+  const start = lines.findIndex((l) => /https:\/\/(?:[a-z0-9.-]*\.)?(?:claude\.(?:ai|com)|anthropic\.com)\//i.test(l));
+  if (start < 0) return "";
+  const first = lines[start].match(/https:\/\/\S+$/i);
+  let url = first ? first[0] : "";
+  let terminated = false;
+  for (let i = start + 1; i < lines.length; i++) {
+    const seg = lines[i].trim();
+    if (seg && /^[A-Za-z0-9%._~:/?#[\]@!$&()*+,;=-]+$/.test(seg)) url += seg; else { terminated = true; break; }
+  }
+  if (url && /client_id=/.test(url) && /[?&]state=[^&]+/.test(url) && terminated) return url.replace(/[.,)\]}]+$/, "");
+  return "";
+}
 function attachPty(ws, req) {
   const url = new URL(req.url, "http://x");
   const project = sanitize(url.searchParams.get("project")) || "main";
@@ -241,18 +255,18 @@ function attachPty(ws, req) {
     if (!busy) { busy = true; busyStart = Date.now(); }
     armIdle();
     if (!authSent) {
-      outBuf = (outBuf + d).slice(-6000);
-      const m = outBuf.replace(ANSI, "").match(AUTH_RE);
-      if (m) { authSent = true; const url = m[0].replace(/[.,)\]}]+$/, ""); try { ws.send(JSON.stringify({ type: "authurl", url })); } catch {} }
+      outBuf = (outBuf + d).slice(-8000);
+      const url = extractAuthUrl(outBuf.replace(ANSI, ""));
+      if (url) { authSent = true; try { ws.send(JSON.stringify({ type: "authurl", url })); } catch {} }
     }
   });
   // On (re)connect, scan what's already on screen so a sign-in URL surfaces without restarting.
   setTimeout(() => {
     if (authSent) return;
     try {
-      const pane = cp.execFileSync("tmux", ["capture-pane", "-t", project, "-p", "-J", "-S", "-400"], { encoding: "utf8" });
-      const m = pane.match(AUTH_RE);
-      if (m) { authSent = true; ws.send(JSON.stringify({ type: "authurl", url: m[0].replace(/[.,)\]}]+$/, "") })); }
+      const pane = cp.execFileSync("tmux", ["capture-pane", "-t", project, "-p", "-S", "-400"], { encoding: "utf8" });
+      const url = extractAuthUrl(pane);
+      if (url) { authSent = true; ws.send(JSON.stringify({ type: "authurl", url })); }
     } catch {}
   }, 400);
   ws.on("message", (m) => {
