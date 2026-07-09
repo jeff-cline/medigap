@@ -33,7 +33,7 @@
   #promptInput { flex:1 1 auto; min-width:0; padding:12px 13px; border-radius:10px; border:1px solid var(--border); background:#0f0f12; color:#fff; font-size:16px; }
   #goBtn { flex:0 0 auto; padding:12px 22px; border:0; border-radius:10px; background:var(--green); color:#fff; font-weight:900; font-size:17px; box-shadow:0 2px 10px rgba(15,157,88,.4); }
   #goBtn:active { filter:brightness(1.15); }
-  #syncBtn { flex:0 0 auto; padding:12px 14px; border:1px solid var(--border); border-radius:10px; background:#26262e; color:#eaeaf0; font-size:16px; font-weight:700; }
+  #syncBtn, #pullBtn { flex:0 0 auto; padding:12px 14px; border:1px solid var(--border); border-radius:10px; background:#26262e; color:#eaeaf0; font-size:16px; font-weight:700; }
   #toast { position:fixed; left:12px; right:12px; bottom:calc(150px + env(safe-area-inset-bottom)); z-index:55; display:none; }
   #toastMsg { background:#16161a; border:1px solid var(--border); border-radius:12px; padding:12px 14px; font-size:13px; box-shadow:0 8px 24px rgba(0,0,0,.5); white-space:pre-wrap; word-break:break-word; }
   /* Login */
@@ -70,6 +70,7 @@
   <div id="promptbar">
     <input id="promptInput" placeholder="Dictate a prompt, then tap Go ▶" enterkeyhint="send" autocapitalize="sentences" />
     <button id="goBtn">Go ▶</button>
+    <button id="pullBtn" title="Pull from GitHub">↻</button>
     <button id="syncBtn" title="Commit &amp; push to GitHub">⤓</button>
   </div>
   <div id="keys"></div>
@@ -286,6 +287,17 @@ function goPrompt() {
   if (t && t.ws.readyState === 1) { t.ws.send(JSON.stringify({ type:"input", data: text + "\r" })); state.lastType = Date.now(); }
   inp.value = "";
   if (t) t.term.focus();
+}
+document.getElementById("pullBtn").onclick = pullProject;
+async function pullProject() {
+  if (!state.active) return;
+  const b = document.getElementById("pullBtn"), old = b.textContent; b.textContent = "…";
+  toast("Pulling " + state.active + " …");
+  try {
+    const r = await (await fetch(BASE + "/api/pull", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ project: state.active }) })).json();
+    toast(r.ok ? "✓ Pulled from GitHub" : ("Pull:\n" + (r.output || "failed")));
+  } catch (e) { toast("Pull failed."); }
+  b.textContent = old;
 }
 document.getElementById("syncBtn").onclick = syncProject;
 async function syncProject() {

@@ -154,6 +154,17 @@ app.post("/api/sync", (req, res) => {
     res.json({ ok: !err, output: out || (err ? String(err).slice(0, 300) : "done") });
   });
 });
+// One-tap pull: grab changes made elsewhere.
+app.post("/api/pull", (req, res) => {
+  if (!authed(req)) return res.status(401).end();
+  const p = getProject(sanitize(req.body.project || ""));
+  if (!p || !p.dir) return res.json({ ok: false, output: "No folder for this project." });
+  if (!fs.existsSync(path.join(p.dir, ".git"))) return res.json({ ok: false, output: "No git repo linked to this project." });
+  cp.exec(`cd ${JSON.stringify(p.dir)} && git pull 2>&1`, { timeout: 90000, maxBuffer: 1 << 20 }, (err, stdout, stderr) => {
+    const out = ((stdout || "") + (stderr || "")).trim().slice(-500);
+    res.json({ ok: !err, output: out || (err ? String(err).slice(0, 300) : "done") });
+  });
+});
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ noServer: true });
