@@ -191,7 +191,8 @@ function attachPty(ws, req) {
       if (p && p.autostart) {
         // init script lives OUTSIDE the project dir so `git clone .` sees an empty dir.
         // On first open: clone if empty, else auto-pull the latest — then launch Claude.
-        const init = `#!/bin/bash\ncd ${JSON.stringify(dir)}\n`
+        // IS_SANDBOX lets `claude --dangerously-skip-permissions` run as root on this dedicated box.
+        const init = `#!/bin/bash\nexport IS_SANDBOX=1\ncd ${JSON.stringify(dir)}\n`
           + (p.website ? `export SITE=${JSON.stringify(p.website)}\n` : "")
           + (p.repo ? `if [ -z "$(ls -A)" ]; then echo "Cloning ${p.repo} ..."; git clone ${JSON.stringify(p.repo)} . && echo "✓ cloned"; elif [ -d .git ]; then echo "Pulling latest ..."; git pull; fi\n` : "");
         const initDir = "/var/www/goterm/inits";
