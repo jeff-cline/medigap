@@ -34,6 +34,7 @@
   #goBtn { flex:0 0 auto; padding:12px 22px; border:0; border-radius:10px; background:var(--green); color:#fff; font-weight:900; font-size:17px; box-shadow:0 2px 10px rgba(15,157,88,.4); }
   #goBtn:active { filter:brightness(1.15); }
   #syncBtn, #pullBtn { flex:0 0 auto; padding:12px 14px; border:1px solid var(--border); border-radius:10px; background:#26262e; color:#eaeaf0; font-size:16px; font-weight:700; }
+  #deployBtn { flex:0 0 auto; padding:12px 14px; border:1px solid var(--accent); border-radius:10px; background:#2a1a08; color:var(--accent); font-size:16px; font-weight:800; }
   #toast { position:fixed; left:12px; right:12px; bottom:calc(150px + env(safe-area-inset-bottom)); z-index:55; display:none; }
   #toastMsg { background:#16161a; border:1px solid var(--border); border-radius:12px; padding:12px 14px; font-size:13px; box-shadow:0 8px 24px rgba(0,0,0,.5); white-space:pre-wrap; word-break:break-word; }
   /* Login */
@@ -72,6 +73,7 @@
     <button id="goBtn">Go ▶</button>
     <button id="pullBtn" title="Pull from GitHub">↻</button>
     <button id="syncBtn" title="Commit &amp; push to GitHub">⤓</button>
+    <button id="deployBtn" title="Deploy to production" style="display:none;">🚀</button>
   </div>
   <div id="keys"></div>
 </div>
@@ -235,6 +237,7 @@ function switchTo(id) {
   Object.entries(state.terms).forEach(([k, t]) => t.el.classList.toggle("active", k === id));
   document.querySelectorAll(".tab").forEach(t => { t.classList.toggle("active", t.dataset.id === id); if (t.dataset.id === id) t.classList.remove("pending"); });
   state.pending = state.pending.filter(x => x !== id);
+  const db = document.getElementById("deployBtn"); if (db) db.style.display = (id === "core") ? "block" : "none";
   setTimeout(() => { doFit(id); state.terms[id] && state.terms[id].term.focus(); }, 40);
 }
 function doFit(id) {
@@ -298,6 +301,24 @@ async function pullProject() {
     toast(r.ok ? "✓ Pulled from GitHub" : ("Pull:\n" + (r.output || "failed")));
   } catch (e) { toast("Pull failed."); }
   b.textContent = old;
+}
+document.getElementById("deployBtn").onclick = deployProject;
+let deployPoll = null;
+async function deployProject() {
+  if (state.active !== "core") { toast("Deploy is only for the Core project."); return; }
+  if (!confirm("Deploy Core to PRODUCTION now?\nBacks up the DB, builds, and reloads the live site.")) return;
+  toast("🚀 Starting deploy… backing up DB + building (~2–3 min). You can lock your phone; it keeps going.");
+  const r = await (await fetch(BASE + "/api/deploy", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ project: state.active }) })).json();
+  if (!r.started) { toast(r.output || "Couldn't start deploy."); return; }
+  clearInterval(deployPoll);
+  deployPoll = setInterval(async () => {
+    try {
+      const s = await (await fetch(BASE + "/api/deploy/log")).json();
+      const last = (s.tail || "").split("\n").slice(-4).join("\n");
+      if (s.running) toast("🚀 Deploying…\n" + last);
+      else { clearInterval(deployPoll); toast((s.ok ? "✅ Deployed to production!\n" : "❌ Deploy FAILED:\n") + last); buzz(); }
+    } catch {}
+  }, 2500);
 }
 document.getElementById("syncBtn").onclick = syncProject;
 async function syncProject() {

@@ -165,6 +165,27 @@ app.post("/api/pull", (req, res) => {
     res.json({ ok: !err, output: out || (err ? String(err).slice(0, 300) : "done") });
   });
 });
+// Deploy to production (Core project only). Runs detached so it survives a dropped connection;
+// progress is polled via /api/deploy/log.
+const DEPLOY_LOG = "/var/www/goterm/deploy.log";
+app.post("/api/deploy", (req, res) => {
+  if (!authed(req)) return res.status(401).end();
+  const p = getProject(sanitize(req.body.project || ""));
+  if (!p || p.dir !== "/var/www/projects/core") return res.json({ ok: false, output: "Deploy is enabled only for the Core project." });
+  try { const cur = fs.readFileSync(DEPLOY_LOG, "utf8"); if (cur && !/__DEPLOY_DONE__/.test(cur)) return res.json({ ok: false, output: "A deploy is already running." }); } catch {}
+  try {
+    fs.writeFileSync(DEPLOY_LOG, "Starting production deploy…\n");
+    const child = cp.spawn("bash", ["-lc", `bash /var/www/goterm/deploy-prod.sh >> ${DEPLOY_LOG} 2>&1; echo "__DEPLOY_DONE__ $?" >> ${DEPLOY_LOG}`], { detached: true, stdio: "ignore" });
+    child.unref();
+    res.json({ ok: true, started: true });
+  } catch (e) { res.json({ ok: false, output: String(e).slice(0, 200) }); }
+});
+app.get("/api/deploy/log", (req, res) => {
+  if (!authed(req)) return res.status(401).end();
+  let tail = ""; try { tail = fs.readFileSync(DEPLOY_LOG, "utf8"); } catch {}
+  const m = tail.match(/__DEPLOY_DONE__ (\d+)/);
+  res.json({ running: !m, ok: m ? m[1] === "0" : false, tail: tail.replace(/__DEPLOY_DONE__ \d+/, "").trim().slice(-1400) });
+});
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ noServer: true });

@@ -3,3 +3,4 @@ config.json
 projects.json
 credentials.json
 inits/
+deploy.log
