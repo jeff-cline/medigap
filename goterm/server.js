@@ -197,6 +197,7 @@ server.on("upgrade", (req, socket, head) => {
 
 // A busy run that goes quiet for IDLE_MS, having been busy at least MIN_BUSY_MS, is "finished".
 const IDLE_MS = 8000, MIN_BUSY_MS = 40000;
+const AUTH_RE = /https:\/\/(?:[a-z0-9.-]*\.)?(?:claude\.(?:ai|com)|anthropic\.com)\/[^\s"'<>]+/i;
 function attachPty(ws, req) {
   const url = new URL(req.url, "http://x");
   const project = sanitize(url.searchParams.get("project")) || "main";
@@ -241,10 +242,19 @@ function attachPty(ws, req) {
     armIdle();
     if (!authSent) {
       outBuf = (outBuf + d).slice(-6000);
-      const m = outBuf.replace(ANSI, "").match(/https:\/\/(?:claude\.ai|console\.anthropic\.com|[a-z0-9.-]*anthropic\.com)\/[^\s"'<>]+/i);
+      const m = outBuf.replace(ANSI, "").match(AUTH_RE);
       if (m) { authSent = true; const url = m[0].replace(/[.,)\]}]+$/, ""); try { ws.send(JSON.stringify({ type: "authurl", url })); } catch {} }
     }
   });
+  // On (re)connect, scan what's already on screen so a sign-in URL surfaces without restarting.
+  setTimeout(() => {
+    if (authSent) return;
+    try {
+      const pane = cp.execFileSync("tmux", ["capture-pane", "-t", project, "-p", "-J", "-S", "-400"], { encoding: "utf8" });
+      const m = pane.match(AUTH_RE);
+      if (m) { authSent = true; ws.send(JSON.stringify({ type: "authurl", url: m[0].replace(/[.,)\]}]+$/, "") })); }
+    } catch {}
+  }, 400);
   ws.on("message", (m) => {
     let msg; try { msg = JSON.parse(m); } catch { return; }
     if (msg.type === "input") term.write(msg.data);
