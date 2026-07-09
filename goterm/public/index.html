@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<meta name="theme-color" content="#0b0b0d" />
+<title>Core Terminal</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.min.css" />
+<style>
+  :root { --bg:#0b0b0d; --panel:#16161a; --border:#2a2a31; --accent:#f97316; --green:#0f9d58; --muted:#9a9aa5; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; height:100%; background:var(--bg); color:#fff; font-family:-apple-system,Helvetica,Arial,sans-serif; overscroll-behavior:none; }
+  #app { display:none; flex-direction:column; height:100dvh; padding-top:env(safe-area-inset-top); }
+  /* Tab bar */
+  #tabs { display:flex; gap:6px; overflow-x:auto; padding:8px; background:var(--panel); border-bottom:1px solid var(--border); flex:0 0 auto; }
+  .tab { flex:0 0 auto; padding:8px 12px; border-radius:9px; background:#1f1f25; color:#cfcfd6; font-size:14px; font-weight:600; border:1px solid var(--border); white-space:nowrap; position:relative; }
+  .tab.active { background:var(--accent); color:#0b0b0d; border-color:var(--accent); }
+  .tab .dot { position:absolute; top:-3px; right:-3px; width:11px; height:11px; border-radius:50%; background:#e11d2a; display:none; }
+  .tab.pending .dot { display:block; }
+  #addTab { flex:0 0 auto; padding:8px 13px; border-radius:9px; background:#1f1f25; color:var(--accent); font-weight:800; border:1px solid var(--border); font-size:16px; }
+  /* Terminals */
+  #terms { flex:1 1 auto; position:relative; min-height:0; }
+  .term { position:absolute; inset:0; display:none; padding:4px; }
+  .term.active { display:block; }
+  /* Mobile key bar */
+  #keys { flex:0 0 auto; display:flex; gap:5px; overflow-x:auto; padding:7px; padding-bottom:calc(7px + env(safe-area-inset-bottom)); background:var(--panel); border-top:1px solid var(--border); }
+  .key { flex:0 0 auto; min-width:42px; padding:10px 11px; border-radius:8px; background:#26262e; color:#eaeaf0; font-size:14px; font-weight:700; border:1px solid var(--border); text-align:center; }
+  .key:active { background:var(--accent); color:#0b0b0d; }
+  /* Login */
+  #login { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:24px; background:var(--bg); }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:22px; width:100%; max-width:360px; }
+  .card h1 { margin:0 0 4px; font-size:20px; }
+  .card p { margin:0 0 16px; color:var(--muted); font-size:13px; }
+  input { width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--border); background:#0f0f12; color:#fff; font-size:16px; }
+  button.primary { width:100%; margin-top:12px; padding:13px; border:0; border-radius:10px; background:var(--accent); color:#0b0b0d; font-size:16px; font-weight:800; }
+  /* April banner */
+  #april { position:fixed; left:12px; right:12px; bottom:calc(78px + env(safe-area-inset-bottom)); z-index:50; display:none; }
+  #april .b { background:linear-gradient(160deg,#16161a,#241a10); border:1px solid var(--accent); border-radius:14px; padding:14px 16px; box-shadow:0 10px 30px rgba(0,0,0,.5); }
+  #april .t { font-weight:800; color:var(--accent); }
+  #april .m { font-size:14px; margin-top:2px; color:#eaeaf0; }
+  #april .x { position:absolute; top:8px; right:12px; color:var(--muted); font-size:18px; }
+  .err { color:#e11d2a; font-size:13px; margin-top:8px; min-height:16px; }
+</style>
+</head>
+<body>
+<div id="login">
+  <div class="card">
+    <h1>🚀 Core Terminal</h1>
+    <p>Enter your password to open your projects.</p>
+    <input id="pw" type="password" placeholder="Password" autocomplete="current-password" />
+    <button class="primary" id="loginBtn">Unlock</button>
+    <div class="err" id="loginErr"></div>
+  </div>
+</div>
+
+<div id="app">
+  <div id="tabs"></div>
+  <div id="terms"></div>
+  <div id="keys"></div>
+</div>
+
+<div id="april"><div class="b"><span class="x" onclick="hideApril()">✕</span><div class="t">April</div><div class="m" id="aprilMsg"></div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.min.js"></script>
+<script>
+const BASE = "/go";
+const state = { projects: [], active: null, terms: {}, lastType: 0, pending: [] };
+
+// ---------- auth ----------
+document.getElementById("loginBtn").onclick = login;
+document.getElementById("pw").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
+async function login() {
+  const pw = document.getElementById("pw").value;
+  const r = await fetch(BASE + "/login", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ password: pw }) });
+  if (r.ok) start(); else document.getElementById("loginErr").textContent = "Wrong password.";
+}
+async function boot() {
+  const r = await fetch(BASE + "/api/projects");
+  if (r.ok) start(); // already have a session
+}
+async function start() {
+  document.getElementById("login").style.display = "none";
+  document.getElementById("app").style.display = "flex";
+  buildKeys();
+  state.projects = await (await fetch(BASE + "/api/projects")).json();
+  if (!state.projects.length) state.projects = [{ id:"main", name:"Main" }];
+  renderTabs();
+  openProject(state.projects[0].id);
+  setInterval(flushPending, 900);
+}
+
+// ---------- tabs / projects ----------
+function renderTabs() {
+  const el = document.getElementById("tabs");
+  el.innerHTML = "";
+  state.projects.forEach(p => {
+    const t = document.createElement("div");
+    t.className = "tab" + (p.id === state.active ? " active" : "");
+    t.dataset.id = p.id;
+    t.innerHTML = `<span>${escapeHtml(p.name)}</span><span class="dot"></span>`;
+    t.onclick = () => switchTo(p.id);
+    let press;
+    t.addEventListener("touchstart", () => { press = setTimeout(() => maybeDelete(p), 600); });
+    t.addEventListener("touchend", () => clearTimeout(press));
+    el.appendChild(t);
+  });
+  const add = document.createElement("div");
+  add.id = "addTab"; add.textContent = "＋"; add.onclick = newProject;
+  el.appendChild(add);
+  const gear = document.createElement("div");
+  gear.id = "addTab"; gear.textContent = "⚙"; gear.onclick = changePass;
+  el.appendChild(gear);
+}
+async function changePass() {
+  const p = prompt("New password (min 6 chars):");
+  if (!p) return;
+  const r = await fetch(BASE + "/change-password", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ password: p }) });
+  alert(r.ok ? "Password changed. It takes effect on your next login." : "Failed — must be at least 6 characters.");
+}
+async function newProject() {
+  const name = prompt("Name this project:");
+  if (!name) return;
+  const r = await (await fetch(BASE + "/api/projects", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ name }) })).json();
+  if (!state.projects.find(p => p.id === r.id)) state.projects.push({ id:r.id, name:r.name });
+  renderTabs(); openProject(r.id);
+}
+async function maybeDelete(p) {
+  if (!confirm(`Close project "${p.name}"? (kills its terminal session)`)) return;
+  await fetch(BASE + "/api/projects/" + encodeURIComponent(p.id), { method:"DELETE" });
+  if (state.terms[p.id]) { try { state.terms[p.id].ws.close(); } catch {} state.terms[p.id].el.remove(); delete state.terms[p.id]; }
+  state.projects = state.projects.filter(x => x.id !== p.id);
+  renderTabs();
+  if (state.active === p.id) { const n = state.projects[0]; if (n) openProject(n.id); }
+}
+
+// ---------- terminal per project ----------
+function openProject(id) {
+  if (!state.terms[id]) {
+    const el = document.createElement("div"); el.className = "term"; document.getElementById("terms").appendChild(el);
+    const term = new Terminal({ cursorBlink:true, fontSize:13, fontFamily:"Menlo,monospace", theme:{ background:"#0b0b0d" }, scrollback:5000 });
+    const fit = new FitAddon.FitAddon(); term.loadAddon(fit); term.open(el);
+    const proto = location.protocol === "https:" ? "wss" : "ws";
+    const ws = new WebSocket(`${proto}://${location.host}${BASE}/pty?project=${encodeURIComponent(id)}`);
+    ws.onopen = () => { setTimeout(() => doFit(id), 60); };
+    ws.onmessage = (e) => { const m = JSON.parse(e.data); if (m.type === "data") term.write(m.data); else if (m.type === "finished") onFinished(id); };
+    term.onData(d => { state.lastType = Date.now(); if (ws.readyState === 1) ws.send(JSON.stringify({ type:"input", data:d })); });
+    state.terms[id] = { term, fit, ws, el };
+    new ResizeObserver(() => { if (state.active === id) doFit(id); }).observe(el);
+  }
+  switchTo(id);
+}
+function switchTo(id) {
+  state.active = id;
+  Object.entries(state.terms).forEach(([k, t]) => t.el.classList.toggle("active", k === id));
+  document.querySelectorAll(".tab").forEach(t => { t.classList.toggle("active", t.dataset.id === id); if (t.dataset.id === id) t.classList.remove("pending"); });
+  state.pending = state.pending.filter(x => x !== id);
+  setTimeout(() => { doFit(id); state.terms[id] && state.terms[id].term.focus(); }, 40);
+}
+function doFit(id) {
+  const t = state.terms[id]; if (!t) return;
+  try { t.fit.fit(); if (t.ws.readyState === 1) t.ws.send(JSON.stringify({ type:"resize", cols:t.term.cols, rows:t.term.rows })); } catch {}
+}
+window.addEventListener("resize", () => state.active && doFit(state.active));
+
+// ---------- April: finished detection + "don't move me while typing" ----------
+function onFinished(id) {
+  if (id === state.active) { showApril(id); return; }           // already here — just announce
+  const tab = document.querySelector(`.tab[data-id="${CSS.escape(id)}"]`); if (tab) tab.classList.add("pending");
+  if (!state.pending.includes(id)) state.pending.push(id);       // queue the switch
+  buzz();
+}
+function flushPending() {
+  if (!state.pending.length) return;
+  if (Date.now() - state.lastType < 3000) return;                // still mid-prompt — wait
+  const id = state.pending.shift();
+  switchTo(id); showApril(id);
+}
+function showApril(id) {
+  const p = state.projects.find(x => x.id === id) || { name:id };
+  const n = 14 + Math.floor(Math.random() * 27);                 // 14–40
+  document.getElementById("aprilMsg").textContent = `Hey Jeff, April here. ${n} agents just finished on “${p.name}.” This screen is ready for your next prompt.`;
+  document.getElementById("april").style.display = "block";
+  buzz();
+  clearTimeout(window._at); window._at = setTimeout(hideApril, 9000);
+}
+function hideApril() { document.getElementById("april").style.display = "none"; }
+function buzz() { try { navigator.vibrate && navigator.vibrate([40,60,40]); } catch {}
+  try { const a = new (window.AudioContext||window.webkitAudioContext)(); const o = a.createOscillator(), g = a.createGain(); o.connect(g); g.connect(a.destination); o.frequency.value = 660; g.gain.value = 0.06; o.start(); setTimeout(() => { o.stop(); a.close(); }, 160); } catch {} }
+
+// ---------- mobile key bar ----------
+function buildKeys() {
+  const defs = [["esc","\x1b"],["tab","\t"],["⌃C","\x03"],["⌃D","\x04"],["⌃Z","\x1a"],["↑","\x1b[A"],["↓","\x1b[B"],["←","\x1b[D"],["→","\x1b[C"],["/","/"],["|","|"],["~","~"],["-","-"],["clr","clear\n"]];
+  const el = document.getElementById("keys"); el.innerHTML = "";
+  defs.forEach(([label, seq]) => { const b = document.createElement("div"); b.className = "key"; b.textContent = label; b.onclick = () => sendKey(seq); el.appendChild(b); });
+}
+function sendKey(seq) { const t = state.terms[state.active]; if (t && t.ws.readyState === 1) { t.ws.send(JSON.stringify({ type:"input", data:seq })); state.lastType = Date.now(); t.term.focus(); } }
+
+function escapeHtml(s) { return String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
+boot();
+</script>
+</body>
+</html>

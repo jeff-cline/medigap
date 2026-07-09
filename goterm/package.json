@@ -1,0 +1,13 @@
+{
+  "name": "goterm",
+  "version": "1.0.0",
+  "private": true,
+  "description": "el.ag/go — iPhone-optimized web terminal for the Core (named tmux projects + April notifications)",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": {
+    "express": "^4.19.2",
+    "node-pty": "^1.0.0",
+    "ws": "^8.18.0"
+  }
+}
