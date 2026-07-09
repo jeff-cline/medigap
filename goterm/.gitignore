@@ -1,3 +1,5 @@
 node_modules/
 config.json
 projects.json
+credentials.json
+inits/

@@ -48,9 +48,10 @@
 <div id="login">
   <div class="card">
     <h1>🚀 Core Terminal</h1>
-    <p>Enter your password to open your projects.</p>
+    <p>Unlock to open your projects.</p>
+    <button class="primary" id="faceBtn" style="display:none; margin-bottom:14px;">🔓 Unlock with Face ID</button>
     <input id="pw" type="password" placeholder="Password" autocomplete="current-password" />
-    <button class="primary" id="loginBtn">Unlock</button>
+    <button class="primary" id="loginBtn" style="margin-top:10px;">Unlock with password</button>
     <div class="err" id="loginErr"></div>
   </div>
 </div>
@@ -76,8 +77,20 @@
   </div>
 </div>
 
+<div id="setModal" style="position:fixed; inset:0; background:rgba(0,0,0,.65); align-items:center; justify-content:center; padding:24px; z-index:60; display:none;">
+  <div class="card">
+    <h1>Settings</h1>
+    <p id="setFaceState">Bind this iPhone with Face ID so you can unlock from anywhere — no password to type.</p>
+    <button class="primary" id="setFace">📲 Set up Face ID on this iPhone</button>
+    <button class="primary" id="setPass" style="margin-top:10px; background:#26262e; color:#fff;">Change password</button>
+    <button id="setCancel" style="width:100%; margin-top:8px; background:transparent; color:var(--muted); border:0; padding:8px; font-size:14px;">Close</button>
+    <div class="err" id="setErr"></div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.min.js"></script>
+<script src="https://unpkg.com/@simplewebauthn/browser@13/dist/bundle/index.umd.min.js"></script>
 <script>
 const BASE = "/go";
 const state = { projects: [], active: null, terms: {}, lastType: 0, pending: [] };
@@ -91,8 +104,34 @@ async function login() {
   if (r.ok) start(); else document.getElementById("loginErr").textContent = "Wrong password.";
 }
 async function boot() {
+  try { const h = await (await fetch(BASE + "/webauthn/has")).json(); if (h.registered) { const b = document.getElementById("faceBtn"); b.style.display = "block"; b.onclick = faceUnlock; } } catch {}
   const r = await fetch(BASE + "/api/projects");
   if (r.ok) start(); // already have a session
+}
+async function faceUnlock() {
+  document.getElementById("loginErr").textContent = "";
+  try {
+    const opts = await (await fetch(BASE + "/webauthn/auth/options", { method:"POST" })).json();
+    const asse = await SimpleWebAuthnBrowser.startAuthentication({ optionsJSON: opts });
+    const r = await (await fetch(BASE + "/webauthn/auth/verify", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify(asse) })).json();
+    if (r.ok) start(); else document.getElementById("loginErr").textContent = "Face ID didn't match.";
+  } catch (e) { document.getElementById("loginErr").textContent = "Face ID canceled."; }
+}
+// Settings (gear): Face ID setup + change password
+function openSettings() { document.getElementById("setErr").textContent = ""; document.getElementById("setModal").style.display = "flex"; }
+document.getElementById("setCancel").onclick = () => document.getElementById("setModal").style.display = "none";
+document.getElementById("setPass").onclick = () => { document.getElementById("setModal").style.display = "none"; changePass(); };
+document.getElementById("setFace").onclick = registerFace;
+async function registerFace() {
+  document.getElementById("setErr").textContent = "Follow the Face ID prompt…";
+  try {
+    const optRes = await fetch(BASE + "/webauthn/register/options", { method:"POST" });
+    if (!optRes.ok) { document.getElementById("setErr").textContent = "Log in with your password first."; return; }
+    const opts = await optRes.json();
+    const att = await SimpleWebAuthnBrowser.startRegistration({ optionsJSON: opts });
+    const r = await (await fetch(BASE + "/webauthn/register/verify", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ response: att, deviceName: "iPhone" }) })).json();
+    document.getElementById("setErr").textContent = r.ok ? "✓ Face ID set up! Next login, tap “Unlock with Face ID.”" : ("Failed: " + (r.error || ""));
+  } catch (e) { document.getElementById("setErr").textContent = "Canceled or not supported here: " + (e.message || e); }
 }
 async function start() {
   document.getElementById("login").style.display = "none";
@@ -124,7 +163,7 @@ function renderTabs() {
   add.id = "addTab"; add.textContent = "＋"; add.onclick = newProject;
   el.appendChild(add);
   const gear = document.createElement("div");
-  gear.id = "addTab"; gear.textContent = "⚙"; gear.onclick = changePass;
+  gear.id = "addTab"; gear.textContent = "⚙"; gear.onclick = openSettings;
   el.appendChild(gear);
 }
 async function changePass() {

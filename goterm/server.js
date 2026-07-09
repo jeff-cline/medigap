@@ -9,6 +9,7 @@ const path = require("path");
 const cp = require("child_process");
 const pty = require("node-pty");
 const { WebSocketServer } = require("ws");
+const { generateRegistrationOptions, verifyRegistrationResponse, generateAuthenticationOptions, verifyAuthenticationResponse } = require("@simplewebauthn/server");
 
 const PORT = process.env.GOTERM_PORT || 3041;
 const DIR = __dirname;
@@ -54,6 +55,55 @@ app.post("/change-password", (req, res) => {
   cfg.passHash = hashPass(np);
   fs.writeFileSync(CFG, JSON.stringify(cfg, null, 2));
   res.json({ ok: true });
+});
+
+// ---------- Face ID / passkey (WebAuthn) — bind access to this iPhone ----------
+const RP_ID = "el.ag", ORIGIN = "https://el.ag", RP_NAME = "Core Terminal";
+const CREDS = path.join(DIR, "credentials.json");
+const readCreds = () => { try { return JSON.parse(fs.readFileSync(CREDS, "utf8")); } catch { return []; } };
+const writeCreds = (c) => fs.writeFileSync(CREDS, JSON.stringify(c, null, 2));
+let regChallenge = "", authChallenge = "";
+
+app.get("/webauthn/has", (_req, res) => res.json({ registered: readCreds().length > 0 }));
+
+app.post("/webauthn/register/options", async (req, res) => {
+  if (!authed(req)) return res.status(401).end();
+  const options = await generateRegistrationOptions({
+    rpName: RP_NAME, rpID: RP_ID, userName: "jeff", attestationType: "none",
+    excludeCredentials: readCreds().map((c) => ({ id: c.id, transports: c.transports })),
+    authenticatorSelection: { residentKey: "preferred", userVerification: "preferred", authenticatorAttachment: "platform" },
+  });
+  regChallenge = options.challenge;
+  res.json(options);
+});
+app.post("/webauthn/register/verify", async (req, res) => {
+  if (!authed(req)) return res.status(401).end();
+  try {
+    const v = await verifyRegistrationResponse({ response: req.body.response, expectedChallenge: regChallenge, expectedOrigin: ORIGIN, expectedRPID: RP_ID });
+    if (!v.verified) return res.json({ ok: false });
+    const c = v.registrationInfo.credential;
+    const creds = readCreds();
+    creds.push({ id: c.id, publicKey: Buffer.from(c.publicKey).toString("base64"), counter: c.counter, transports: c.transports || [], name: String(req.body.deviceName || "iPhone").slice(0, 40), createdAt: new Date().toISOString() });
+    writeCreds(creds);
+    res.json({ ok: true });
+  } catch (e) { res.status(400).json({ ok: false, error: String(e).slice(0, 200) }); }
+});
+app.post("/webauthn/auth/options", async (_req, res) => {
+  const options = await generateAuthenticationOptions({ rpID: RP_ID, allowCredentials: readCreds().map((c) => ({ id: c.id, transports: c.transports })), userVerification: "preferred" });
+  authChallenge = options.challenge;
+  res.json(options);
+});
+app.post("/webauthn/auth/verify", async (req, res) => {
+  try {
+    const cred = readCreds().find((c) => c.id === req.body.id);
+    if (!cred) return res.status(400).json({ ok: false, error: "unknown device" });
+    const v = await verifyAuthenticationResponse({ response: req.body, expectedChallenge: authChallenge, expectedOrigin: ORIGIN, expectedRPID: RP_ID,
+      credential: { id: cred.id, publicKey: new Uint8Array(Buffer.from(cred.publicKey, "base64")), counter: cred.counter, transports: cred.transports } });
+    if (!v.verified) return res.json({ ok: false });
+    const creds = readCreds(); const cc = creds.find((c) => c.id === cred.id); if (cc) { cc.counter = v.authenticationInfo.newCounter; writeCreds(creds); }
+    res.setHeader("Set-Cookie", `goterm_session=${makeToken()}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`);
+    res.json({ ok: true });
+  } catch (e) { res.status(400).json({ ok: false, error: String(e).slice(0, 200) }); }
 });
 
 // project management
