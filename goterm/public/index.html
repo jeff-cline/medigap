@@ -83,8 +83,8 @@
   <div style="position:relative; background:linear-gradient(160deg,#0b1f14,#0f2a1a); border:1px solid var(--green); border-radius:14px; padding:14px 16px; box-shadow:0 10px 30px rgba(0,0,0,.5);">
     <span style="position:absolute; top:8px; right:12px; color:var(--muted); font-size:18px;" onclick="hideAuth()">✕</span>
     <div style="font-weight:800; color:var(--green);">🔐 Log in to Claude (one time)</div>
-    <div style="font-size:13px; margin:4px 0 10px; color:#eaeaf0;">Tap below → approve → copy the code → paste it in the prompt box → tap <b>Go ▶</b>.</div>
-    <button id="authOpen" style="width:100%; padding:12px; border:0; border-radius:10px; background:var(--green); color:#fff; font-weight:800; font-size:16px;">Log in to Claude ↗</button>
+    <div style="font-size:13px; margin:4px 0 10px; color:#eaeaf0;">Opens a <b>new tab</b>. Approve → copy the code → switch back to this tab → paste in the prompt box → tap <b>Go ▶</b>.</div>
+    <a id="authOpen" target="_blank" rel="noopener" style="display:block; text-align:center; text-decoration:none; width:100%; padding:12px; border-radius:10px; background:var(--green); color:#fff; font-weight:800; font-size:16px;">Log in to Claude ↗ (new tab)</a>
   </div>
 </div>
 
@@ -341,7 +341,7 @@ async function syncProject() {
   b.textContent = old;
 }
 function toast(msg) { document.getElementById("toastMsg").textContent = msg; document.getElementById("toast").style.display = "block"; clearTimeout(window._tt); window._tt = setTimeout(() => { document.getElementById("toast").style.display = "none"; }, 6500); }
-function showAuth(url) { document.getElementById("authOpen").onclick = () => window.open(url, "_blank", "noopener"); document.getElementById("authbar").style.display = "block"; buzz(); }
+function showAuth(url) { document.getElementById("authOpen").href = url; document.getElementById("authbar").style.display = "block"; buzz(); }
 function hideAuth() { document.getElementById("authbar").style.display = "none"; }
 
 function escapeHtml(s) { return String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
