@@ -63,6 +63,19 @@
 
 <div id="april"><div class="b"><span class="x" onclick="hideApril()">✕</span><div class="t">April</div><div class="m" id="aprilMsg"></div></div></div>
 
+<div id="newModal" style="position:fixed; inset:0; background:rgba(0,0,0,.65); align-items:center; justify-content:center; padding:24px; z-index:60; display:none;">
+  <div class="card">
+    <h1>New project</h1>
+    <p>Creates a folder on the server, clones your repo, and starts Claude automatically.</p>
+    <input id="npName" placeholder="Project name (e.g. SEO Rebuild)" autocapitalize="words" />
+    <input id="npSite" placeholder="Website — optional (e.g. el.ag)" autocapitalize="none" style="margin-top:10px" />
+    <input id="npRepo" placeholder="GitHub repo — optional (owner/repo)" autocapitalize="none" autocorrect="off" style="margin-top:10px" />
+    <button class="primary" id="npGo">Create &amp; open Claude</button>
+    <button id="npCancel" style="width:100%; margin-top:8px; background:transparent; color:var(--muted); border:0; padding:8px; font-size:14px;">Cancel</button>
+    <div class="err" id="npErr"></div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.min.js"></script>
 <script>
@@ -120,13 +133,24 @@ async function changePass() {
   const r = await fetch(BASE + "/change-password", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ password: p }) });
   alert(r.ok ? "Password changed. It takes effect on your next login." : "Failed — must be at least 6 characters.");
 }
-async function newProject() {
-  const name = prompt("Name this project:");
-  if (!name) return;
-  const r = await (await fetch(BASE + "/api/projects", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ name }) })).json();
+function newProject() {
+  ["npName","npSite","npRepo","npErr"].forEach(id => document.getElementById(id).textContent = "");
+  ["npName","npSite","npRepo"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("newModal").style.display = "flex";
+  setTimeout(() => document.getElementById("npName").focus(), 60);
+}
+async function createProject() {
+  const name = document.getElementById("npName").value.trim();
+  if (!name) { document.getElementById("npErr").textContent = "Give it a name."; return; }
+  const website = document.getElementById("npSite").value.trim();
+  const repo = document.getElementById("npRepo").value.trim();
+  const r = await (await fetch(BASE + "/api/projects", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ name, website, repo }) })).json();
+  document.getElementById("newModal").style.display = "none";
   if (!state.projects.find(p => p.id === r.id)) state.projects.push({ id:r.id, name:r.name });
   renderTabs(); openProject(r.id);
 }
+document.getElementById("npGo").onclick = createProject;
+document.getElementById("npCancel").onclick = () => document.getElementById("newModal").style.display = "none";
 async function maybeDelete(p) {
   if (!confirm(`Close project "${p.name}"? (kills its terminal session)`)) return;
   await fetch(BASE + "/api/projects/" + encodeURIComponent(p.id), { method:"DELETE" });
