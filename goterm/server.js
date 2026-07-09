@@ -137,9 +137,22 @@ app.post("/api/projects", (req, res) => {
 app.delete("/api/projects/:id", (req, res) => {
   if (!authed(req)) return res.status(401).end();
   const id = sanitize(req.params.id);
-  try { require("child_process").execSync(`tmux kill-session -t ${id} 2>/dev/null`); } catch {}
+  try { cp.execSync(`tmux kill-session -t ${id} 2>/dev/null`); } catch {}
   writeProjects(readProjects().filter((p) => p.id !== id));
   res.json({ ok: true });
+});
+// One-tap sync: commit + push the project's folder (uses the box's GitHub SSH key).
+app.post("/api/sync", (req, res) => {
+  if (!authed(req)) return res.status(401).end();
+  const p = getProject(sanitize(req.body.project || ""));
+  if (!p || !p.dir) return res.json({ ok: false, output: "No folder for this project." });
+  if (!fs.existsSync(path.join(p.dir, ".git"))) return res.json({ ok: false, output: "No git repo linked to this project." });
+  const msg = String(req.body.message || "sync from phone").slice(0, 120);
+  const script = `cd ${JSON.stringify(p.dir)} && git add -A && (git commit -m ${JSON.stringify(msg)} || echo "(nothing to commit)") && git push 2>&1`;
+  cp.exec(script, { timeout: 90000, maxBuffer: 1 << 20 }, (err, stdout, stderr) => {
+    const out = ((stdout || "") + (stderr || "")).trim().slice(-500);
+    res.json({ ok: !err, output: out || (err ? String(err).slice(0, 300) : "done") });
+  });
 });
 
 const server = http.createServer(app);
