@@ -190,9 +190,10 @@ function attachPty(ws, req) {
       cp.execFileSync("tmux", ["new-session", "-d", "-s", project, "-c", dir]);
       if (p && p.autostart) {
         // init script lives OUTSIDE the project dir so `git clone .` sees an empty dir.
+        // On first open: clone if empty, else auto-pull the latest — then launch Claude.
         const init = `#!/bin/bash\ncd ${JSON.stringify(dir)}\n`
           + (p.website ? `export SITE=${JSON.stringify(p.website)}\n` : "")
-          + (p.repo ? `if [ -z "$(ls -A)" ]; then echo "Cloning ${p.repo} ..."; git clone ${JSON.stringify(p.repo)} . && echo "✓ synced"; fi\n` : "");
+          + (p.repo ? `if [ -z "$(ls -A)" ]; then echo "Cloning ${p.repo} ..."; git clone ${JSON.stringify(p.repo)} . && echo "✓ cloned"; elif [ -d .git ]; then echo "Pulling latest ..."; git pull; fi\n` : "");
         const initDir = "/var/www/goterm/inits";
         try { fs.mkdirSync(initDir, { recursive: true }); fs.writeFileSync(path.join(initDir, project + ".sh"), init); } catch {}
         cp.execFileSync("tmux", ["send-keys", "-t", project, `source ${initDir}/${project}.sh`, "Enter"]);
