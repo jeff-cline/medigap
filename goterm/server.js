@@ -232,10 +232,18 @@ function attachPty(ws, req) {
       busy = false;
     }, IDLE_MS);
   };
+  // Watch the stream for a Claude sign-in URL so the client can offer a one-tap "Log in" button.
+  let outBuf = "", authSent = false;
+  const ANSI = /\x1b\[[0-9;?]*[A-Za-z]|\x1b\][^\x07]*(?:\x07|\x1b\\)|\x1b[()][AB012]|[\x00-\x08\x0b-\x1f]/g;
   term.onData((d) => {
     try { ws.send(JSON.stringify({ type: "data", data: d })); } catch {}
     if (!busy) { busy = true; busyStart = Date.now(); }
     armIdle();
+    if (!authSent) {
+      outBuf = (outBuf + d).slice(-6000);
+      const m = outBuf.replace(ANSI, "").match(/https:\/\/(?:claude\.ai|console\.anthropic\.com|[a-z0-9.-]*anthropic\.com)\/[^\s"'<>]+/i);
+      if (m) { authSent = true; const url = m[0].replace(/[.,)\]}]+$/, ""); try { ws.send(JSON.stringify({ type: "authurl", url })); } catch {} }
+    }
   });
   ws.on("message", (m) => {
     let msg; try { msg = JSON.parse(m); } catch { return; }
