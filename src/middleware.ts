@@ -50,6 +50,16 @@ export function middleware(req: NextRequest) {
     }
   }
 
+  // 1800medigap.biz — investor / JV / BD power-platform lander (/biz segment).
+  // /login, /dashboard, /unified etc. pass through to the Core (owner god access).
+  if (host === "1800medigap.biz" || host === "www.1800medigap.biz") {
+    if (!/^\/(login|change-password|dashboard|unified|partner|agent|advertiser|investor|vos|ads\.txt|_next|favicon)/i.test(path)) {
+      const url = req.nextUrl.clone();
+      url.pathname = path === "/" ? "/biz" : `/biz${path}`;
+      return NextResponse.rewrite(url);
+    }
+  }
+
   // exitoptimization.com — SEO/AEO lead-gen site on the Core (serves the /exit segment).
   if (host === "exitoptimization.com" || host === "www.exitoptimization.com") {
     if (!/^\/(login|change-password|dashboard|unified|partner|agent|advertiser|investor|vos|ads\.txt|_next|favicon)/i.test(path)) {
