@@ -120,3 +120,107 @@ export const VANITY_POINTS = [
   { h: "Appreciating, non-dilutive", p: "Unlike ad budgets that vanish, a category vanity asset compounds in value as the brand and market grow — a balance-sheet asset, not an expense line." },
   { h: "Priceless where it matters", p: "In healthcare and senior care — high-stakes, high-trust, high-LTV — a front-door control point in the Medicare category is, by any strategic measure, priceless." },
 ];
+
+// ---------------------------------------------------------------------------
+// Investor comparables (deep research) — real, cited figures. Estimates labeled.
+// The senior/Medicare customer's lifetime value vs. these vanity-brand customers.
+// ---------------------------------------------------------------------------
+export const SENIOR_LTV = {
+  spendHeadline: "$15,000–$26,000",     // Medigap premium over ~8–10 yrs (conservative, apples-to-apples customer spend)
+  spendUpside: "$50,000–$90,000",       // Medicare Advantage gross revenue per member over tenure
+  mid: 18000,                            // conservative midpoint used for illustrative multiples
+  agentBasis: "$1,500–$2,500",           // like-for-like agent/agency commission LTV per policyholder
+  multipleHeadline: "10×–100×+",
+  note: "Illustrative lifetime economic value per customer. Senior figures reflect Medigap premium dollars over a typical 8–10-year hold (guaranteed-renewable, high-persistency), with Medicare Advantage gross revenue reaching $50k–$90k per member. Retail figures reflect customer lifetime value/spend to each business. Not apples-to-apples across every basis; directional guidance for conversations.",
+};
+
+export type Comp = {
+  slug: string; name: string; ticker: string; isPublic: boolean;
+  tenK?: string; tenKLabel?: string; ownership?: string;
+  marketCap: string; marketCapNote: string; revenue: string; revenueNote: string;
+  aov: string; customerLtv: string; customerLtvMid: number; ltvBasis: string;
+  tagline: string; narrative: string; facts: string[]; sources: { label: string; url: string }[];
+};
+
+export const COMPS: Comp[] = [
+  {
+    slug: "flowers", name: "1-800-FLOWERS.COM, Inc.", ticker: "NASDAQ: FLWS", isPublic: true,
+    tenK: "https://www.sec.gov/Archives/edgar/data/1084869/000108486925000017/flws-20250629.htm", tenKLabel: "FY2025 Form 10-K (SEC EDGAR)",
+    marketCap: "~$250M", marketCapNote: "micro-cap (mid-2026); de-rated from a multi-billion-dollar cap in 2020–21",
+    revenue: "$1.69B", revenueNote: "FY2025 (ended June 29, 2025) — a down year: $200M net loss incl. a $143.8M non-cash impairment",
+    aov: "~$89", customerLtv: "~$150–$400", customerLtvMid: 275, ltvBasis: "occasion-driven gifting; >10M customers, ~74% of revenue from repeat customers",
+    tagline: "The number that became a brand — then a whole gifting empire.",
+    narrative: "1-800-FLOWERS is the textbook case that a vanity phone number becomes a durable, self-marketing consumer brand. The mnemonic drove unaided recall and free brand equity, was ported to the web domain, and now anchors a house of brands — Harry & David, Cheryl's Cookies, Shari's Berries, PersonalizationMall, and more.",
+    facts: [
+      "The entire brand was built on the memorable toll-free number — the number IS the brand.",
+      ">10 million customers served; ~74% of revenue from existing customers — a strong repeat base.",
+      "Anchors a >$1.5B-revenue public company across three segments and a dozen+ brands.",
+      "Proof a vanity number can scale into a multi-brand, publicly-traded gifting platform.",
+    ],
+    sources: [
+      { label: "SEC — FY2025 10-K", url: "https://www.sec.gov/Archives/edgar/data/1084869/000108486925000017/flws-20250629.htm" },
+      { label: "BusinessWire — FY2025 results", url: "https://www.businesswire.com/news/home/20250904202543/en/1-800-FLOWERS.COM-Inc.-Reports-Fiscal-2025-Fourth-Quarter-and-Year-End-Results" },
+      { label: "Macrotrends — FLWS market cap", url: "https://www.macrotrends.net/stocks/charts/FLWS/1-800-flowerscom/market-cap" },
+    ],
+  },
+  {
+    slug: "contacts", name: "1-800 Contacts", ticker: "Private (KKR-owned)", isPublic: false,
+    ownership: "Privately held — acquired by KKR in 2020 from AEA Investors. No public filings / no 10-K.",
+    marketCap: ">$3.0B", marketCapNote: "enterprise value at the 2020 KKR acquisition (Bloomberg: '$3B-plus')",
+    revenue: "~$700M–$1B+", revenueNote: "estimated at the 2020 transaction (private; low public data). Largest U.S. contact-lens retailer",
+    aov: "~$250/yr spend", customerLtv: "~$1,000–$3,000", customerLtvMid: 2000, ltvBasis: "prescription-locked recurring consumable; 20M+ customers, high retention",
+    tagline: "A category-owning vanity brand that changed hands in billion-dollar deals.",
+    narrative: "The name IS the category and the purchase instruction. '1-800-CONTACTS' delivers near-zero-cost brand recall and direct-response memorability — customers don't search, they already know who to call. A prescription-locked, repeat-consumable model with in-house telemedicine keeps customers inside the funnel.",
+    facts: [
+      "Serial billion-dollar step-ups: ~$340M (2007) → ~$900M (WellPoint, 2012) → $3B+ (KKR, 2020).",
+      "Changed hands five times, each at a higher valuation — with blue-chip owners (WellPoint, THL, AEA, KKR).",
+      "Largest U.S. contact-lens retailer; 20M+ customers; top-100 U.S. e-commerce player.",
+      "The vanity number is the moat — a marketing asset that compounds and can't be replicated.",
+    ],
+    sources: [
+      { label: "KKR / PRNewswire — 2020 acquisition (20M+ customers)", url: "https://www.prnewswire.com/news-releases/kkr-to-acquire-dtc-pioneer-1-800-contacts-from-aea-investors-301136355.html" },
+      { label: "Bloomberg — KKR buys 1-800 Contacts, $3B+", url: "https://www.bloomberg.com/news/articles/2020-09-23/kkr-buys-1-800-contacts-from-aea-in-3-billion-plus-deal" },
+      { label: "ValueWalk — 2012 WellPoint $900M; 2007 Fenway $340M", url: "https://www.valuewalk.com/2012/06/1-800-contacts-sold-to-wellpoint-for-900-million/" },
+    ],
+  },
+  {
+    slug: "got-junk", name: "1-800-GOT-JUNK? (O2E Brands)", ticker: "Private", isPublic: false,
+    ownership: "Privately held by founder Brian Scudamore via O2E Brands. No public filings / no 10-K.",
+    marketCap: "n/a (private)", marketCapNote: "no disclosed enterprise valuation; press has framed it as a potential billion-dollar business",
+    revenue: "~$300M+", revenueNote: "system-wide (reported ~2018–2020); founder has referenced approaching ~$600M (mixed CAD/aspirational)",
+    aov: "~$240/job", customerLtv: "~$300–$600", customerLtvMid: 450, ltvBasis: "episodic, event-driven jobs (moves, cleanouts); low repeat frequency",
+    tagline: "Proof the number can BE the business model.",
+    narrative: "Founded as 'The Rubbish Boys' in 1989; the pivotal move was acquiring the vanity number 1-800-GOT-JUNK? in 1998 and renaming the company after it. Painted on every truck, the fleet became rolling billboards and the memorable number became the entire top-of-funnel — franchising to other cities began within a year of the rename.",
+    facts: [
+      "A single vanity number + truck-as-billboard is the whole marketing engine — near-zero marginal cost, decades durable.",
+      "~120–160 franchise locations across the U.S., Canada, and Australia; 1,000+ trucks.",
+      "'World's largest junk removal service' — 4.98★ across 724,000+ reviews (brand trust as the asset).",
+      "The 1998 number purchase is directly credited with unlocking franchising and national scale.",
+    ],
+    sources: [
+      { label: "RingCentral — the vanity number pays off", url: "https://www.ringcentral.com/us/en/blog/800-vanity-number-pays-off-for-1-800-got-junk/" },
+      { label: "CNBC — eyeing a billion-dollar business", url: "https://www.cnbc.com/2020/08/01/how-the-1-800-got-junk-founder-became-a-multimillionaire.html" },
+      { label: "Wikipedia — 1-800-GOT-JUNK?", url: "https://en.wikipedia.org/wiki/1-800-GOT-JUNK%3F" },
+    ],
+  },
+  {
+    slug: "petmeds", name: "PetMed Express, Inc. (1-800-PetMeds)", ticker: "NASDAQ: PETS", isPublic: true,
+    tenK: "https://www.sec.gov/Archives/edgar/data/0001040130/000104013026000019/pets-20260331.htm", tenKLabel: "FY2026 Form 10-K (SEC EDGAR)",
+    marketCap: "~$40M", marketCapNote: "distressed micro-cap (mid-2026); going-concern flag, dividend suspended",
+    revenue: "$179.0M", revenueNote: "FY2026 (ended March 31, 2026), down ~21% YoY; $57.3M net loss; heavy pressure from Chewy & Amazon",
+    aov: "~$97", customerLtv: "~$850–$1,700", customerLtvMid: 1100, ltvBasis: "subscription-heavy (~56% AutoShip); LTV pressured by falling reorders",
+    tagline: "The original 'call for pet meds' — a cautionary legacy of the model.",
+    narrative: "The vanity number 1-800-PetMeds made it the category-defining pet-pharmacy name before Chewy or Amazon existed — free, permanent top-of-funnel recall. Today it's a distressed micro-cap, which is precisely why it matters as a comparable: the number is still the durable asset even as the business contracts.",
+    facts: [
+      "The vanity number remains the moat — legacy brand equity and mnemonic recall — even in decline.",
+      "~56% of sales are recurring (AutoShip) — a genuine subscription base built off the number.",
+      "FY2026 carries a going-concern disclosure; dividend suspended — a cautionary benchmark, not a healthy one.",
+      "Shows both the power and the fragility of a vanity brand without a defensible, high-LTV market underneath it.",
+    ],
+    sources: [
+      { label: "SEC — FY2026 10-K", url: "https://www.sec.gov/Archives/edgar/data/0001040130/000104013026000019/pets-20260331.htm" },
+      { label: "GlobeNewswire — FY2026 results", url: "https://www.globenewswire.com/news-release/2026/06/02/3305585/10002/en/petmeds-announces-fourth-quarter-and-fiscal-year-2026-financial-results.html" },
+    ],
+  },
+];
+export const compBySlug = (s: string) => COMPS.find((c) => c.slug === s) || null;

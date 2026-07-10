@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BIZ, VANITY_EXAMPLES, VANITY_POINTS } from "@/lib/biz";
+import { BIZ, VANITY_POINTS, COMPS, SENIOR_LTV } from "@/lib/biz";
 import BizShell from "@/components/biz/BizShell";
 
 export const dynamic = "force-dynamic";
@@ -37,13 +37,14 @@ export default function VanityPage() {
         <h2 style={{ fontFamily: serif, fontSize: 26, fontWeight: 700, marginTop: 44 }}>Real comparables — the number as the business</h2>
         <p style={{ color: C.muted, fontSize: 15, lineHeight: 1.6, marginTop: 8 }}>Entire public companies and franchise empires have been built on a single vanity number. The pattern is consistent: own the category term, and the number becomes the brand.</p>
         <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
-          {VANITY_EXAMPLES.map((e) => (
-            <div key={e.name} style={{ borderLeft: `3px solid ${C.gold}`, paddingLeft: 14 }}>
-              <div style={{ fontWeight: 800, color: C.ink }}>{e.name}</div>
-              <div style={{ fontSize: 14.5, color: C.muted, marginTop: 3 }}>{e.note}</div>
-            </div>
+          {COMPS.map((c) => (
+            <a key={c.slug} href={`/comps/${c.slug}`} style={{ display: "block", borderLeft: `3px solid ${C.gold}`, paddingLeft: 14, textDecoration: "none" }}>
+              <div style={{ fontWeight: 800, color: C.ink }}>{c.name.split("(")[0].trim()} <span style={{ color: C.muted, fontWeight: 400, fontSize: 13 }}>· {c.ticker}</span> <span style={{ color: C.goldSoft, fontSize: 13.5 }}>— see the comparison →</span></div>
+              <div style={{ fontSize: 14.5, color: C.muted, marginTop: 3 }}>{c.tagline} <span style={{ color: C.disrupt2, fontWeight: 700 }}>Medicare customer ≈{Math.round(SENIOR_LTV.mid / c.customerLtvMid)}× the LTV.</span></div>
+            </a>
           ))}
         </div>
+        <p style={{ marginTop: 14 }}><a href="/comps" style={{ color: C.goldSoft, fontWeight: 700, textDecoration: "none" }}>See all comparables + the market analysis →</a></p>
 
         <h2 style={{ fontFamily: serif, fontSize: 26, fontWeight: 700, marginTop: 44 }}>Why 1-800-MEDIGAP specifically</h2>
         <p style={{ color: "#c7d0e0", fontSize: 16, lineHeight: 1.65, marginTop: 10 }}>

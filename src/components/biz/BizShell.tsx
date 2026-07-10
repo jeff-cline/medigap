@@ -31,7 +31,12 @@ export default function BizShell({ children }: { children: React.ReactNode }) {
                   <a key={r.role} href={`/?role=${r.role}#disrupt`} style={{ color: C.ink, fontSize: 14, textDecoration: "none" }}>{r.label} →</a>
                 ))}
               </div>
-              <div style={{ marginTop: 14 }}><a href="/login" style={{ color: C.muted, fontSize: 13, textDecoration: "none" }}>Owner login →</a></div>
+              <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", gap: "6px 20px" }}>
+                <a href="/comps" style={{ color: C.goldSoft, fontSize: 13.5, textDecoration: "none", fontWeight: 700 }}>Comps →</a>
+                <a href="/market-analysis" style={{ color: C.goldSoft, fontSize: 13.5, textDecoration: "none", fontWeight: 700 }}>Market Analysis →</a>
+                <a href="/vanity" style={{ color: C.muted, fontSize: 13.5, textDecoration: "none" }}>Vanity thesis →</a>
+                <a href="/login" style={{ color: C.muted, fontSize: 13, textDecoration: "none" }}>Owner login →</a>
+              </div>
             </div>
           </div>
           <p style={{ marginTop: 28, paddingTop: 18, borderTop: `1px solid ${C.line}`, color: C.muted, fontSize: 11.5, lineHeight: 1.6 }}>{BIZ.disclaimer}</p>
