@@ -32,6 +32,7 @@ export default function BizShell({ children }: { children: React.ReactNode }) {
                 ))}
               </div>
               <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", gap: "6px 20px" }}>
+                <a href="/summary" style={{ color: C.goldSoft, fontSize: 13.5, textDecoration: "none", fontWeight: 700 }}>Executive Summary →</a>
                 <a href="/comps" style={{ color: C.goldSoft, fontSize: 13.5, textDecoration: "none", fontWeight: 700 }}>Comps →</a>
                 <a href="/market-analysis" style={{ color: C.goldSoft, fontSize: 13.5, textDecoration: "none", fontWeight: 700 }}>Market Analysis →</a>
                 <a href="/vanity" style={{ color: C.muted, fontSize: 13.5, textDecoration: "none" }}>Vanity thesis →</a>
