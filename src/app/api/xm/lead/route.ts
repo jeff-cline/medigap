@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { XM, eyeballsCost, reachForBudget } from "@/lib/xm";
+import { sendEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
+
+// Every experientialmarketing.ai lead alerts the founder + the Savage XM team (Zapmail).
+const XM_NOTIFY = "jeff.cline@me.com, s@savagexm.com, h@savagexm.com";
 
 // Ensure the experientialmarketing.ai partner Site exists (leads attach here; owner sees them,
 // all data stays in the Core). Owner is wired by the setup script.
@@ -48,6 +52,22 @@ export async function POST(req: NextRequest) {
     },
   }).catch(() => {});
 
+  // Notify the founder + Savage XM of every new lead with all captured info (Zapmail).
+  const fmt$ = (n: number) => "$" + n.toLocaleString();
+  const html = `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6">
+    <h2 style="margin:0 0 8px">🎪 New experientialmarketing.ai lead</h2>
+    <p><b>${name}</b></p>
+    <p>Email: <a href="mailto:${email}">${email}</a><br>
+    Phone: ${phone || "—"}<br>
+    Website: ${website ? `<a href="${website.startsWith("http") ? website : "https://" + website}">${website}</a>` : "—"}</p>
+    <p>Form: <b>${kind}</b>${budget ? `<br>Budget: <b>${fmt$(budget)}</b>` : ""}${markets > 1 ? `<br>Markets: <b>${markets}</b>` : ""}${eyeballs ? `<br>Target eyeballs: <b>${eyeballs.toLocaleString()}</b>` : ""}</p>
+    <p style="margin-top:14px">Manage this lead: <a href="https://experientialmarketing.ai/partner">open the XM board →</a></p>
+  </div>`;
+  const subject = `New experientialmarketing.ai lead — ${name}`;
+  const text = `New XM lead: ${name} | ${email} | ${phone || "no phone"} | ${website || "no site"} | form:${kind}${budget ? ` | budget:${budget}` : ""}`;
+  const notifyP = sendEmail(XM_NOTIFY, subject, html, "zapmail", { text });
+  const notify = b._test ? await notifyP : (notifyP.catch(() => {}), null);
+
   // Calculator proposal at $33 / 1,000 eyeballs
   if (kind === "calculator") {
     const targetEyeballs = eyeballs || (budget ? reachForBudget(budget) : 0);
@@ -65,7 +85,8 @@ export async function POST(req: NextRequest) {
         recommended,
         disclaimer: "Limited to budget items. May vary. To reach KPIs, we may activate other known industry best practices to meet KPIs, including technology and AI.",
       },
+      ...(notify ? { notify } : {}),
     });
   }
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, ...(notify ? { notify } : {}) });
 }
