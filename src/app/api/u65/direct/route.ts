@@ -22,14 +22,16 @@ export async function POST(req: NextRequest) {
   // The direct line has no AI, so "regular flow" can't apply; after hours -> backup if set, else SET.
   const dest = afterHours ? cfg.backupNumber || cfg.setNumber : cfg.setNumber;
 
+  const billable = dest === cfg.setNumber;
   const rec = await db.u65Call.create({
     data: {
       source: "direct_220", fromNumber: from, state, u65: true,
       answer: afterHours ? "direct · after-hours" : "direct", afterHours, forwardedTo: dest,
     },
-  });
+  }).catch(() => null);
 
   const num = normalizePhone(dest) || dest;
-  const action = `${BASE}/api/u65/status?u65=${rec.id}`;
-  return xml(`<Dial timeout="30" record="record-from-answer-dual" action="${action}"><Number>${num}</Number></Dial>`);
+  const action = rec ? `${BASE}/api/u65/status?u65=${rec.id}${billable ? "" : "&bill=0"}` : "";
+  const actionAttr = action ? ` action="${action}"` : "";
+  return xml(`<Dial timeout="30" record="record-from-answer-dual"${actionAttr}><Number>${num}</Number></Dial>`);
 }

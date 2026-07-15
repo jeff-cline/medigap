@@ -11,10 +11,11 @@ const emptyTwiml = () =>
 // leg only (buyer answer -> hangup), which is exactly the billable clock.
 export async function POST(req: NextRequest) {
   const u65Id = new URL(req.url).searchParams.get("u65") || "";
+  const noBill = new URL(req.url).searchParams.get("bill") === "0";
   const form = await req.formData().catch(() => null);
   const dialSec = parseInt(String(form?.get("DialCallDuration") || form?.get("CallDuration") || "0"), 10);
   if (u65Id) {
-    const billable = isBillable(dialSec);
+    const billable = !noBill && isBillable(dialSec);
     await db.u65Call
       .update({
         where: { id: u65Id },

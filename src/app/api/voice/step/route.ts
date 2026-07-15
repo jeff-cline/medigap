@@ -53,10 +53,10 @@ async function transferMoneyWord(callId: string, voice: string, mw: { id: string
 
 // U65 hot transfer: bridge the caller straight to the buyer's SET number and record
 // a U65Call whose status callback captures the 121s billable clock.
-async function u65Transfer(callId: string, u65Id: string, dest: string) {
+async function u65Transfer(callId: string, u65Id: string, dest: string, billable = true) {
   const s = await getSettings();
   const num = normalizePhone(dest) || dest;
-  const action = `${BASE}/api/u65/status?u65=${u65Id}`;
+  const action = `${BASE}/api/u65/status?u65=${u65Id}${billable ? "" : "&bill=0"}`;
   await db.call.update({ where: { id: callId }, data: { forwardedTo: num, status: "transferring", disposition: "u65" } }).catch(() => {});
   const numberEl = s.callWhisper ? `<Number url="${BASE}/api/calls/whisper">${num}</Number>` : `<Number>${num}</Number>`;
   return `<Dial timeout="30" callerId="${s.raw["tollFreeCallerId"] || "+18006334427"}" record="record-from-answer-dual" action="${action}">${numberEl}</Dial>`;
@@ -155,10 +155,17 @@ export async function POST(req: NextRequest) {
     }
 
     if (u65Eligible && !withinHours) {
-      // Log the after-hours U65 call for the report; default mode = regular flow (fall through).
-      await db.u65Call.create({
-        data: { callId: call.id, source: "ai_633", fromNumber: call.fromNumber, name: lead?.name || "", state: call.state, u65: true, afterHours: true, answer: "after-hours · regular flow" },
-      }).catch(() => {});
+      const useBackup = cfg.afterHoursMode === "backup" && !!cfg.backupNumber;
+      const rec = await db.u65Call.create({
+        data: { callId: call.id, source: "ai_633", fromNumber: call.fromNumber, name: lead?.name || "", state: call.state, u65: true, afterHours: true, forwardedTo: useBackup ? cfg.backupNumber : "", answer: useBackup ? "after-hours · backup" : "after-hours · regular flow" },
+      }).catch(() => null);
+      if (useBackup && rec) {
+        const line = "Thanks for calling. Let me connect you now. One moment.";
+        dialogue.push({ role: "assistant", text: line, at: nowISO() });
+        await db.call.update({ where: { id: call.id }, data: { transcript: JSON.stringify(dialogue) } }).catch(() => {});
+        return xml(`<Say voice="${agent.voice}">${esc(line)}</Say>${await u65Transfer(call.id, rec.id, cfg.backupNumber, false)}`);
+      }
+      // regular mode (or backup unset / create failed) → fall through to the normal flow below.
     }
 
     const intro = `${age ? `Thank you. That makes you about ${age}. ` : "Thank you. "}Okay${fn ? " " + fn : ""}, how can I help you today?`;

@@ -69,7 +69,8 @@ export async function fetchRingbaCallLogs(opts: {
   }).catch(() => null);
   if (!res || !res.ok) return [];
   const json = await res.json().catch(() => null);
-  const records: Record<string, unknown>[] = json?.report?.records || json?.records || [];
+  const rawRecords = json?.report?.records ?? json?.records;
+  const records: Record<string, unknown>[] = Array.isArray(rawRecords) ? rawRecords : [];
   return records.map((r) => ({
     callId: String(r.inboundCallId ?? r.callId ?? ""),
     inboundPhone: String(r.inboundPhoneNumber ?? ""),

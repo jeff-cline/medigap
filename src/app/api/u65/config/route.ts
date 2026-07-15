@@ -6,7 +6,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const patch = await req.json().catch(() => ({}));
+  const raw = await req.json().catch(() => ({}));
+  const patch = raw && typeof raw === "object" ? raw : {};
   const saved = await saveU65Config(patch);
   return NextResponse.json(saved);
 }
