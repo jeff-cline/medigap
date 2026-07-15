@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { routeCall, getSettings } from "@/lib/logic";
 import { normalizePhone } from "@/lib/sms";
 import { getVoiceAgent, aiReply, esc, getIntake, firstName, ageFromSpeech, detectMoneyWord, normalizeDob, normalizeDobAI, cleanPersonName, ChatMsg } from "@/lib/voice";
+import { loadU65Config } from "@/lib/u65-store";
+import { isWithinHours, isStateEnabled, matchesU65Intent } from "@/lib/u65";
 
 const BASE = "https://medigap.plus";
 function xml(body: string) {
@@ -49,6 +51,17 @@ async function transferMoneyWord(callId: string, voice: string, mw: { id: string
   return `<Dial timeout="25" callerId="${s.raw["tollFreeCallerId"] || "+18006334427"}" record="record-from-answer-dual" action="${BASE}/api/calls/status">${numberEl}</Dial>`;
 }
 
+// U65 hot transfer: bridge the caller straight to the buyer's SET number and record
+// a U65Call whose status callback captures the 121s billable clock.
+async function u65Transfer(callId: string, u65Id: string, voice: string, dest: string) {
+  const s = await getSettings();
+  const num = normalizePhone(dest) || dest;
+  const action = `${BASE}/api/u65/status?u65=${u65Id}`;
+  await db.call.update({ where: { id: callId }, data: { forwardedTo: num, status: "transferring", disposition: "u65" } }).catch(() => {});
+  const numberEl = s.callWhisper ? `<Number url="${BASE}/api/calls/whisper">${num}</Number>` : `<Number>${num}</Number>`;
+  return `<Dial timeout="30" callerId="${s.raw["tollFreeCallerId"] || "+18006334427"}" record="record-from-answer-dual" action="${action}">${numberEl}</Dial>`;
+}
+
 export async function POST(req: NextRequest) {
   const url = new URL(req.url);
   const callId = url.searchParams.get("callId") || "";
@@ -67,8 +80,15 @@ export async function POST(req: NextRequest) {
 
   // No speech captured (silence/timeout) → re-prompt the same step.
   if (!speech) {
-    const action = phase === "intake" ? `${BASE}/api/voice/step?callId=${call.id}&phase=intake&idx=${idx}` : `${BASE}/api/voice/step?callId=${call.id}&phase=open&turn=${turn}`;
-    const line = phase === "intake" ? (intake[idx]?.ask || "Could you repeat that?") : "Sorry, I didn't catch that. How can I help you?";
+    const u65Id = url.searchParams.get("u65") || "";
+    const action =
+      phase === "intake" ? `${BASE}/api/voice/step?callId=${call.id}&phase=intake&idx=${idx}`
+      : phase === "u65" ? `${BASE}/api/voice/step?callId=${call.id}&phase=u65&u65=${u65Id}`
+      : `${BASE}/api/voice/step?callId=${call.id}&phase=open&turn=${turn}`;
+    const line =
+      phase === "intake" ? (intake[idx]?.ask || "Could you repeat that?")
+      : phase === "u65" ? "Sorry, I didn't catch that. Are you looking for private or individual health insurance?"
+      : "Sorry, I didn't catch that. How can I help you?";
     return xml(sayGather(action, agent.voice, line));
   }
 
@@ -111,14 +131,57 @@ export async function POST(req: NextRequest) {
       await db.call.update({ where: { id: call.id }, data: { transcript: JSON.stringify(dialogue) } }).catch(() => {});
       return xml(sayGather(action, agent.voice, next.ask));
     }
-    // Intake complete → age readback + open question.
+    // Intake complete → decide U65 vs normal open flow.
     const lead = call.leadId ? await db.lead.findUnique({ where: { id: call.leadId } }) : null;
     const fn = firstName(lead?.name || "");
     const age = ageFromSpeech(lead?.dob || speech);
+    const cfg = await loadU65Config();
+    const u65Eligible = age !== null && age < 65 && isStateEnabled(cfg, call.state);
+    const withinHours = isWithinHours(cfg, Date.now());
+
+    if (u65Eligible && withinHours) {
+      // Create the U65Call now; the phase=u65 turn fills in the answer + routes.
+      const rec = await db.u65Call.create({
+        data: { callId: call.id, source: "ai_633", fromNumber: call.fromNumber, name: lead?.name || "", state: call.state, u65: true, forwardedTo: cfg.setNumber },
+      });
+      const ask = `Thank you${fn ? " " + fn : ""}. Are you looking for private or individual health insurance?`;
+      const action = `${BASE}/api/voice/step?callId=${call.id}&phase=u65&u65=${rec.id}`;
+      dialogue.push({ role: "assistant", text: ask, at: nowISO() });
+      await db.call.update({ where: { id: call.id }, data: { transcript: JSON.stringify(dialogue), status: "in-progress" } }).catch(() => {});
+      return xml(sayGather(action, agent.voice, ask));
+    }
+
+    if (u65Eligible && !withinHours) {
+      // Log the after-hours U65 call for the report; default mode = regular flow (fall through).
+      await db.u65Call.create({
+        data: { callId: call.id, source: "ai_633", fromNumber: call.fromNumber, name: lead?.name || "", state: call.state, u65: true, afterHours: true, answer: "after-hours · regular flow" },
+      }).catch(() => {});
+    }
+
     const intro = `${age ? `Thank you. That makes you about ${age}. ` : "Thank you. "}Okay${fn ? " " + fn : ""}, how can I help you today?`;
     const action = `${BASE}/api/voice/step?callId=${call.id}&phase=open&turn=0`;
     dialogue.push({ role: "assistant", text: intro, at: nowISO() });
     await db.call.update({ where: { id: call.id }, data: { transcript: JSON.stringify(dialogue), status: "in-progress" } }).catch(() => {});
+    return xml(sayGather(action, agent.voice, intro));
+  }
+
+  // -------- U65 PHASE: buyer qualifying question --------
+  if (phase === "u65") {
+    const u65Id = url.searchParams.get("u65") || "";
+    const cfg = await loadU65Config();
+    if (matchesU65Intent(speech)) {
+      await db.u65Call.update({ where: { id: u65Id }, data: { answer: `yes · ${speech.slice(0, 60)}` } }).catch(() => {});
+      const line = "Great — let me connect you now. One moment.";
+      dialogue.push({ role: "assistant", text: line, at: nowISO() });
+      await db.call.update({ where: { id: call.id }, data: { transcript: JSON.stringify(dialogue) } }).catch(() => {});
+      return xml(`<Say voice="${agent.voice}">${esc(line)}</Say>${await u65Transfer(call.id, u65Id, agent.voice, cfg.setNumber)}`);
+    }
+    // "No" → mark it and resume the normal open flow (ping tree / auction unchanged).
+    await db.u65Call.update({ where: { id: u65Id }, data: { answer: `no · ${speech.slice(0, 60)}` } }).catch(() => {});
+    const intro = "No problem. How can I help you today?";
+    const action = `${BASE}/api/voice/step?callId=${call.id}&phase=open&turn=0`;
+    dialogue.push({ role: "assistant", text: intro, at: nowISO() });
+    await db.call.update({ where: { id: call.id }, data: { transcript: JSON.stringify(dialogue) } }).catch(() => {});
     return xml(sayGather(action, agent.voice, intro));
   }
 
