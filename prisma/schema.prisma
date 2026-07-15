@@ -1024,3 +1024,30 @@ model JvProject {
   stage              String   @default("new") // new | quoted | in_production | delivered | closed
   updatedAt          DateTime @updatedAt
 }
+
+model U65Call {
+  id             String    @id @default(cuid())
+  callId         String?   // links to Call when the AI line created one
+  source         String    @default("ai_633")  // ai_633 | direct_220
+  fromNumber     String    @default("")
+  name           String    @default("")
+  state          String    @default("")
+  u65            Boolean   @default(true)
+  answer         String    @default("")         // e.g. "yes · private", "no", "direct", "after-hours"
+  afterHours     Boolean   @default(false)
+  forwardedTo    String    @default("")
+  transferSec    Int       @default(0)          // DialCallDuration — transfer leg only
+  billable       Boolean   @default(false)      // transferSec >= 121
+  billableCents  Int       @default(0)          // 7500 when billable
+  ringbaCallId   String    @default("")
+  ringbaSec      Int       @default(0)
+  ringbaPaid     Boolean   @default(false)
+  reconciled     Boolean   @default(false)
+  reconciledAt   DateTime?
+  isTest         Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+
+  @@index([createdAt])
+  @@index([billable])
+  @@index([reconciled])
+}
