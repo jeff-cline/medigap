@@ -25,6 +25,9 @@ describe("isBillable", () => {
     expect(isBillable(121)).toBe(true);
     expect(isBillable(122)).toBe(true);
   });
+  it("bills $75 (7500 cents)", () => {
+    expect(BILLABLE_CENTS).toBe(7500);
+  });
 });
 
 describe("isStateEnabled", () => {
