@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { db } from "@/lib/db";
 import { Card, Stat, Section, Badge } from "@/components/ui";
 import { usd2, num, fmtPhone } from "@/lib/format";
@@ -63,7 +64,9 @@ export default async function U65Page() {
                 <tr key={c.id} className="border-b border-[var(--border)] last:border-0">
                   <td className="p-3 whitespace-nowrap text-xs text-[var(--muted)]">{fmt(c.createdAt)}{c.afterHours ? " · AH" : ""}</td>
                   <td className="p-3 whitespace-nowrap text-xs">{typeof c.age === "number" ? c.age : <span className="text-[var(--muted)]">—</span>}</td>
-                  <td className="p-3">{c.name || <span className="text-[var(--muted)]">{c.fromNumber ? fmtPhone(c.fromNumber) : "—"}</span>}</td>
+                  <td className="p-3">{c.callId
+                    ? <Link href={`/dashboard/calls/${c.callId}`} className="text-[var(--brand)] hover:underline" title="View AI conversation, caller info & appended data">{c.name || (c.fromNumber ? fmtPhone(c.fromNumber) : "View call")}</Link>
+                    : (c.name || <span className="text-[var(--muted)]">{c.fromNumber ? fmtPhone(c.fromNumber) : "—"}</span>)}</td>
                   <td className="p-3 text-xs">{c.source === "direct_220" ? "Direct" : "AI"}</td>
                   <td className="p-3 text-xs">{c.state || "—"}</td>
                   <td className="p-3 text-xs">{c.answer || "—"}</td>
