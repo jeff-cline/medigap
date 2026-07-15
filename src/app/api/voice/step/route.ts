@@ -53,7 +53,7 @@ async function transferMoneyWord(callId: string, voice: string, mw: { id: string
 
 // U65 hot transfer: bridge the caller straight to the buyer's SET number and record
 // a U65Call whose status callback captures the 121s billable clock.
-async function u65Transfer(callId: string, u65Id: string, voice: string, dest: string) {
+async function u65Transfer(callId: string, u65Id: string, dest: string) {
   const s = await getSettings();
   const num = normalizePhone(dest) || dest;
   const action = `${BASE}/api/u65/status?u65=${u65Id}`;
@@ -143,12 +143,15 @@ export async function POST(req: NextRequest) {
       // Create the U65Call now; the phase=u65 turn fills in the answer + routes.
       const rec = await db.u65Call.create({
         data: { callId: call.id, source: "ai_633", fromNumber: call.fromNumber, name: lead?.name || "", state: call.state, u65: true, forwardedTo: cfg.setNumber },
-      });
-      const ask = `Thank you${fn ? " " + fn : ""}. Are you looking for private or individual health insurance?`;
-      const action = `${BASE}/api/voice/step?callId=${call.id}&phase=u65&u65=${rec.id}`;
-      dialogue.push({ role: "assistant", text: ask, at: nowISO() });
-      await db.call.update({ where: { id: call.id }, data: { transcript: JSON.stringify(dialogue), status: "in-progress" } }).catch(() => {});
-      return xml(sayGather(action, agent.voice, ask));
+      }).catch(() => null);
+      if (rec) {
+        const ask = `Thank you${fn ? " " + fn : ""}. Are you looking for private or individual health insurance?`;
+        const action = `${BASE}/api/voice/step?callId=${call.id}&phase=u65&u65=${rec.id}`;
+        dialogue.push({ role: "assistant", text: ask, at: nowISO() });
+        await db.call.update({ where: { id: call.id }, data: { transcript: JSON.stringify(dialogue), status: "in-progress" } }).catch(() => {});
+        return xml(sayGather(action, agent.voice, ask));
+      }
+      // U65 row couldn't be created — fall through to the normal flow below rather than error the live call.
     }
 
     if (u65Eligible && !withinHours) {
@@ -174,7 +177,7 @@ export async function POST(req: NextRequest) {
       const line = "Great — let me connect you now. One moment.";
       dialogue.push({ role: "assistant", text: line, at: nowISO() });
       await db.call.update({ where: { id: call.id }, data: { transcript: JSON.stringify(dialogue) } }).catch(() => {});
-      return xml(`<Say voice="${agent.voice}">${esc(line)}</Say>${await u65Transfer(call.id, u65Id, agent.voice, cfg.setNumber)}`);
+      return xml(`<Say voice="${agent.voice}">${esc(line)}</Say>${await u65Transfer(call.id, u65Id, cfg.setNumber)}`);
     }
     // "No" → mark it and resume the normal open flow (ping tree / auction unchanged).
     await db.u65Call.update({ where: { id: u65Id }, data: { answer: `no · ${speech.slice(0, 60)}` } }).catch(() => {});
