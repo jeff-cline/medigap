@@ -49,6 +49,20 @@ Live Twilio call routing & whisper · Groq voice intake · real bidding auction 
 Stripe charges/ACH sweeps · Klaviyo/Zapmail sends · PredictiveData append · Google/Meta spend sync ·
 autonomous decision execution. Each page marks these with a "Wired next:" note.
 
+## U65 Call Routing
+Under-65 (pre-Medicare) callers are routed to a dedicated buyer via two paths:
+- **Direct line — (346) 220-3471:** point this Twilio number's Voice webhook ("A Call Comes In",
+  HTTP POST) at `https://medigap.plus/api/u65/direct`. No AI leg; it dials straight to the U65
+  SET number.
+- **AI line — 1-800-633-4427:** already posts to `/api/calls/inbound`. The U65 branch fires
+  automatically once a caller is age < 65, their state is enabled for U65, and the call falls
+  within configured hours — no separate webhook needed.
+- **Ringba/BrokerCalls reconciliation (optional):** to light up the paid column on
+  `/dashboard/u65`, grant the `MEDIGAP` API token read access to Campaigns + Call Logs, set
+  `ringbaCampaignId` in the U65 config, allowlist the medigap.plus server egress IP on the
+  BrokerCalls token, and set `RINGBA_API_TOKEN` in server env. Leave `RINGBA_API_TOKEN` empty to
+  disable reconciliation — the rest of the U65 flow degrades gracefully.
+
 ## Production (Postgres)
 1. In `prisma/schema.prisma` set `datasource.provider = "postgresql"`.
 2. Set `DATABASE_URL` to your Postgres URL and a strong `AUTH_SECRET`.
