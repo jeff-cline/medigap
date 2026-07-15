@@ -7,6 +7,7 @@ import CallSimulator from "@/components/CallSimulator";
 import TwilioPanel from "@/components/TwilioPanel";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/logic";
+import { ageFromSpeech } from "@/lib/voice";
 import { usd, usd2, num, TOLLFREE } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -109,6 +110,7 @@ export default async function CallsPage() {
                 <th>Zip / State</th>
                 <th className="text-right">Duration</th>
                 <th>Status</th>
+                <th>Age</th>
                 <th>Disposition</th>
                 <th>Money Word</th>
                 <th className="text-right">Price</th>
@@ -124,6 +126,7 @@ export default async function CallsPage() {
                 const isDefault = c.disposition === "default" && !qsSold;
                 const routedTo = qsSold ? "QuinStreet" : c.bidWinnerId ? (agentName.get(c.bidWinnerId) || "agent") : isDefault ? `House ${fmtPhone(c.forwardedTo)}` : "—";
                 const showAppend = hasAppended(c.lead?.appended);
+                const age = ageFromSpeech(c.lead?.dob || "");
                 return (
                   <Fragment key={c.id}>
                   <tr className={showAppend ? "[&>td]:border-b-0" : ""}>
@@ -136,6 +139,7 @@ export default async function CallsPage() {
                     <td className="text-[var(--muted)]">{[c.zip, c.state].filter(Boolean).join(" · ") || "—"}</td>
                     <td className="text-right">{mmss(c.durationSec)}</td>
                     <td><Badge tone={statusTone}>{c.status}</Badge></td>
+                    <td>{age != null ? <span className={`font-semibold ${age >= 65 ? "text-green-500" : "text-orange-500"}`}>{age}</span> : <span className="text-[var(--muted)]">—</span>}</td>
                     <td>
                       <Badge tone={qsSold ? "brand" : isDefault ? "gold" : "up"}>{qsSold ? "sold → QS" : isDefault ? "default" : "sold"}</Badge>
                       {!c.realized && !qsSold && <span className="ml-1 text-[10px] font-bold text-[var(--gold)]">UNREALIZED</span>}
@@ -157,7 +161,7 @@ export default async function CallsPage() {
                   </tr>
                   {showAppend && (
                     <tr>
-                      <td colSpan={10} className="!pt-0 !pb-2 pl-3"><AppendedStrip raw={c.lead?.appended} /></td>
+                      <td colSpan={11} className="!pt-0 !pb-2 pl-3"><AppendedStrip raw={c.lead?.appended} /></td>
                     </tr>
                   )}
                   </Fragment>
@@ -165,7 +169,7 @@ export default async function CallsPage() {
               })}
               {calls.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="text-center text-[var(--muted)] py-8">
+                  <td colSpan={11} className="text-center text-[var(--muted)] py-8">
                     No calls yet. Live calls to {TOLLFREE} appear here the moment Twilio is connected — or fire a simulated inbound above.
                   </td>
                 </tr>
