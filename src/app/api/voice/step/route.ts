@@ -58,7 +58,9 @@ async function u65Transfer(callId: string, u65Id: string, dest: string, billable
   const num = normalizePhone(dest) || dest;
   const action = `${BASE}/api/u65/status?u65=${u65Id}${billable ? "" : "&bill=0"}`;
   await db.call.update({ where: { id: callId }, data: { forwardedTo: num, status: "transferring", disposition: "u65" } }).catch(() => {});
-  const numberEl = s.callWhisper ? `<Number url="${BASE}/api/calls/whisper">${num}</Number>` : `<Number>${num}</Number>`;
+  // No whisper on U65 buyer transfers — the buyer (e.g. a Ringba/BrokerCalls target) takes the caller
+  // directly; the call-whisper is only for the internal agent auction and was causing answer-then-drop.
+  const numberEl = `<Number>${num}</Number>`;
   return `<Dial timeout="30" callerId="${s.raw["tollFreeCallerId"] || "+18006334427"}" record="record-from-answer-dual" action="${action}">${numberEl}</Dial>`;
 }
 
