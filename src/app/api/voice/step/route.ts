@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
     if (u65Eligible && withinHours) {
       // Create the U65Call now; the phase=u65 turn fills in the answer + routes.
       const rec = await db.u65Call.create({
-        data: { callId: call.id, source: "ai_633", fromNumber: call.fromNumber, name: lead?.name || "", state: call.state, u65: true, forwardedTo: cfg.setNumber },
+        data: { callId: call.id, source: "ai_633", fromNumber: call.fromNumber, name: lead?.name || "", state: call.state, u65: true, age, forwardedTo: cfg.setNumber },
       }).catch(() => null);
       if (rec) {
         const ask = `Thank you${fn ? " " + fn : ""}. Are you looking for private or individual health insurance?`;
@@ -157,7 +157,7 @@ export async function POST(req: NextRequest) {
     if (u65Eligible && !withinHours) {
       const useBackup = cfg.afterHoursMode === "backup" && !!cfg.backupNumber;
       const rec = await db.u65Call.create({
-        data: { callId: call.id, source: "ai_633", fromNumber: call.fromNumber, name: lead?.name || "", state: call.state, u65: true, afterHours: true, forwardedTo: useBackup ? cfg.backupNumber : "", answer: useBackup ? "after-hours · backup" : "after-hours · regular flow" },
+        data: { callId: call.id, source: "ai_633", fromNumber: call.fromNumber, name: lead?.name || "", state: call.state, u65: true, age, afterHours: true, forwardedTo: useBackup ? cfg.backupNumber : "", answer: useBackup ? "after-hours · backup" : "after-hours · regular flow" },
       }).catch(() => null);
       if (useBackup && rec) {
         const line = "Thanks for calling. Let me connect you now. One moment.";

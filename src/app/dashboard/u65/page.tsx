@@ -48,6 +48,7 @@ export default async function U65Page() {
             <thead>
               <tr className="text-[10px] uppercase tracking-wide text-[var(--muted)] border-b border-[var(--border)]">
                 <th className="text-left p-3">When (UTC-6)</th>
+                <th className="text-left p-3">Age</th>
                 <th className="text-left p-3">Name</th>
                 <th className="text-left p-3">Source</th>
                 <th className="text-left p-3">State</th>
@@ -61,6 +62,7 @@ export default async function U65Page() {
               {calls.map((c) => (
                 <tr key={c.id} className="border-b border-[var(--border)] last:border-0">
                   <td className="p-3 whitespace-nowrap text-xs text-[var(--muted)]">{fmt(c.createdAt)}{c.afterHours ? " · AH" : ""}</td>
+                  <td className="p-3 whitespace-nowrap text-xs">{typeof c.age === "number" ? c.age : <span className="text-[var(--muted)]">—</span>}</td>
                   <td className="p-3">{c.name || <span className="text-[var(--muted)]">{c.fromNumber ? fmtPhone(c.fromNumber) : "—"}</span>}</td>
                   <td className="p-3 text-xs">{c.source === "direct_220" ? "Direct" : "AI"}</td>
                   <td className="p-3 text-xs">{c.state || "—"}</td>
@@ -70,7 +72,7 @@ export default async function U65Page() {
                   <td className="p-3">{c.reconciled ? <Badge tone={c.ringbaPaid ? "brand" : "default"}>{c.ringbaPaid ? "paid" : "no"}</Badge> : <span className="text-[var(--muted)] text-xs">—</span>}</td>
                 </tr>
               ))}
-              {calls.length === 0 && <tr><td colSpan={8} className="p-6 text-center text-[var(--muted)]">No U65 calls this week yet.</td></tr>}
+              {calls.length === 0 && <tr><td colSpan={9} className="p-6 text-center text-[var(--muted)]">No U65 calls this week yet.</td></tr>}
             </tbody>
           </table>
         </Card>

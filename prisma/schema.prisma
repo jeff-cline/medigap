@@ -1033,6 +1033,7 @@ model U65Call {
   name           String    @default("")
   state          String    @default("")
   u65            Boolean   @default(true)
+  age            Int?                            // caller age from intake DOB (AI line); null for direct line
   answer         String    @default("")         // e.g. "yes · private", "no", "direct", "after-hours"
   afterHours     Boolean   @default(false)
   forwardedTo    String    @default("")
