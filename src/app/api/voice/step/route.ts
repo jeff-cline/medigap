@@ -55,13 +55,17 @@ async function transferMoneyWord(callId: string, voice: string, mw: { id: string
 // a U65Call whose status callback captures the 121s billable clock.
 async function u65Transfer(callId: string, u65Id: string, dest: string, billable = true) {
   const s = await getSettings();
+  const call = await db.call.findUnique({ where: { id: callId }, select: { fromNumber: true } });
   const num = normalizePhone(dest) || dest;
+  // Pass the ACTUAL CUSTOMER's number as the caller ID so the buyer (Ringba/BrokerCalls) sees who's
+  // calling and accepts/tracks the call — sending the main 1-800 line got the calls rejected/dropped.
+  // Fall back to the toll-free only if the caller withheld their number.
+  const callerId = normalizePhone(call?.fromNumber || "") || s.raw["tollFreeCallerId"] || "+18006334427";
   const action = `${BASE}/api/u65/status?u65=${u65Id}${billable ? "" : "&bill=0"}`;
   await db.call.update({ where: { id: callId }, data: { forwardedTo: num, status: "transferring", disposition: "u65" } }).catch(() => {});
-  // No whisper on U65 buyer transfers — the buyer (e.g. a Ringba/BrokerCalls target) takes the caller
-  // directly; the call-whisper is only for the internal agent auction and was causing answer-then-drop.
+  // No whisper on U65 buyer transfers — the buyer takes the caller directly.
   const numberEl = `<Number>${num}</Number>`;
-  return `<Dial timeout="30" callerId="${s.raw["tollFreeCallerId"] || "+18006334427"}" record="record-from-answer-dual" action="${action}">${numberEl}</Dial>`;
+  return `<Dial timeout="30" callerId="${callerId}" record="record-from-answer-dual" action="${action}">${numberEl}</Dial>`;
 }
 
 export async function POST(req: NextRequest) {

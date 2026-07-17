@@ -6,6 +6,7 @@ export type DayKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 export type U65Config = {
   setNumber: string;
   backupNumber: string;
+  directNumber: string;
   afterHoursMode: "regular" | "backup";
   hours: { start: string; end: string; days: Record<DayKey, boolean> };
   timezone: string; // informational label; the offset is fixed below
@@ -35,6 +36,7 @@ export function defaultU65Config(): U65Config {
   return {
     setNumber: "+13809790146",
     backupNumber: "+19728006670",
+    directNumber: "+13462203471",
     afterHoursMode: "regular",
     hours: { start: "08:30", end: "18:30", days },
     timezone: "UTC-6",

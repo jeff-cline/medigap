@@ -33,5 +33,8 @@ export async function POST(req: NextRequest) {
   const num = normalizePhone(dest) || dest;
   const action = rec ? `${BASE}/api/u65/status?u65=${rec.id}${billable ? "" : "&bill=0"}` : "";
   const actionAttr = action ? ` action="${action}"` : "";
-  return xml(`<Dial timeout="30" record="record-from-answer-dual"${actionAttr}><Number>${num}</Number></Dial>`);
+  // Pass the caller's own number as caller ID so the buyer sees the real customer, not the direct line.
+  const cid = normalizePhone(from) || from;
+  const cidAttr = cid ? ` callerId="${cid}"` : "";
+  return xml(`<Dial timeout="30"${cidAttr} record="record-from-answer-dual"${actionAttr}><Number>${num}</Number></Dial>`);
 }

@@ -39,6 +39,32 @@ export default async function U65Page() {
         <Stat label="Actually paid (Ringba)" value={ringbaConnected ? usd2(paidCents) : "—"} sub={ringbaConnected ? "reconciled" : "connect Ringba"} tone={ringbaConnected ? "up" : "down"} />
       </div>
 
+      <Card className="mb-6 border-l-4 border-[var(--brand)]">
+        <div className="text-sm font-semibold mb-2">📞 Test lines — call these to test the flow</div>
+        <div className="grid gap-3 sm:grid-cols-3 text-sm">
+          <div>
+            <div className="text-[10px] uppercase tracking-wide text-[var(--muted)]">AI line (1-800-MEDIGAP)</div>
+            <div className="font-semibold">{fmtPhone("+18006334427")}</div>
+            <div className="text-xs text-[var(--muted)]">intake → asks the U65 question → transfers</div>
+          </div>
+          <div>
+            <div className="text-[10px] uppercase tracking-wide text-[var(--muted)]">Direct line (no AI)</div>
+            <div className="font-semibold text-[var(--brand)]">{fmtPhone(cfg.directNumber)}</div>
+            <div className="text-xs text-[var(--muted)]">straight to the SET number</div>
+          </div>
+          <div>
+            <div className="text-[10px] uppercase tracking-wide text-[var(--muted)]">SET number (buyer)</div>
+            <div className="font-semibold">{fmtPhone(cfg.setNumber)}</div>
+            <div className="text-xs text-[var(--muted)]">where qualified calls land</div>
+          </div>
+        </div>
+        <p className="text-xs text-[var(--muted)] mt-3">
+          Caller ID now passes the <b className="text-[var(--text)]">customer&apos;s number</b> to the buyer (not the 1-800 line).
+          To activate the direct line, point {fmtPhone(cfg.directNumber)}&apos;s Twilio voice webhook (HTTP POST) at{" "}
+          <code className="text-[var(--brand2)]">https://medigap.plus/api/u65/direct</code>.
+        </p>
+      </Card>
+
       <Section title="Controls" desc="States, destination number, hours (UTC-6), after-hours behavior, and Ringba sync.">
         <U65Controls initial={cfg} />
       </Section>
