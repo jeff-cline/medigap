@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { loadU65Config } from "@/lib/u65-store";
 import { isWithinHours } from "@/lib/u65";
 import { normalizePhone } from "@/lib/sms";
+import { matchFireCallbackBackground } from "@/lib/fire-engine";
 
 const BASE = "https://medigap.plus";
 const xml = (body: string) =>
@@ -29,6 +30,7 @@ export async function POST(req: NextRequest) {
       answer: afterHours ? "direct · after-hours" : "direct", afterHours, forwardedTo: dest,
     },
   }).catch(() => null);
+  matchFireCallbackBackground(from, ""); // Fire conversion: an emailed contact calling the direct line counts too
 
   const num = normalizePhone(dest) || dest;
   const action = rec ? `${BASE}/api/u65/status?u65=${rec.id}${billable ? "" : "&bill=0"}` : "";
