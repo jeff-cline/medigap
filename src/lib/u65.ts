@@ -27,7 +27,14 @@ export const US_STATES = [
 ];
 
 const DAY_KEYS: DayKey[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-const U65_MONEY_WORDS = ["private", "health insurance", "medical insurance", "individual"];
+// U65 "yes" money words — individual + the private/health/medical/healthcare family and their variants.
+// Uses substring matching, so short tokens catch the longer phrases (e.g. "healthcare" catches
+// "private healthcare insurance"; "health insurance" catches "individual health insurance").
+const U65_MONEY_WORDS = [
+  "individual", "private", "private insurance",
+  "health insurance", "healthcare", "health care", "health plan",
+  "medical insurance", "medical plan",
+];
 
 export function defaultU65Config(): U65Config {
   const states: Record<string, boolean> = {};
