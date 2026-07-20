@@ -52,12 +52,17 @@ export default async function U65Page({ searchParams }: { searchParams: Promise<
 
   return (
     <>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">🎯 U65 — Under-65 Private Health Calls</h1>
-        <p className="text-sm text-[var(--muted)] max-w-3xl">
-          Calls transfer to the SET number; a transfer leg of <b>≥121 seconds</b> is billable at <b>$75</b>.
-          &ldquo;Actually paid&rdquo; reconciles against Ringba/BrokerCalls. Use the date picker below to view any range.
-        </p>
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">🎯 U65 — Under-65 Private Health Calls</h1>
+          <p className="text-sm text-[var(--muted)] max-w-3xl">
+            Calls transfer to the SET number; a transfer leg of <b>≥121 seconds</b> is billable at <b>$75</b>.
+            &ldquo;Actually paid&rdquo; reconciles against Ringba/BrokerCalls. Use the date picker below to view any range.
+          </p>
+        </div>
+        <Link href="/fire" className="shrink-0 rounded-xl bg-gradient-to-r from-[#14b8a6] to-[#0d9488] px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-[#0d9488]/30 hover:brightness-110">
+          ⚡ Activate Predictive Data
+        </Link>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4 mb-6">

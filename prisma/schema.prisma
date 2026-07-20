@@ -1052,3 +1052,72 @@ model U65Call {
   @@index([billable])
   @@index([reconciled])
 }
+
+// ===== /fire — Predictive Data Outbound Email Engine =====
+model EmailList {
+  id        String   @id @default(cuid())
+  name      String
+  source    String   @default("predictive-data")
+  fileName  String   @default("")
+  total     Int      @default(0)
+  sendable  Int      @default(0)
+  createdAt DateTime @default(now())
+  contacts  EmailContact[]
+}
+
+model EmailContact {
+  id        String    @id @default(cuid())
+  listId    String
+  list      EmailList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  email     String    @default("")
+  business  String    @default("")
+  personal  String    @default("")
+  firstName String    @default("")
+  lastName  String    @default("")
+  company   String    @default("")
+  raw       String    @default("{}")
+  createdAt DateTime  @default(now())
+  @@index([listId])
+}
+
+model EmailCampaign {
+  id         String    @id @default(cuid())
+  name       String
+  listId     String
+  emailField String    @default("business") // business | personal | personal_business
+  perHour    Int       @default(20)
+  tracking   Boolean   @default(false)       // open pixel (HTML mode only)
+  status     String    @default("draft")     // draft | running | paused | done
+  createdAt  DateTime  @default(now())
+  startedAt  DateTime?
+  steps      EmailSequenceStep[]
+}
+
+model EmailSequenceStep {
+  id         String        @id @default(cuid())
+  campaignId String
+  campaign   EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  order      Int           @default(0)
+  dayOffset  Int           @default(0)       // Day 1 = 0
+  mode       String        @default("text")  // text | html
+  subject    String        @default("")
+  body       String        @default("")
+  html       String        @default("")
+  templateId String?
+  @@index([campaignId, order])
+}
+
+model CampaignRecipient {
+  id         String    @id @default(cuid())
+  campaignId String
+  contactId  String
+  email      String
+  firstName  String    @default("")
+  status     String    @default("pending") // pending | in_progress | done | bounced | unsub | no_email
+  stepIndex  Int       @default(0)
+  nextDueAt  DateTime  @default(now())
+  lastSentAt DateTime?
+  createdAt  DateTime  @default(now())
+  @@index([campaignId, status, nextDueAt])
+  @@unique([campaignId, contactId])
+}
