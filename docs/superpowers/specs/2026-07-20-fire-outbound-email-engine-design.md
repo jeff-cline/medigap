@@ -18,7 +18,9 @@ left / pace** on a dashboard. This is the "full outbound funnel starter" for the
 - **Recipient field:** default **`business_email`**; per-campaign selectable (`business` | `personal` | `personal→business fallback`).
 - **Per-mailbox daily cap:** **30/mailbox/day** (a Setting, adjustable). Total daily capacity = warm mailboxes × cap.
 - **Scope:** build the **full system including sequences** now.
-- **Body:** **text-first.** Emails are sent multipart (plain-text body + a minimal HTML copy carrying the open pixel). Per-campaign **"open tracking" toggle, default ON**; OFF sends pure text (max deliverability, no open metric).
+- **Body:** two modes per campaign/step — **Text** (default) and **HTML**. You can do both; pick per campaign.
+  - **Text mode (default):** pure plain-text, **no tracking pixel** → best inbox delivery, **no open tracking** (accepted trade-off: inbox > tracking).
+  - **HTML mode:** an HTML body with an optional **open-tracking pixel** (per-campaign toggle). Use when you want formatting and/or opens.
 
 ## 3. Reused infrastructure (already built — do not rebuild)
 | Piece | Where | Use |
@@ -63,7 +65,7 @@ model EmailCampaign {
   listId     String
   emailField String   @default("business")   // business | personal | personal_business
   perHour    Int      @default(20)            // global send pace
-  tracking   Boolean  @default(true)          // open-tracking pixel on/off
+  tracking   Boolean  @default(false)         // open pixel (HTML mode only); text mode never tracks
   status     String   @default("draft")       // draft | running | paused | done
   createdAt  DateTime @default(now())
   startedAt  DateTime?
@@ -76,8 +78,10 @@ model EmailSequenceStep {
   campaign   EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   order      Int     @default(0)   // 0 = Day 1
   dayOffset  Int     @default(0)   // days after enrollment (Day 1 = 0)
+  mode       String  @default("text") // text | html
   subject    String  @default("")
-  body       String  @default("")  // text; supports {{first_name}} {{last_name}} {{company}}
+  body       String  @default("")  // plain-text body (mode=text); supports {{first_name}} {{last_name}} {{company}}
+  html       String  @default("")  // HTML body (mode=html); merge tokens supported
   templateId String?               // optional link to a saved EmailTemplate
   @@index([campaignId, order])
 }
@@ -109,8 +113,9 @@ model CampaignRecipient {
 - Same format every upload; a re-upload of the same data is idempotent per (list, email).
 
 ## 6. Templates + merge
-- Text subject + body editor on `/fire`. Merge tokens: `{{first_name}}`, `{{last_name}}`, `{{company}}` (blank if missing; sentences degrade gracefully).
-- **Default templates:** a "Templates" button/editor to save/reuse named `EmailTemplate`s; a sequence step can start from one.
+- Per step, a **mode** (Text or HTML). **Text** = subject + plain-text body editor (default, no tracking). **HTML** = subject + HTML body editor (formatting and/or open tracking).
+- Merge tokens in either mode: `{{first_name}}`, `{{last_name}}`, `{{company}}` (blank if missing; sentences degrade gracefully).
+- **Default templates:** a "Templates" editor to save/reuse named `EmailTemplate`s (each can hold a subject + text and/or HTML); a sequence step can load from one.
 
 ## 7. Sequences (Day 1 + follow-ups)
 - A campaign has ordered steps: **Day 1** (dayOffset 0) + **"add another day"** (Day N, arbitrary offsets), each with its own subject/body.
@@ -130,13 +135,16 @@ Protected by an env cron key (`FIRE_CRON_KEY`). Each tick:
 1. Load running campaigns + the warm mailbox pool + today's per-mailbox counts.
 2. **Hourly budget** per campaign = `perHour`; **tick budget** = `ceil(perHour * 5/60)` (with an hour-window ledger so we never exceed perHour/hour).
 3. Select due `CampaignRecipient`s (`status in pending/in_progress`, `nextDueAt <= now`), oldest first, up to the tick budget **and** remaining total mailbox capacity.
-4. For each: pick `nextMailbox()` (skipping mailboxes at their daily cap), render the current step (merge fields), `sendEmail(zapmail)` as multipart (text + pixel HTML if tracking on), log (`batch = campaignId`), advance the recipient (§7).
+4. For each: pick `nextMailbox()` (skipping mailboxes at their daily cap), render the current step (merge fields).
+   - **Text mode:** send **pure plain-text only** (no HTML part, no pixel) — maximum inbox placement.
+   - **HTML mode:** send HTML (+ a plain-text alternative); if the campaign's tracking toggle is on, inject the `openToken` open pixel.
+   Then log (`batch = campaignId`), advance the recipient (§7).
 5. On send error/bounce → mark recipient `bounced`, keep going.
 6. Emit capacity alert if warranted (§8).
 Idempotent and safe to run frequently; it simply does nothing when nothing is due.
 
 ## 10. `/fire` dashboard (auth-gated, mirrors dashboard chrome)
-- **KPIs:** Sent · **Opened + open rate** · Left to send · **Pace/day** (rolling) + **projected finish date**.
+- **KPIs:** Sent · **Opened + open rate** (HTML-tracked campaigns only; text campaigns show "tracking off — inbox-first") · Left to send · **Pace/day** (rolling) + **projected finish date**.
 - **Capacity strip:** warm mailboxes · daily capacity · used today · "add mailboxes" alert if short.
 - **Campaigns list:** name, list, status, sent/left, pace; start/pause; drill-in.
 - **Compose/sequence builder:** name, pick list, pick email field, per-hour, tracking toggle; **Day 1 + "add another day"** steps each with subject/body (text) and optional "load default template".
@@ -150,7 +158,7 @@ Idempotent and safe to run frequently; it simply does nothing when nothing is du
 - Zapmail API key + mailbox pool already configured in the `zapmail` Integration (verify count via `verifyZapmailApi`).
 
 ## 12. Non-goals (now)
-- No rich **HTML editor** (text-first; a minimal HTML wrapper is generated only for the tracking pixel).
+- No WYSIWYG HTML *builder* — HTML mode is a raw-HTML editor; text mode is plain-text. Text-first for deliverability.
 - No list-segmentation/filtering UI (send to the whole list minus no-email/unsub).
 - No A/B testing, no reply-content parsing beyond "a reply stops the sequence."
 
