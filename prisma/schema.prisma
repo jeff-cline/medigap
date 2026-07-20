@@ -1088,6 +1088,9 @@ model EmailCampaign {
   perHour    Int       @default(20)
   tracking   Boolean   @default(false)       // open pixel (HTML mode only)
   status     String    @default("draft")     // draft | running | paused | done
+  sendStart  String    @default("09:00")     // send-window start (UTC-6 / CST)
+  sendEnd    String    @default("17:00")      // send-window end
+  sendDays   String    @default("mon,tue,wed,thu,fri") // CSV of enabled weekdays
   createdAt  DateTime  @default(now())
   startedAt  DateTime?
   steps      EmailSequenceStep[]
