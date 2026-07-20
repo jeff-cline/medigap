@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   // Insert in chunks (SQLite/Postgres param limits).
   const rows = unique.map((c) => ({
     listId: list.id, email: "", business: c.business, personal: c.personal,
-    firstName: c.firstName, lastName: c.lastName, company: c.company, raw: JSON.stringify(c.raw),
+    firstName: c.firstName, lastName: c.lastName, company: c.company, phones: c.phones.join(","), raw: JSON.stringify(c.raw),
   }));
   for (let i = 0; i < rows.length; i += 500) {
     await db.emailContact.createMany({ data: rows.slice(i, i + 500) });

@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 import { randomBytes } from "crypto";
 import { db } from "@/lib/db";
 import { getZapConfig, type ZapMailbox } from "@/lib/zapmail";
-import { pickEmail, mergeFields, type EmailField } from "@/lib/fire";
+import { pickEmail, mergeFields, normPhone10, type EmailField } from "@/lib/fire";
 
 const BASE = "https://medigap.plus";
 const TICK_MIN = 5; // the cron cadence
@@ -153,4 +153,26 @@ async function maybeAlertCapacity(now: number, mailboxes: number, cap: number) {
   const msg = `Fire capacity: ${pending} emails are due but your ${mailboxes} warm mailboxes only cover ${dailyCapacity}/day (${cap}/mailbox). Add mailboxes in Zapmail (zapmail.io) to keep pace.`;
   const { sendEmail } = await import("@/lib/email");
   await sendEmail("jeff.cline@me.com", "Fire: add mailboxes (capacity reached)", `<p>${msg}</p>`, "zapmail", { text: msg }).catch(() => {});
+}
+
+// ===== Conversion tracking: match an inbound call to an emailed contact (turn them green) =====
+// When a call arrives, if its number matches the phone of anyone we emailed, mark that
+// recipient calledBackAt + link the callId (so we can open the voice-AI transcript).
+export async function matchFireCallback(fromNumber: string, callId: string): Promise<number> {
+  const p = normPhone10(fromNumber);
+  if (!p) return 0;
+  const contacts = await db.emailContact.findMany({ where: { phones: { contains: p } }, select: { id: true } });
+  if (!contacts.length) return 0;
+  const recips = await db.campaignRecipient.findMany({
+    where: { contactId: { in: contacts.map((c) => c.id) }, lastSentAt: { not: null }, calledBackAt: null },
+    select: { id: true },
+  });
+  for (const r of recips) {
+    await db.campaignRecipient.update({ where: { id: r.id }, data: { calledBackAt: new Date(), callId } }).catch(() => {});
+  }
+  return recips.length;
+}
+
+export function matchFireCallbackBackground(fromNumber: string, callId: string) {
+  matchFireCallback(fromNumber, callId).catch(() => {});
 }

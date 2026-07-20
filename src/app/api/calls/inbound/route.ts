@@ -4,6 +4,7 @@ import { routeCall, getSettings } from "@/lib/logic";
 import { normalizePhone } from "@/lib/sms";
 import { getVoiceAgent, getAIProvider, esc } from "@/lib/voice";
 import { appendLeadBackground } from "@/lib/predictivedata";
+import { matchFireCallbackBackground } from "@/lib/fire-engine";
 
 // Twilio Voice webhook for 1-800-MEDIGAP → https://medigap.plus/api/calls/inbound
 const BASE = "https://medigap.plus";
@@ -26,6 +27,7 @@ export async function POST(req: NextRequest) {
   }
 
   const call = await db.call.create({ data: { leadId: lead?.id, zip, state, status: "in-progress", source: "house", providerSid: callSid, fromNumber: from } });
+  matchFireCallbackBackground(from, call.id); // Fire conversion: did an emailed contact just call back? → turn them green
 
   const agent = await getVoiceAgent();
   const ai = await getAIProvider();

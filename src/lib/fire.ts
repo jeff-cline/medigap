@@ -37,7 +37,14 @@ export type ParsedContact = {
   firstName: string;
   lastName: string;
   company: string;
+  phones: string[]; // normalized last-10 digit phones (personal / mobile / direct)
   raw: Record<string, string>;
+};
+
+// Normalize a phone to its last 10 digits (US), or "" if not a plausible number.
+export const normPhone10 = (s: string) => {
+  const d = (s || "").replace(/\D/g, "").slice(-10);
+  return d.length === 10 ? d : "";
 };
 
 // Minimal robust CSV parser: handles quoted fields, embedded commas/quotes ("" escape),
@@ -79,6 +86,7 @@ export function extractContacts(text: string): { total: number; contacts: Parsed
   const idx = (name: string) => header.indexOf(name);
   const iFirst = idx("first_name"), iLast = idx("last_name");
   const iPersonal = idx("personal_emails"), iBiz = idx("business_email"), iCompany = idx("company_name");
+  const iPhone = idx("personal_phone"), iMobile = idx("mobile_phone"), iDirect = idx("direct_number");
   const contacts: ParsedContact[] = [];
   for (let r = 1; r < rows.length; r++) {
     const cells = rows[r];
@@ -86,6 +94,7 @@ export function extractContacts(text: string): { total: number; contacts: Parsed
     header.forEach((h, j) => { raw[h] = cells[j] ?? ""; });
     const personal = firstEmail(cells[iPersonal] ?? "");
     const business = firstEmail(cells[iBiz] ?? "");
+    const phones = [...new Set([cells[iPhone], cells[iMobile], cells[iDirect]].map((p) => normPhone10(p ?? "")).filter(Boolean))];
     contacts.push({
       email: "",
       business: looksLikeEmail(business) ? business : "",
@@ -93,6 +102,7 @@ export function extractContacts(text: string): { total: number; contacts: Parsed
       firstName: (cells[iFirst] ?? "").trim(),
       lastName: (cells[iLast] ?? "").trim(),
       company: (cells[iCompany] ?? "").trim(),
+      phones,
       raw,
     });
   }

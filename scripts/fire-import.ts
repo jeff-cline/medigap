@@ -28,7 +28,7 @@ const prisma = new PrismaClient();
   });
   const rows = unique.map((c) => ({
     listId: list.id, email: "", business: c.business, personal: c.personal,
-    firstName: c.firstName, lastName: c.lastName, company: c.company, raw: JSON.stringify(c.raw),
+    firstName: c.firstName, lastName: c.lastName, company: c.company, phones: c.phones.join(","), raw: JSON.stringify(c.raw),
   }));
   for (let i = 0; i < rows.length; i += 500) await prisma.emailContact.createMany({ data: rows.slice(i, i + 500) });
 

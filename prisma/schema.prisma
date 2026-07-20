@@ -1075,6 +1075,7 @@ model EmailContact {
   firstName String    @default("")
   lastName  String    @default("")
   company   String    @default("")
+  phones    String    @default("")  // CSV of normalized last-10 digit phones (for inbound-call matching)
   raw       String    @default("{}")
   createdAt DateTime  @default(now())
   @@index([listId])
@@ -1120,7 +1121,10 @@ model CampaignRecipient {
   stepIndex  Int       @default(0)
   nextDueAt  DateTime  @default(now())
   lastSentAt DateTime?
+  calledBackAt DateTime? // set when an inbound call matched this emailed contact's phone (GREEN = converted)
+  callId     String?    // the matched inbound Call (to open the voice-AI transcript/recording)
   createdAt  DateTime  @default(now())
   @@index([campaignId, status, nextDueAt])
+  @@index([campaignId, calledBackAt])
   @@unique([campaignId, contactId])
 }
