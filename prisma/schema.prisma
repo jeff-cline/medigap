@@ -1252,15 +1252,18 @@ model InvestEvent {
 
 // predictivedata.org — Joint Venture leads captured from the marketing site's JOIN form.
 model JvLead {
-  id        String   @id @default(cuid())
-  firstName String   @default("")
-  lastName  String   @default("")
-  city      String   @default("")
-  state     String   @default("")
-  zip       String   @default("")
-  website   String   @default("")
-  business  String   @default("")
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  firstName  String   @default("")
+  lastName   String   @default("")
+  city       String   @default("")
+  state      String   @default("")
+  zip        String   @default("")
+  website    String   @default("")
+  business   String   @default("")
+  resellerId String?                  // attributed affiliate (Join-form submission = a "join")
+  visitorId  String   @default("")
+  createdAt  DateTime @default(now())
+  @@index([resellerId])
   @@map("jv_lead")
 }
 
@@ -1322,8 +1325,24 @@ model PdLead {
   bonusCents      Int         @default(0)    // Phase 2: computed affiliate bonus
   bonusPaid       Boolean     @default(false) // once paid, affiliate stops seeing customer
   createdAt       DateTime    @default(now())
+  notes           PdLeadNote[]
   @@index([resellerId])
   @@map("pd_lead")
+}
+
+// CRM notes / call logs on a referred lead. Written by the affiliate; visible to the
+// affiliate who owns the lead AND the God account. Every entry is timestamped.
+model PdLeadNote {
+  id         String   @id @default(cuid())
+  leadId     String
+  lead       PdLead   @relation(fields: [leadId], references: [id])
+  authorType String   @default("reseller") // reseller | god
+  authorName String   @default("")
+  kind       String   @default("note")     // note | call
+  body       String
+  createdAt  DateTime @default(now())
+  @@index([leadId])
+  @@map("pd_lead_note")
 }
 
 model PdCoupon {
