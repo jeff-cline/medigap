@@ -1123,8 +1123,217 @@ model CampaignRecipient {
   lastSentAt DateTime?
   calledBackAt DateTime? // set when an inbound call matched this emailed contact's phone (GREEN = converted)
   callId     String?    // the matched inbound Call (to open the voice-AI transcript/recording)
+  // VoiceDrip: a ringless-style voicemail drop scheduled off this recipient's email.
+  dropDueAt  DateTime?  // when the voicemail drop should fire (11:00 CST next business day by default)
+  droppedAt  DateTime?  // when the drop was actually placed
+  dropCallSid String?   // the Twilio call SID of the drop
   createdAt  DateTime  @default(now())
   @@index([campaignId, status, nextDueAt])
   @@index([campaignId, calledBackAt])
+  @@index([dropDueAt, droppedAt])
   @@unique([campaignId, contactId])
+}
+
+// VoiceDrip: one outbound ringless-style voicemail drop (Twilio AMD) or an inbound call-back.
+// priceCents is the REAL Twilio cost captured from the status callback / Call resource (COGS).
+model VoiceDrop {
+  id          String   @id @default(cuid())
+  callSid     String   @unique
+  toNumber    String   @default("")
+  fromNumber  String   @default("")
+  status      String   @default("")        // Twilio CallStatus: queued|ringing|in-progress|completed|no-answer|busy|failed
+  answeredBy  String   @default("")        // AMD result: machine_end_beep|machine_end_silence|human|fax|unknown
+  durationSec Int      @default(0)
+  priceCents  Int      @default(0)         // actual Twilio price (absolute cents)
+  priceFinal  Boolean  @default(false)     // true once Twilio's real price is in (vs 0/estimate)
+  direction   String   @default("outbound") // outbound (drop) | inbound (callback)
+  recipientId String?                      // the emailed CampaignRecipient this drop targeted
+  campaignId  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([campaignId, createdAt])
+  @@index([direction, status])
+}
+
+// ===========================================================================
+// 2X INVESTING (Lifestyle Investing) — shared with the separate 2xinvesting.com app.
+// Core owns these tables (db push runs here); the 2xinvesting app uses a
+// generate-only client against the same Postgres. Tables are invest_* mapped.
+// ===========================================================================
+model InvestOffer {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  category      String   @default("")
+  blurb         String   @default("")   // short card copy
+  description   String   @default("")   // long landing copy
+  iconGlyph     String   @default("")   // decorative glyph
+  coverClass    String   @default("c1") // gradient cover class when no image
+  featuredImage String   @default("")   // sponsor-uploaded hero (empty = gradient)
+  gallery       String   @default("[]") // JSON: portfolio image URLs
+  pdfs          String   @default("[]") // JSON: [{label,url}] pitch deck / exec summary / PPM / memorandum
+  sponsorId     String?
+  isSample      Boolean  @default(false)// seeded placeholder, retires as real offers arrive
+  priority      Int      @default(0)    // God priority (higher ranks first)
+  trending      Boolean  @default(false)// show in the homepage Trending section
+  pocket        Boolean  @default(false)// Pocket Offerings — premium member-only benefits
+  listingType   String   @default("opportunity") // opportunity (sponsor) | product (advertiser)
+  impressions   Int      @default(0)
+  clicks        Int      @default(0)
+  status        String   @default("live") // live | draft | retired
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([status, priority])
+  @@map("invest_offer")
+}
+
+model InvestLead {
+  id        String   @id @default(cuid())
+  name      String   @default("")
+  phone     String   @default("")
+  email     String   @default("")
+  business  String   @default("")
+  role      String   @default("")   // accredited | fund_manager | jv | private
+  interests String   @default("[]") // JSON: offer slugs / categories
+  offerId   String?                  // offer they expressed interest in
+  source    String   @default("intake")
+  kind      String   @default("investor") // investor | pocket | geek | discovery-tour | member-interest
+  sourcePage String  @default("")   // the page/CTA the lead signed up from
+  sponsorNote String @default("")   // the sponsor's private note on this lead
+  memberId  String?                  // the logged-in member who generated this lead (if any)
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+  @@map("invest_lead")
+}
+
+model InvestSponsor {
+  id           String   @id @default(cuid())
+  name         String   @default("")
+  email        String   @unique
+  phone        String   @default("")
+  business     String   @default("")
+  offerPitch   String   @default("")
+  passwordHash String   @default("")
+  mustReset    Boolean  @default(true)
+  status       String   @default("pending") // pending | active
+  crmType      String   @default("")   // zoho | gohighlevel | salesforce
+  crmApiKey    String   @default("")
+  crmEndpoint  String   @default("")
+  crmConnected Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  @@map("invest_sponsor")
+}
+
+// A registered Investor (Member). Logged-in members unlock private docs and generate sponsor leads.
+model InvestMember {
+  id           String   @id @default(cuid())
+  name         String   @default("")
+  email        String   @unique
+  phone        String   @default("")
+  passwordHash String   @default("")
+  role         String   @default("private") // accredited | fund_manager | jv | private
+  createdAt    DateTime @default(now())
+  @@map("invest_member")
+}
+
+// Visitor click-path tracking — one row per tracked action (pageview / offer_click / cta_click).
+model InvestEvent {
+  id        String   @id @default(cuid())
+  visitorId String   @default("")
+  type      String   @default("pageview") // pageview | offer_click | cta_click
+  page      String   @default("")
+  offerSlug String   @default("")
+  meta      String   @default("")
+  createdAt DateTime @default(now())
+  @@index([visitorId, createdAt])
+  @@index([type, createdAt])
+  @@map("invest_event")
+}
+
+// predictivedata.org — Joint Venture leads captured from the marketing site's JOIN form.
+model JvLead {
+  id        String   @id @default(cuid())
+  firstName String   @default("")
+  lastName  String   @default("")
+  city      String   @default("")
+  state     String   @default("")
+  zip       String   @default("")
+  website   String   @default("")
+  business  String   @default("")
+  createdAt DateTime @default(now())
+  @@map("jv_lead")
+}
+
+// ---------------------------------------------------------------------------
+// PredictiveData.org reseller / affiliate platform (Phase 1).
+// Resellers sign up, get a root tracking link /firstname-lastname that sets a
+// 90-day attribution cookie; any lead/subscription created within the window is
+// credited to them. God (jeff.cline@me.com) CRM + Stripe billing live in the app.
+// ---------------------------------------------------------------------------
+model PdReseller {
+  id           String   @id @default(cuid())
+  firstName    String
+  lastName     String
+  slug         String   @unique          // firstname-lastname → /slug tracking link
+  email        String   @unique
+  phone        String   @default("")
+  passHash     String
+  achName      String   @default("")     // Phase 2 payout capture (manual ACH)
+  achRouting   String   @default("")
+  achAccount   String   @default("")
+  overridePct  Int      @default(0)      // Phase 2: God-set % of monthly (e.g. 10/15)
+  oneTimeCents Int      @default(0)      // Phase 2: God-set one-time payout
+  createdAt    DateTime @default(now())
+  clicks       PdClick[]
+  leads        PdLead[]
+  @@map("pd_reseller")
+}
+
+model PdClick {
+  id         String     @id @default(cuid())
+  resellerId String
+  reseller   PdReseller @relation(fields: [resellerId], references: [id])
+  visitorId  String                        // anonymous cookie id
+  ip         String     @default("")
+  ua         String     @default("")
+  path       String     @default("/")
+  createdAt  DateTime   @default(now())
+  @@index([resellerId])
+  @@map("pd_click")
+}
+
+model PdLead {
+  id              String      @id @default(cuid())
+  name            String      @default("")
+  email           String
+  phone           String      @default("")
+  resellerId      String?                    // attributed affiliate (90-day cookie)
+  reseller        PdReseller? @relation(fields: [resellerId], references: [id])
+  visitorId       String      @default("")
+  plan            String      @default("")   // moneyword | regional | national
+  status          String      @default("lead") // lead | subscribed | canceled
+  stripeCustomerId String     @default("")
+  stripeSubId     String      @default("")
+  paid            Boolean     @default(false)
+  paidAt          DateTime?
+  firstPaymentAt  DateTime?                  // Phase 2 bonus trigger inputs
+  secondPaymentAt DateTime?
+  amountCents     Int         @default(0)
+  bonusCents      Int         @default(0)    // Phase 2: computed affiliate bonus
+  bonusPaid       Boolean     @default(false) // once paid, affiliate stops seeing customer
+  createdAt       DateTime    @default(now())
+  @@index([resellerId])
+  @@map("pd_lead")
+}
+
+model PdCoupon {
+  id             String   @id @default(cuid())
+  code           String   @unique
+  label          String   @default("")
+  percentOff     Int      @default(0)
+  amountOffCents Int      @default(0)
+  scope          String   @default("first") // first | all
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  @@map("pd_coupon")
 }
