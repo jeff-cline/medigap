@@ -31,6 +31,11 @@ export async function createNode(input: { word: string; parentId?: string | null
 export async function updateNode(id: string, patch: Record<string, unknown>): Promise<StaticRow> {
   const data: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(patch)) if (EDITABLE.has(k)) data[k] = v;
+  if (typeof data.word === "string") {
+    const trimmed = data.word.trim();
+    if (trimmed) data.word = trimmed;
+    else delete data.word; // never persist a blank money-word tab — keep the existing name
+  }
   if (typeof data.states === "object") data.states = JSON.stringify(data.states);
   if (typeof data.ageRule === "object") data.ageRule = JSON.stringify(data.ageRule);
   return db.staticMoneyWord.update({ where: { id }, data });

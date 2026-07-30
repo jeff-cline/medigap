@@ -1381,4 +1381,5 @@ model StaticMoneyWord {
   updatedAt         DateTime          @updatedAt
 
   @@index([parentId, sortOrder])
+  @@map("static_money_word")
 }
