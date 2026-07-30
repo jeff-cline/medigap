@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { seedStaticMoneyWords } from "../src/lib/static/seed";
 
 const db = new PrismaClient();
 const DEMO = process.env.SEED_DEMO === "1"; // demo/sample data only when explicitly requested
@@ -44,6 +45,9 @@ async function main() {
     ["vibe", "Vibe.co — connected TV advertising"],
   ];
   for (const [key, label] of integrations) await db.integration.upsert({ where: { key }, update: { label }, create: { key, label } });
+
+  // --- Static engine money-word tabs (idempotent) ---
+  await seedStaticMoneyWords(db);
 
   if (!DEMO) { console.log("✅ Clean seed complete (no demo data) — God: jeff.cline@me.com / TEMP!234"); return; }
 
