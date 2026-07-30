@@ -51,6 +51,17 @@ describe("pickBuyerFor", () => {
     const blankAfter = await db.staticBuyer.findUnique({ where: { id: blank.id } });
     expect(blankAfter!.dailyCount).toBe(0); // blank-number buyer was never selected or persisted
   });
+
+  it("no lost updates under concurrent calls (atomic read+write)", async () => {
+    const mw = await leaf();
+    await db.staticBuyer.create({ data: { moneyWordId: mw, name: "Unl", defaultNumber: "+15551110000", dailyCap: 0 } }); // unlimited
+    const N = 8;
+    const results = await Promise.all(Array.from({ length: N }, () => pickBuyerFor(mw, {}, NOW)));
+    const routed = results.filter(Boolean);
+    const b = await db.staticBuyer.findFirst({ where: { moneyWordId: mw } });
+    expect(routed.length).toBe(N);        // all routed (unlimited cap)
+    expect(b!.dailyCount).toBe(N);        // every increment persisted — NO lost updates (this is the race the fix prevents)
+  });
 });
 
 describe("captureCallback", () => {
