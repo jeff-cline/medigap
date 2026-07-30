@@ -6,15 +6,23 @@ export default function EngineToggle({ current }: { current: "fluid" | "static" 
   const router = useRouter();
   const [engine, setEngine] = useState(current);
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
   const flip = async (next: "fluid" | "static") => {
     if (busy || next === engine) return;
     setBusy(true);
-    await fetch("/api/static/engine", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ engine: next }) });
-    setEngine(next);
-    setBusy(false);
-    router.push(next === "static" ? "/dashboard/static" : "/dashboard/u65");
-    router.refresh();
+    setErr(null);
+    try {
+      const res = await fetch("/api/static/engine", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ engine: next }) });
+      if (!res.ok) throw new Error(`Engine switch failed (${res.status})`);
+      setEngine(next);
+      router.push(next === "static" ? "/dashboard/static" : "/dashboard/u65");
+      router.refresh();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -25,6 +33,7 @@ export default function EngineToggle({ current }: { current: "fluid" | "static" 
         <button disabled={busy} onClick={() => flip("static")} className={`px-3 py-1 ${engine === "static" ? "bg-[var(--gold)] text-black font-semibold" : ""}`}>Static</button>
       </div>
       <span className="text-[10px] text-[var(--muted)]">(Phase 1: dashboard only — live calls stay on Fluid)</span>
+      {err && <span className="text-[10px] text-[var(--danger)]">{err}</span>}
     </div>
   );
 }
