@@ -4,6 +4,8 @@ import { listNodes, toFlat } from "@/lib/static/store";
 import { buildTree, moneyWordsList } from "@/lib/static/tree";
 import { Card, Section } from "@/components/ui";
 import StaticControls from "@/components/static/StaticControls";
+import { moneyWordCloud } from "@/lib/static/hotlist";
+import HotList from "@/components/static/HotList";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +17,7 @@ export default async function StaticPage({ searchParams }: { searchParams: Promi
   const rows = await listNodes();
   const tree = buildTree(toFlat(rows));
   const spoken = moneyWordsList(tree);
+  const cloud = await moneyWordCloud();
 
   return (
     <div className="space-y-6">
@@ -26,6 +29,7 @@ export default async function StaticPage({ searchParams }: { searchParams: Promi
           </div>
         </Card>
       </Section>
+      <HotList entries={cloud} />
       <StaticControls rows={rows} selected={node ?? null} />
     </div>
   );
