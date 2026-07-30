@@ -1377,9 +1377,51 @@ model StaticMoneyWord {
   textTemplate      String?           // Phase 4 (reserved)
   aiModel           String?           // Phase 4 (reserved)
   aiVoice           String?           // Phase 4 (reserved)
+  buyers            StaticBuyer[]
+  zipRules          StaticZipRule[]
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
   @@index([parentId, sortOrder])
   @@map("static_money_word")
+}
+
+// ---------------------------------------------------------------------------
+// STATIC ENGINE — Phase 2 buyer routing (additive; leaves only)
+// ---------------------------------------------------------------------------
+model StaticBuyer {
+  id               String          @id @default(cuid())
+  moneyWordId      String
+  moneyWord        StaticMoneyWord @relation(fields: [moneyWordId], references: [id], onDelete: Cascade)
+  name             String
+  defaultNumber    String          // primary DID we transfer to (E.164)
+  afterHoursNumber String?         // used during this buyer's after-hours window
+  backupNumber     String?         // used if default/after-hours don't connect
+  afterHoursDays   String          @default("[]") // JSON array of weekday numbers (0=Sun..6=Sat)
+  afterHoursStart  Int?            // minutes-from-midnight (CST) after-hours window start
+  afterHoursEnd    Int?            // minutes-from-midnight (CST) after-hours window end
+  active           Boolean         @default(true)
+  dailyCap         Int             @default(0) // 0 = unlimited
+  priorityWeight   Int             @default(1) // relative weight for weighted round-robin
+  dailyCount       Int             @default(0) // resets daily (CST)
+  swrrCurrent      Int             @default(0) // smooth-weighted-round-robin running counter
+  lastAssignedAt   DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([moneyWordId, active])
+  @@map("static_buyer")
+}
+
+model StaticZipRule {
+  id          String          @id @default(cuid())
+  moneyWordId String
+  moneyWord   StaticMoneyWord @relation(fields: [moneyWordId], references: [id], onDelete: Cascade)
+  buyerId     String          // references StaticBuyer.id (no FK; plain id per spec)
+  zip         String          // center ZIP
+  radiusMiles Int             @default(0) // 0 = exact ZIP only (radius resolution = Phase 2B)
+  createdAt   DateTime        @default(now())
+
+  @@index([moneyWordId, zip])
+  @@map("static_zip_rule")
 }
