@@ -1425,3 +1425,21 @@ model StaticZipRule {
   @@index([moneyWordId, zip])
   @@map("static_zip_rule")
 }
+
+// ---------------------------------------------------------------------------
+// STATIC ENGINE — Phase 2B unsold-demand capture (no-buyer callbacks / hot list)
+// ---------------------------------------------------------------------------
+model StaticCallback {
+  id          String   @id @default(cuid())
+  moneyWordId String?
+  word        String   // the money word the caller wanted
+  state       String   @default("")
+  zip         String   @default("")
+  phone       String   @default("")
+  note        String   @default("") // e.g. "no buyer in area" / requested callback time
+  createdAt   DateTime @default(now())
+
+  @@index([word])
+  @@index([createdAt])
+  @@map("static_callback")
+}
