@@ -41,6 +41,16 @@ describe("pickBuyerFor", () => {
     await db.staticBuyer.create({ data: { moneyWordId: mw, name: "Capped", defaultNumber: "+15551110000", dailyCap: 1, dailyCount: 1 } });
     expect(await pickBuyerFor(mw, {}, NOW)).toBeNull();
   });
+
+  it("excludes blank-number buyers before selection and never persists their state", async () => {
+    const mw = await leaf();
+    const blank = await db.staticBuyer.create({ data: { moneyWordId: mw, name: "BlankNum", defaultNumber: "", priorityWeight: 99 } });
+    const real = await db.staticBuyer.create({ data: { moneyWordId: mw, name: "RealNum", defaultNumber: "+15551234567", priorityWeight: 1 } });
+    const r = await pickBuyerFor(mw, {}, NOW);
+    expect(r!.buyerId).toBe(real.id); // routes to the real-number buyer despite blank's higher weight
+    const blankAfter = await db.staticBuyer.findUnique({ where: { id: blank.id } });
+    expect(blankAfter!.dailyCount).toBe(0); // blank-number buyer was never selected or persisted
+  });
 });
 
 describe("captureCallback", () => {

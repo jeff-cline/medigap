@@ -19,30 +19,34 @@ export async function pickBuyerFor(leafId: string, ctx: { zip?: string }, nowMs:
     return stale ? { ...b, dailyCount: 0 } : b;
   });
 
+  // filter out buyers with blank defaultNumber before selection
+  const filtered = rolled.filter((b) => b.defaultNumber.trim() !== "");
+  if (filtered.length === 0) return null;
+
   // exact-ZIP override (radius ignored in 2B-core)
   let chosenId: string | null = null;
   if (ctx.zip) {
     const rule = await db.staticZipRule.findFirst({ where: { moneyWordId: leafId, zip: ctx.zip } });
     if (rule) {
-      const rb = rolled.find((b) => b.id === rule.buyerId);
+      const rb = filtered.find((b) => b.id === rule.buyerId);
       if (rb && rb.active && (rb.dailyCap === 0 || rb.dailyCount < rb.dailyCap)) chosenId = rb.id;
     }
   }
 
-  let poolNext = rolled.map(toSwrr);
+  let poolNext = filtered.map(toSwrr);
   if (!chosenId) {
-    const sel = selectBuyer(rolled.map(toSwrr));
+    const sel = selectBuyer(filtered.map(toSwrr));
     chosenId = sel.chosenId;
     poolNext = sel.next;
   }
   if (!chosenId) return null;
 
-  const chosen = rolled.find((b) => b.id === chosenId)!;
+  const chosen = filtered.find((b) => b.id === chosenId)!;
   const swrrOf = new Map(poolNext.map((p) => [p.id, p.swrrCurrent]));
 
   // persist: swrrCurrent for all, dailyCount+1 + lastAssignedAt on the chosen; reset stale counts too
   await db.$transaction(
-    rolled.map((b) =>
+    filtered.map((b) =>
       db.staticBuyer.update({
         where: { id: b.id },
         data: {

@@ -112,6 +112,7 @@ export async function POST(req: NextRequest) {
   if (phase === "submenu") {
     const parentId = call.moneyWord || "";
     const kids = await childMenu(parentId);
+    if (kids.length === 0) return xml(`<Say voice="${voice}">We're sorry, no options are available right now. Goodbye.</Say><Hangup/>`);
     const hitId = matchSelection(speech, digit, kids);
     if (!hitId) return xml(gather(step("submenu", callId), voice, `Sorry, I didn't catch that. ${buildMenuPrompt(kids)}`));
     const grand = await childMenu(hitId);
@@ -125,6 +126,7 @@ export async function POST(req: NextRequest) {
   // ---- ask: caller heard the leaf's question; now route ----
   if (phase === "ask") {
     const leafId = call.moneyWord || "";
+    if (call.leadId && speech) await db.leadAnswer.create({ data: { leadId: call.leadId, question: "static-ask", answer: speech } }).catch(() => {});
     return routeLeaf(callId, leafId, voice, call);
   }
 
