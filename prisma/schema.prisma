@@ -1356,3 +1356,29 @@ model PdCoupon {
   createdAt      DateTime @default(now())
   @@map("pd_coupon")
 }
+
+// ---------------------------------------------------------------------------
+// STATIC ENGINE — Phase 1 money-word tab tree (independent of Fluid's MoneyWord)
+// ---------------------------------------------------------------------------
+model StaticMoneyWord {
+  id                String            @id @default(cuid())
+  parentId          String?
+  parent            StaticMoneyWord?  @relation("StaticTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children          StaticMoneyWord[] @relation("StaticTree")
+  sortOrder         Int               @default(0)
+  active            Boolean           @default(true)
+  word              String
+  slug              String            @unique
+  valueCents        Int               @default(0)
+  states            String            @default("[]") // JSON string[] of 2-letter codes; [] = all
+  ageRule           String            @default("{}") // JSON { min?: number, max?: number }
+  contextPrompt     String            @default("")
+  askQuestionPrompt String            @default("")
+  textTemplate      String?           // Phase 4 (reserved)
+  aiModel           String?           // Phase 4 (reserved)
+  aiVoice           String?           // Phase 4 (reserved)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([parentId, sortOrder])
+}
