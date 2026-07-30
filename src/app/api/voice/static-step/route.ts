@@ -44,7 +44,7 @@ async function transfer(callId: string, number: string, voice: string, buyerId: 
   const dest = normalizePhone(number) || number;
   const callerId = normalizePhone(call?.fromNumber || "") || s.raw["tollFreeCallerId"] || "+18006334427";
   await db.call.update({ where: { id: callId }, data: { forwardedTo: dest, status: "transferring", disposition: "static" } }).catch(() => {});
-  const action = `${BASE}/api/voice/static-step?callId=${callId}&phase=backup&buyer=${buyerId}`;
+  const action = step("backup", callId, `&buyer=${buyerId}`);
   return `<Dial timeout="25" callerId="${callerId}" record="record-from-answer-dual" action="${action}"><Number>${dest}</Number></Dial>`;
 }
 
@@ -97,6 +97,7 @@ export async function POST(req: NextRequest) {
   // ---- menu (top level) ----
   if (phase === "menu") {
     const menu = await topMenu();
+    if (menu.length === 0) return xml(`<Say voice="${voice}">We're sorry, no options are available right now. Goodbye.</Say><Hangup/>`);
     const hitId = matchSelection(speech, digit, menu);
     if (!hitId) return xml(gather(step("menu", callId), voice, `Sorry, I didn't catch that. ${buildMenuPrompt(menu)}`));
     const kids = await childMenu(hitId);
