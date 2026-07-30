@@ -35,6 +35,9 @@ export async function updateBuyer(id: string, patch: Record<string, unknown>): P
 }
 
 export async function deleteBuyer(id: string): Promise<void> {
+  // ZIP rules reference a buyer by plain id (no FK per spec §4.2) — clean them up
+  // so routing (Phase 2B) never resolves a ZIP to a deleted buyer.
+  await db.staticZipRule.deleteMany({ where: { buyerId: id } });
   await db.staticBuyer.delete({ where: { id } });
 }
 

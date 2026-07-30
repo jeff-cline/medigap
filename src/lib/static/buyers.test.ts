@@ -45,4 +45,14 @@ describe("buyers store", () => {
     await deleteZipRule(z.id);
     expect(await listZipRules(mw)).toHaveLength(0);
   });
+
+  it("deletes a buyer's zip rules when the buyer is removed (no orphans)", async () => {
+    const mw = await makeLeaf();
+    const b = await createBuyer({ moneyWordId: mw, name: "Acme", defaultNumber: "+15551230000" });
+    await createZipRule({ moneyWordId: mw, buyerId: b.id, zip: "75001" });
+    expect(await listZipRules(mw)).toHaveLength(1);
+    await deleteBuyer(b.id);
+    expect(await listZipRules(mw)).toHaveLength(0);
+  });
+
 });
