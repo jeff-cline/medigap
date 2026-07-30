@@ -10,5 +10,8 @@ export default defineConfig({
   test: {
     include: ["src/**/*.test.ts"],
     environment: "node",
+    // Integration tests share one dev SQLite DB; running files in parallel races their
+    // cleanup deletes ("No record found for delete"). Serialize files for determinism.
+    fileParallelism: false,
   },
 });
