@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import BuyerPanel from "./BuyerPanel";
 
 type Row = {
   id: string; parentId: string | null; sortOrder: number; active: boolean; word: string; slug: string;
@@ -64,14 +65,14 @@ export default function StaticControls({ rows, selected }: { rows: Row[]; select
       {sel && (
         <>
           {children.length > 0 && <TabRow items={children} label={`Sub-tabs of “${sel.word}”`} />}
-          <NodeForm key={sel.id} row={sel} busy={busy} onSave={(patch) => run({ action: "update", id: sel.id, patch })} onDelete={async () => { if (confirm(`Delete “${sel.word}” and its sub-tabs?`)) { const ok = await run({ action: "delete", id: sel.id }); if (ok) router.push("/dashboard/static"); } }} />
+          <NodeForm key={sel.id} row={sel} busy={busy} isLeaf={children.length === 0} onSave={(patch) => run({ action: "update", id: sel.id, patch })} onDelete={async () => { if (confirm(`Delete “${sel.word}” and its sub-tabs?`)) { const ok = await run({ action: "delete", id: sel.id }); if (ok) router.push("/dashboard/static"); } }} />
         </>
       )}
     </div>
   );
 }
 
-function NodeForm({ row, busy, onSave, onDelete }: { row: Row; busy: boolean; onSave: (patch: Record<string, unknown>) => void; onDelete: () => void }) {
+function NodeForm({ row, busy, isLeaf, onSave, onDelete }: { row: Row; busy: boolean; isLeaf: boolean; onSave: (patch: Record<string, unknown>) => void; onDelete: () => void }) {
   const [word, setWord] = useState(row.word);
   const [valueDollars, setValueDollars] = useState((row.valueCents / 100).toString());
   const [statesCsv, setStatesCsv] = useState((JSON.parse(row.states || "[]") as string[]).join(", "));
@@ -103,7 +104,10 @@ function NodeForm({ row, busy, onSave, onDelete }: { row: Row; busy: boolean; on
       <label className={L}>States (CSV, blank = all)</label><input className={F} value={statesCsv} onChange={(e) => setStatesCsv(e.target.value)} placeholder="TX, FL, CA" />
       <label className={L}>Context prompt</label><textarea className={F} rows={3} value={ctx} onChange={(e) => setCtx(e.target.value)} />
       <label className={L}>Ask-this-question prompt</label><textarea className={F} rows={2} value={ask} onChange={(e) => setAsk(e.target.value)} />
-      <div className="text-xs text-[var(--muted)] mb-3">Buyers · ZIP rules · text template · voice — <b>Phase 2/4</b>.</div>
+      {isLeaf
+        ? <BuyerPanel moneyWordId={row.id} />
+        : <div className="text-xs text-[var(--muted)] mb-3">This is a <b>category</b> (has sub-tabs) — only leaf money words route to buyers.</div>}
+      <div className="text-xs text-[var(--muted)] mt-3 mb-0">Text template · voice — <b>Phase 4</b>.</div>
       <div className="flex gap-2">
         <button className="btn" disabled={busy} onClick={save}>Save</button>
         <button className="btn" disabled={busy} onClick={onDelete}>Delete</button>
