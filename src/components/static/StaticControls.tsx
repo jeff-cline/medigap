@@ -17,14 +17,16 @@ export default function StaticControls({ rows, selected }: { rows: Row[]; select
   const refresh = () => router.refresh();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const run = async (body: unknown) => {
+  const run = async (body: unknown): Promise<boolean> => {
     setBusy(true);
     setErr(null);
     try {
       await api(body);
       refresh();
+      return true;
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Something went wrong.");
+      return false;
     } finally {
       setBusy(false);
     }
@@ -62,7 +64,7 @@ export default function StaticControls({ rows, selected }: { rows: Row[]; select
       {sel && (
         <>
           {children.length > 0 && <TabRow items={children} label={`Sub-tabs of “${sel.word}”`} />}
-          <NodeForm key={sel.id} row={sel} busy={busy} onSave={(patch) => run({ action: "update", id: sel.id, patch })} onDelete={async () => { if (confirm(`Delete “${sel.word}” and its sub-tabs?`)) { await run({ action: "delete", id: sel.id }); router.push("/dashboard/static"); } }} />
+          <NodeForm key={sel.id} row={sel} busy={busy} onSave={(patch) => run({ action: "update", id: sel.id, patch })} onDelete={async () => { if (confirm(`Delete “${sel.word}” and its sub-tabs?`)) { const ok = await run({ action: "delete", id: sel.id }); if (ok) router.push("/dashboard/static"); } }} />
         </>
       )}
     </div>
