@@ -8,14 +8,27 @@ type Row = {
 };
 
 async function api(body: unknown) {
-  await fetch("/api/static/tree", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const res = await fetch("/api/static/tree", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  if (!res.ok) throw new Error(`Request failed (${res.status})`);
 }
 
 export default function StaticControls({ rows, selected }: { rows: Row[]; selected: string | null }) {
   const router = useRouter();
   const refresh = () => router.refresh();
   const [busy, setBusy] = useState(false);
-  const run = async (body: unknown) => { setBusy(true); await api(body); setBusy(false); refresh(); };
+  const [err, setErr] = useState<string | null>(null);
+  const run = async (body: unknown) => {
+    setBusy(true);
+    setErr(null);
+    try {
+      await api(body);
+      refresh();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const topLevel = useMemo(() => rows.filter((r) => !r.parentId).sort((a, b) => a.sortOrder - b.sortOrder), [rows]);
   const sel = rows.find((r) => r.id === selected) ?? null;
@@ -39,6 +52,7 @@ export default function StaticControls({ rows, selected }: { rows: Row[]; select
 
   return (
     <div className="space-y-4">
+      {err && <div className="rounded border border-[var(--danger)] text-[var(--danger)] text-sm px-3 py-2">{err}</div>}
       <TabRow items={topLevel} label="Top-level tabs" />
       <div className="flex gap-2">
         <button className="btn" disabled={busy} onClick={() => run({ action: "create", parentId: null, word: "New Money Word" })}>+ Add tab</button>
@@ -48,7 +62,7 @@ export default function StaticControls({ rows, selected }: { rows: Row[]; select
       {sel && (
         <>
           {children.length > 0 && <TabRow items={children} label={`Sub-tabs of “${sel.word}”`} />}
-          <NodeForm key={sel.id} row={sel} busy={busy} onSave={(patch) => run({ action: "update", id: sel.id, patch })} onDelete={() => { if (confirm(`Delete “${sel.word}” and its sub-tabs?`)) run({ action: "delete", id: sel.id }); router.push("/dashboard/static"); }} />
+          <NodeForm key={sel.id} row={sel} busy={busy} onSave={(patch) => run({ action: "update", id: sel.id, patch })} onDelete={async () => { if (confirm(`Delete “${sel.word}” and its sub-tabs?`)) { await run({ action: "delete", id: sel.id }); router.push("/dashboard/static"); } }} />
         </>
       )}
     </div>
