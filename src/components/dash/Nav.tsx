@@ -29,6 +29,7 @@ export const LEFT_NAV: [string, string, string][] = [
   ["Affiliate Network", "/dashboard/affiliates", "🔁"],
   ["Ping Tree", "/dashboard/ping-tree", "🌳"],
   ["U65", "/dashboard/u65", "🎯"],
+  ["Follow-Up", "/dashboard/followup", "📞"],
   ["Partner Payouts", "/dashboard/payouts", "💸"],
   ["Marketing / Ads", "/dashboard/marketing", "📣"],
   ["Integrations", "/dashboard/integrations", "🔌"],

@@ -71,5 +71,15 @@ export async function POST(req: NextRequest) {
       sendSms({ to: FOUNDER.cell, body: `↩️ JV reply from ${who}: "${body.slice(0, 200)}" — manage: ${dealUrl}`, batch: "jv-reply-alert" }).catch(() => {});
     }
   }
+
+  // Consumer (non-JV) inbound text → auto-reply that this line isn't monitored for texts, and send it
+  // via the API so it logs + threads in the Unified inbox (where you can still reply by hand).
+  // Light throttle (once/hour per number) so an auto-responder on the other end can't loop.
+  if (!isJv && last10 !== founderLast10) {
+    const recentAuto = await db.smsMessage.findFirst({ where: { to: e164, batch: "not-monitored", createdAt: { gte: new Date(Date.now() - 3600_000) } } }).catch(() => null);
+    if (!recentAuto) {
+      sendSms({ to: e164, body: "This is not a monitored number. Please give us a call at 1-800-633-4427 (1-800-MEDIGAP), M–F 9–6. We appreciate the opportunity to serve you.", leadId: lead?.id, batch: "not-monitored" }).catch(() => {});
+    }
+  }
   return twiml(); // no inline TwiML reply — we send via the API so it threads + logs
 }

@@ -17,6 +17,7 @@ function xml(body: string) {
 export async function POST(req: NextRequest) {
   const form = await req.formData().catch(() => null);
   const from = String(form?.get("From") || "");
+  const to = String(form?.get("To") || ""); // which tracked number was dialed (TV campaign attribution)
   const callSid = String(form?.get("CallSid") || "");
   const state = String(form?.get("FromState") || "");
   const zip = String(form?.get("FromZip") || "");
@@ -28,7 +29,8 @@ export async function POST(req: NextRequest) {
     appendLeadBackground(lead.id); // real-time enrichment by phone while the call is live
   }
 
-  const call = await db.call.create({ data: { leadId: lead?.id, zip, state, status: "in-progress", source: "house", providerSid: callSid, fromNumber: from } });
+  const toNumber = (normalizePhone(to) || to).replace(/\D/g, "") || "18006334427"; // TV campaign attribution
+  const call = await db.call.create({ data: { leadId: lead?.id, zip, state, status: "in-progress", source: "house", providerSid: callSid, fromNumber: from, toNumber } });
   matchFireCallbackBackground(from, call.id); // Fire conversion: did an emailed contact just call back? → turn them green
 
   // Static engine (dormant unless a God has flipped the toggle) — branch to the Static intake.
@@ -50,5 +52,7 @@ export async function POST(req: NextRequest) {
   const dest = normalizePhone(r.forwardedTo) || r.forwardedTo;
   if (!dest) return xml(`<Say voice="${agent.voice}">Thank you for calling Medigap. All specialists are busy. Please call back shortly.</Say>`);
   const numberEl = s.callWhisper ? `<Number url="${BASE}/api/calls/whisper">${dest}</Number>` : `<Number>${dest}</Number>`;
-  return xml(`<Dial timeout="25" callerId="${s.raw["tollFreeCallerId"] || "+18006334427"}" record="record-from-answer-dual" action="${BASE}/api/calls/status">${numberEl}</Dial>`);
+  // Pass the caller's real number so the buyer accepts/pays it (never the toll-free line).
+  const cid = normalizePhone(from) || from || s.raw["tollFreeCallerId"] || "+18006334427";
+  return xml(`<Dial timeout="25" callerId="${cid}" record="record-from-answer-dual" action="${BASE}/api/calls/status">${numberEl}</Dial>`);
 }
