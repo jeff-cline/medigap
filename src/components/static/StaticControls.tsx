@@ -104,14 +104,15 @@ function NodeForm({ row, busy, isLeaf, onSave, onDelete }: { row: Row; busy: boo
       <label className={L}>States (CSV, blank = all)</label><input className={F} value={statesCsv} onChange={(e) => setStatesCsv(e.target.value)} placeholder="TX, FL, CA" />
       <label className={L}>Context prompt</label><textarea className={F} rows={3} value={ctx} onChange={(e) => setCtx(e.target.value)} />
       <label className={L}>Ask-this-question prompt</label><textarea className={F} rows={2} value={ask} onChange={(e) => setAsk(e.target.value)} />
+      <div className="flex gap-2 mb-1">
+        <button className="btn" disabled={busy} onClick={save}>Save config</button>
+        <button className="btn" disabled={busy} onClick={onDelete}>Delete</button>
+      </div>
+      <div className="text-[11px] text-[var(--muted)] mb-2">Saves the fields above. Buyers below each save on their own.</div>
       {isLeaf
         ? <BuyerPanel moneyWordId={row.id} />
         : <div className="text-xs text-[var(--muted)] mb-3">This is a <b>category</b> (has sub-tabs) — only leaf money words route to buyers.</div>}
       <div className="text-xs text-[var(--muted)] mt-3 mb-0">Text template · voice — <b>Phase 4</b>.</div>
-      <div className="flex gap-2">
-        <button className="btn" disabled={busy} onClick={save}>Save</button>
-        <button className="btn" disabled={busy} onClick={onDelete}>Delete</button>
-      </div>
     </div>
   );
 }
