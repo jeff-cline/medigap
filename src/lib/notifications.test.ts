@@ -21,4 +21,12 @@ describe("cstStartOf", () => {
     const now = new Date(Date.UTC(2026, 6, 15, 18, 0, 0));
     expect(cstStartOf(now, "month").toISOString()).toBe("2026-07-01T05:00:00.000Z");
   });
+  it("spring-forward day (Mar 8 2026): local midnight is still CST (UTC-6)", () => {
+    const now = new Date(Date.UTC(2026, 2, 8, 18, 0, 0)); // Mar 8 2026 = 2nd Sunday, spring forward
+    expect(cstStartOf(now, "day").toISOString()).toBe("2026-03-08T06:00:00.000Z");
+  });
+  it("fall-back day (Nov 1 2026): local midnight is still CDT (UTC-5)", () => {
+    const now = new Date(Date.UTC(2026, 10, 1, 18, 0, 0)); // Nov 1 2026 = 1st Sunday, fall back
+    expect(cstStartOf(now, "day").toISOString()).toBe("2026-11-01T05:00:00.000Z");
+  });
 });

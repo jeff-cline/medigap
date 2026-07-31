@@ -24,17 +24,21 @@ function chicagoYMD(dt: Date): { y: number; m: number; d: number; wd: number } {
 
 // UTC instant for Chicago-local midnight of the given Y-M-D.
 function chicagoMidnightUTC(y: number, m: number, d: number): Date {
-  const noon = new Date(Date.UTC(y, m - 1, d, 12, 0, 0)); // noon UTC that day → safe for the offset lookup
-  const off = chicagoOffsetMin(noon);
-  return new Date(Date.UTC(y, m - 1, d, 0, 0, 0) - off * 60000);
+  const guess = new Date(Date.UTC(y, m - 1, d, 0, 0, 0)); // naive: pretend local midnight is UTC
+  const off1 = chicagoOffsetMin(guess);
+  let result = new Date(guess.getTime() - off1 * 60000);
+  const off2 = chicagoOffsetMin(result); // re-check at the computed instant; correct once if it crossed a transition
+  if (off2 !== off1) result = new Date(guess.getTime() - off2 * 60000);
+  return result;
 }
 
 export function cstStartOf(now: Date, unit: "day" | "week" | "month"): Date {
   const { y, m, d, wd } = chicagoYMD(now);
   if (unit === "month") return chicagoMidnightUTC(y, m, 1);
-  const startToday = chicagoMidnightUTC(y, m, d);
-  if (unit === "day") return startToday;
-  return new Date(startToday.getTime() - wd * 86400000); // back up to Sunday
+  if (unit === "day") return chicagoMidnightUTC(y, m, d);
+  // week: back up to Sunday by calendar date, then that date's CST midnight
+  const sun = new Date(Date.UTC(y, m - 1, d - wd));
+  return chicagoMidnightUTC(sun.getUTCFullYear(), sun.getUTCMonth() + 1, sun.getUTCDate());
 }
 
 const LIVE = ["in-progress", "ringing", "connected", "transferring"];
