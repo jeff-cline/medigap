@@ -27,6 +27,7 @@ async function main() {
     mgmtFeePct: "2", profitSharePct: "50", aiFeePct: "0", futureProofingPct: "5", investorPct: "100",
     autoApproveAgent: "true", autoApproveAdvertiser: "true", autoApproveInvestor: "false",
     autonomousMode: "learning", arbitrageTarget: "3.0",
+    activeEngine: "static",            // Static call-routing engine is the locked-in default
   };
   for (const [key, value] of Object.entries(settings)) {
     await db.setting.upsert({ where: { key }, update: {}, create: { key, value } });

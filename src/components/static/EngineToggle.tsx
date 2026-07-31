@@ -32,7 +32,7 @@ export default function EngineToggle({ current }: { current: "fluid" | "static" 
         <button disabled={busy} onClick={() => flip("fluid")} className={`px-3 py-1 ${engine === "fluid" ? "bg-[var(--gold)] text-black font-semibold" : ""}`}>Fluid</button>
         <button disabled={busy} onClick={() => flip("static")} className={`px-3 py-1 ${engine === "static" ? "bg-[var(--gold)] text-black font-semibold" : ""}`}>Static</button>
       </div>
-      <span className="text-[10px] text-[var(--muted)]">(Phase 1: dashboard only — live calls stay on Fluid)</span>
+      <span className="text-[10px] text-[var(--muted)]">(controls live call routing)</span>
       {err && <span className="text-[10px] text-[var(--danger)]">{err}</span>}
     </div>
   );
