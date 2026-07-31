@@ -21,6 +21,11 @@ export async function unifiedThreads(limit = 500): Promise<{ threads: Thread[]; 
     if (g) g.push(r); else groups.set(key, [r]);
   }
 
+  // Batch all lead-name lookups into ONE query (avoid an N+1 inside the per-thread loop).
+  const leadIds = Array.from(new Set(rows.map((r) => r.leadId).filter((id): id is string => !!id)));
+  const leads = leadIds.length ? await db.lead.findMany({ where: { id: { in: leadIds } }, select: { id: true, name: true } }) : [];
+  const nameById = new Map(leads.map((l) => [l.id, l.name]));
+
   const threads: Thread[] = [];
   for (const [sender, msgs] of groups) {
     // rows are already newest-first from the query
@@ -30,15 +35,10 @@ export async function unifiedThreads(limit = 500): Promise<{ threads: Thread[]; 
     const withLead = msgs.find((m) => m.leadId);
     const leadId = withLead?.leadId ?? null;
 
-    let name = sender;
-    if (leadId) {
-      const lead = await db.lead.findUnique({ where: { id: leadId } });
-      if (lead?.name) name = lead.name;
-    }
+    const name = (leadId && nameById.get(leadId)) || sender;
 
-    const messages: CommsMsg[] = msgs
-      .map((m) => ({ id: m.id, direction: m.direction, body: m.body, at: m.createdAt.toISOString(), read: m.direction === "outbound" || m.readAt != null }))
-      .sort((a, b) => b.at.localeCompare(a.at));
+    // rows are newest-first from the query, so no re-sort needed
+    const messages: CommsMsg[] = msgs.map((m) => ({ id: m.id, direction: m.direction, body: m.body, at: m.createdAt.toISOString(), read: m.direction === "outbound" || m.readAt != null }));
 
     threads.push({ sender, ourNumber, leadId, name, lastAt: messages[0]?.at || "", needsHuman, messages });
   }
