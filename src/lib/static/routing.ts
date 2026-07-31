@@ -3,7 +3,7 @@ import { selectBuyer, cstDayKey, type SwrrBuyer } from "./swrr";
 import { isAfterHours } from "./voice";
 import { Prisma } from "@prisma/client";
 
-export type RouteResult = { buyerId: string; number: string; payoutCents: number } | null;
+export type RouteResult = { buyerId: string; number: string; payoutCents: number; billableSeconds: number } | null;
 
 function toSwrr(b: { id: string; priorityWeight: number; swrrCurrent: number; active: boolean; dailyCap: number; dailyCount: number }): SwrrBuyer {
   return { id: b.id, priorityWeight: b.priorityWeight, swrrCurrent: b.swrrCurrent, active: b.active, dailyCap: b.dailyCap, dailyCount: b.dailyCount };
@@ -11,7 +11,7 @@ function toSwrr(b: { id: string; priorityWeight: number; swrrCurrent: number; ac
 
 const IS_PG = (process.env.DATABASE_URL || "").startsWith("postgres");
 
-export async function pickBuyerFor(leafId: string, ctx: { zip?: string }, nowMs: number): Promise<RouteResult> {
+export async function pickBuyerFor(leafId: string, ctx: { zip?: string; state?: string }, nowMs: number): Promise<RouteResult> {
   const nowKey = cstDayKey(nowMs);
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
@@ -30,29 +30,38 @@ export async function pickBuyerFor(leafId: string, ctx: { zip?: string }, nowMs:
           const filtered = rolled.filter((b) => b.defaultNumber.trim() !== "");
           if (filtered.length === 0) return null;
 
+          // state filter: caller state must match buyer's state list (or list is empty/invalid)
+          const st = (ctx.state || "").trim().toUpperCase().slice(0, 2);
+          const inState = (b: { states: string }) => {
+            let arr: string[]; try { arr = JSON.parse(b.states || "[]"); } catch { arr = []; }
+            return !Array.isArray(arr) || arr.length === 0 || (st !== "" && arr.map((x) => x.toUpperCase()).includes(st));
+          };
+          const stateFiltered = filtered.filter(inState);
+          if (stateFiltered.length === 0) return null;
+
           // exact-ZIP override (radius ignored in 2B-core)
           let chosenId: string | null = null;
           if (ctx.zip) {
             const rule = await tx.staticZipRule.findFirst({ where: { moneyWordId: leafId, zip: ctx.zip } });
             if (rule) {
-              const rb = filtered.find((b) => b.id === rule.buyerId);
+              const rb = stateFiltered.find((b) => b.id === rule.buyerId);
               if (rb && rb.active && (rb.dailyCap === 0 || rb.dailyCount < rb.dailyCap)) chosenId = rb.id;
             }
           }
 
-          let poolNext = filtered.map(toSwrr);
+          let poolNext = stateFiltered.map(toSwrr);
           if (!chosenId) {
-            const sel = selectBuyer(filtered.map(toSwrr));
+            const sel = selectBuyer(stateFiltered.map(toSwrr));
             chosenId = sel.chosenId;
             poolNext = sel.next;
           }
           if (!chosenId) return null;
 
-          const chosen = filtered.find((b) => b.id === chosenId)!;
+          const chosen = stateFiltered.find((b) => b.id === chosenId)!;
           const swrrOf = new Map(poolNext.map((p) => [p.id, p.swrrCurrent]));
 
           // persist: swrrCurrent for all, dailyCount+1 + lastAssignedAt on the chosen; reset stale counts too
-          for (const b of filtered) {
+          for (const b of stateFiltered) {
             await tx.staticBuyer.update({
               where: { id: b.id },
               data: {
@@ -66,7 +75,7 @@ export async function pickBuyerFor(leafId: string, ctx: { zip?: string }, nowMs:
           const useAfterHours = isAfterHours(chosen, nowMs) && !!chosen.afterHoursNumber;
           const number = (useAfterHours ? chosen.afterHoursNumber : chosen.defaultNumber) || "";
           if (!number) return null;
-          return { buyerId: chosen.id, number, payoutCents: chosen.payoutCents };
+          return { buyerId: chosen.id, number, payoutCents: chosen.payoutCents, billableSeconds: chosen.billableSeconds };
         },
         // Serializable + P2034 retry is the Postgres-prod concurrency safeguard against double-assign /
         // cap breach / SWRR skew; SQLite can't exercise that path but the atomic read+write is verified

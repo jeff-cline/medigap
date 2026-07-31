@@ -7,6 +7,7 @@ const EDITABLE_BUYER = new Set([
   "name", "defaultNumber", "afterHoursNumber", "backupNumber",
   "afterHoursDays", "afterHoursStart", "afterHoursEnd",
   "active", "dailyCap", "priorityWeight", "payoutCents",
+  "states", "billableSeconds",
 ]);
 
 export async function listBuyers(moneyWordId: string): Promise<BuyerRow[]> {
@@ -31,6 +32,7 @@ export async function updateBuyer(id: string, patch: Record<string, unknown>): P
     if (t) data.name = t; else delete data.name; // never blank a buyer name
   }
   if (Array.isArray(data.afterHoursDays)) data.afterHoursDays = JSON.stringify(data.afterHoursDays);
+  if (Array.isArray(data.states)) data.states = JSON.stringify(data.states);
   return db.staticBuyer.update({ where: { id }, data });
 }
 

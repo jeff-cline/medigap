@@ -21,17 +21,18 @@ describe("pickBuyerFor", () => {
     const mw = await leaf();
     const b = await db.staticBuyer.create({ data: { moneyWordId: mw, name: "Acme", defaultNumber: "+15551110000" } });
     const r = await pickBuyerFor(mw, {}, NOW);
-    expect(r).toEqual({ buyerId: b.id, number: "+15551110000", payoutCents: 0 });
+    expect(r).toEqual({ buyerId: b.id, number: "+15551110000", payoutCents: 0, billableSeconds: 0 });
     const after = await db.staticBuyer.findUnique({ where: { id: b.id } });
     expect(after!.dailyCount).toBe(1);
     expect(after!.lastAssignedAt).not.toBeNull();
   });
 
-  it("includes buyer payoutCents in routing result", async () => {
+  it("includes buyer payoutCents and billableSeconds in routing result", async () => {
     const mw = await leaf();
-    const b = await db.staticBuyer.create({ data: { moneyWordId: mw, name: "Premium", defaultNumber: "+15551110000", payoutCents: 5000 } });
+    const b = await db.staticBuyer.create({ data: { moneyWordId: mw, name: "Premium", defaultNumber: "+15551110000", payoutCents: 5000, billableSeconds: 30 } });
     const r = await pickBuyerFor(mw, {}, NOW);
     expect(r!.payoutCents).toBe(5000);
+    expect(r!.billableSeconds).toBe(30);
   });
 
   it("honors an exact-ZIP rule over plain SWRR", async () => {
@@ -68,6 +69,27 @@ describe("pickBuyerFor", () => {
     const b = await db.staticBuyer.findFirst({ where: { moneyWordId: mw } });
     expect(routed.length).toBe(N);        // all routed (unlimited cap)
     expect(b!.dailyCount).toBe(N);        // every increment persisted — NO lost updates (this is the race the fix prevents)
+  });
+
+  it("skips a buyer with non-matching state (only buyer, returns null)", async () => {
+    const mw = await leaf();
+    await db.staticBuyer.create({ data: { moneyWordId: mw, name: "FL Only", defaultNumber: "+15551110000", states: JSON.stringify(["FL"]) } });
+    const r = await pickBuyerFor(mw, { state: "TX" }, NOW);
+    expect(r).toBeNull(); // no buyers in state, all filtered out
+  });
+
+  it("routes to a buyer with empty states array (matches any state)", async () => {
+    const mw = await leaf();
+    const b = await db.staticBuyer.create({ data: { moneyWordId: mw, name: "Any State", defaultNumber: "+15551110000", states: "[]" } });
+    const r = await pickBuyerFor(mw, { state: "TX" }, NOW);
+    expect(r!.buyerId).toBe(b.id);
+  });
+
+  it("returns billableSeconds in routing result", async () => {
+    const mw = await leaf();
+    const b = await db.staticBuyer.create({ data: { moneyWordId: mw, name: "Billable", defaultNumber: "+15551110000", billableSeconds: 60 } });
+    const r = await pickBuyerFor(mw, {}, NOW);
+    expect(r!.billableSeconds).toBe(60);
   });
 });
 
