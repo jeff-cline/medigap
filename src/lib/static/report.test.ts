@@ -12,13 +12,14 @@ afterEach(async () => {
 
 describe("staticCallReport", () => {
   it("returns only static-disposition calls, newest first, excluding non-static", async () => {
-    const short = await db.call.create({ data: { disposition: "static", durationSec: 10, moneyWord: "zzztest-a", state: "TX" } });
+    // Explicit spaced createdAt so newest-first ordering is deterministic (same-ms ties flake).
+    const short = await db.call.create({ data: { disposition: "static", durationSec: 10, moneyWord: "zzztest-a", state: "TX", createdAt: new Date("2026-07-30T00:00:01Z") } });
     createdIds.push(short.id);
-    const mid = await db.call.create({ data: { disposition: "static", durationSec: 60, moneyWord: "zzztest-b", state: "FL" } });
+    const mid = await db.call.create({ data: { disposition: "static", durationSec: 60, moneyWord: "zzztest-b", state: "FL", createdAt: new Date("2026-07-30T00:00:02Z") } });
     createdIds.push(mid.id);
-    const long = await db.call.create({ data: { disposition: "static", durationSec: 120, moneyWord: "zzztest-c", state: "CA" } });
+    const long = await db.call.create({ data: { disposition: "static", durationSec: 120, moneyWord: "zzztest-c", state: "CA", createdAt: new Date("2026-07-30T00:00:03Z") } });
     createdIds.push(long.id);
-    const nonStatic = await db.call.create({ data: { disposition: "u65", durationSec: 45, moneyWord: "zzztest-d", state: "NY" } });
+    const nonStatic = await db.call.create({ data: { disposition: "u65", durationSec: 45, moneyWord: "zzztest-d", state: "NY", createdAt: new Date("2026-07-30T00:00:04Z") } });
     createdIds.push(nonStatic.id);
 
     const rows = await staticCallReport();
