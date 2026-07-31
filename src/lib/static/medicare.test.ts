@@ -16,8 +16,14 @@ describe("classifyMedicareIntent", () => {
     expect(classifyMedicareIntent("how do I sign up for Part B")).toBe("plan");
     expect(classifyMedicareIntent("I need to start social security")).toBe("plan");
   });
-  it("returns null on no keyword hit", () => {
+  it("strong BUY tokens win over broad gov/plan words (no lost sales)", () => {
+    expect(classifyMedicareIntent("I want to buy insurance, put it on my card")).toBe("buy");
+    expect(classifyMedicareIntent("sign up for Medicare Advantage")).toBe("buy");
+    expect(classifyMedicareIntent("I want to enroll in a Medigap plan")).toBe("buy");
+  });
+  it("returns null on ambiguous/no strong keyword (defers to AI)", () => {
     expect(classifyMedicareIntent("the weather is nice")).toBeNull();
+    expect(classifyMedicareIntent("I want to sign up")).toBeNull();
     expect(classifyMedicareIntent("")).toBeNull();
   });
 });
@@ -42,12 +48,16 @@ describe("medicareInterrupt", () => {
     expect(medicareInterrupt("what?")).toBe("what");
     expect(medicareInterrupt("wait, what")).toBe("what");
   });
-  it("detects customer service / rep", () => {
+  it("detects customer service / human requests", () => {
     expect(medicareInterrupt("I want customer service")).toBe("service");
     expect(medicareInterrupt("give me a representative")).toBe("service");
+    expect(medicareInterrupt("let me speak to a person")).toBe("service");
   });
   it("null on a normal intent utterance", () => {
     expect(medicareInterrupt("I want a quote")).toBeNull();
+  });
+  it("does not treat 'agent' as service when there's a buy intent", () => {
+    expect(medicareInterrupt("I want an agent to give me a quote")).toBeNull();
   });
 });
 

@@ -254,12 +254,14 @@ export async function POST(req: NextRequest) {
 
   // ---- Medicare: GOV confirm → text the state Medicare number, then upsell cascade ----
   if (phase === "mcare_gov_confirm") {
+    const intr = medicareInterrupt(speech);
+    if (intr) return medicareInterruptReply(callId, voice, "mcare_gov_confirm", intr, SCRIPT.GOV_CONFIRM);
     const yn = detectYesNo(speech, digit);
     if (yn === "no") { await logTurn(callId, "bot", SCRIPT.GOODBYE); return xml(`<Say voice="${voice}">${esc(SCRIPT.GOODBYE)}</Say><Hangup/>`); }
     if (yn !== "yes") { await logTurn(callId, "bot", SCRIPT.GOV_CONFIRM); return xml(gather(step("mcare_gov_confirm", callId), voice, SCRIPT.GOV_CONFIRM)); }
-    // yes → send the state Medicare office number now
+    // yes → text the state Medicare office number (fire-and-forget so a slow Twilio API never dead-airs the call)
     const num = medicarePhoneForState(call.state || "");
-    await sendStaticSms({ to: call.fromNumber || "", body: `Thank you for calling 1-800-MEDIGAP. Here is the number you requested: ${num}`, leadId: call.leadId });
+    void sendStaticSms({ to: call.fromNumber || "", body: `Thank you for calling 1-800-MEDIGAP. Here is the number you requested: ${num}`, leadId: call.leadId });
     const line = `${SCRIPT.GOV_YES_ACK} ${SCRIPT.LIFE_PITCH}`;
     await logTurn(callId, "bot", line);
     return xml(gather(step("mcare_gov_life", callId), voice, line));
@@ -267,6 +269,8 @@ export async function POST(req: NextRequest) {
 
   // ---- Medicare: upsell 1 — Life Insurance ----
   if (phase === "mcare_gov_life") {
+    const intr = medicareInterrupt(speech);
+    if (intr) return medicareInterruptReply(callId, voice, "mcare_gov_life", intr, SCRIPT.LIFE_PITCH);
     const yn = detectYesNo(speech, digit);
     if (yn === "yes") return medicareRouteBySlug(callId, "life-insurance", voice, call, "Life Insurance");
     const line = yn === "no" ? SCRIPT.PHI_PITCH : SCRIPT.LIFE_PITCH;
@@ -276,6 +280,8 @@ export async function POST(req: NextRequest) {
 
   // ---- Medicare: upsell 2 — Private Health Insurance ----
   if (phase === "mcare_gov_phi") {
+    const intr = medicareInterrupt(speech);
+    if (intr) return medicareInterruptReply(callId, voice, "mcare_gov_phi", intr, SCRIPT.PHI_PITCH);
     const yn = detectYesNo(speech, digit);
     if (yn === "yes") return medicareRouteBySlug(callId, "private-health-insurance", voice, call, "Private Health Insurance");
     const line = yn === "no" ? SCRIPT.REVERSE_PITCH : SCRIPT.PHI_PITCH;
@@ -285,6 +291,8 @@ export async function POST(req: NextRequest) {
 
   // ---- Medicare: upsell 3 — Reverse Mortgage ----
   if (phase === "mcare_gov_reverse") {
+    const intr = medicareInterrupt(speech);
+    if (intr) return medicareInterruptReply(callId, voice, "mcare_gov_reverse", intr, SCRIPT.REVERSE_PITCH);
     const yn = detectYesNo(speech, digit);
     if (yn === "yes") return medicareRouteBySlug(callId, "reverse-mortgage", voice, call, "Reverse Mortgage");
     const line = yn === "no" ? SCRIPT.RETIRE_PITCH : SCRIPT.REVERSE_PITCH;
@@ -294,8 +302,11 @@ export async function POST(req: NextRequest) {
 
   // ---- Medicare: upsell 4 — Retirement Planner ----
   if (phase === "mcare_gov_retire") {
+    const intr = medicareInterrupt(speech);
+    if (intr) return medicareInterruptReply(callId, voice, "mcare_gov_retire", intr, SCRIPT.RETIRE_PITCH);
     const yn = detectYesNo(speech, digit);
     if (yn === "yes") return medicareRouteBySlug(callId, "retirement-planner", voice, call, "Retirement Planner");
+    if (yn === null) { await logTurn(callId, "bot", SCRIPT.RETIRE_PITCH); return xml(gather(step("mcare_gov_retire", callId), voice, SCRIPT.RETIRE_PITCH)); }
     await logTurn(callId, "bot", SCRIPT.GOODBYE);
     return xml(`<Say voice="${voice}">${esc(SCRIPT.GOODBYE)}</Say><Hangup/>`);
   }
@@ -306,12 +317,13 @@ export async function POST(req: NextRequest) {
     if (intr) return medicareInterruptReply(callId, voice, "mcare_plan", intr, SCRIPT.PLAN_SS);
     const yn = detectYesNo(speech, digit);
     const enrolled = yn === "yes";
-    await db.educationalProgram.create({ data: { phone: call.fromNumber || "", state: call.state || "", source: "medicare-plan", enrolled, leadId: call.leadId } }).catch(() => {});
+    // Capture + text are best-effort; never block the TwiML response (avoids voice-webhook timeout).
+    db.educationalProgram.create({ data: { phone: call.fromNumber || "", state: call.state || "", source: "medicare-plan", enrolled, leadId: call.leadId } }).catch(() => {});
     const ss = ssPhoneForState(call.state || "");
     const body = enrolled
       ? `Thanks for calling 1-800-MEDIGAP. Here is the Social Security number you requested: ${ss}. You're enrolled in our free notification service — we'll text you timely reminders.`
       : `Thanks for calling 1-800-MEDIGAP. Here is the Social Security number you requested: ${ss}.`;
-    await sendStaticSms({ to: call.fromNumber || "", body, leadId: call.leadId });
+    void sendStaticSms({ to: call.fromNumber || "", body, leadId: call.leadId });
     const line = `Here is the number for Social Security: ${ss}. ${SCRIPT.GOODBYE}`;
     await logTurn(callId, "bot", line);
     return xml(`<Say voice="${voice}">${esc(line)}</Say><Hangup/>`);

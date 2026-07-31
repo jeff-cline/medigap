@@ -2,10 +2,13 @@ import { aiReply as realAiReply, type ChatMsg } from "@/lib/voice";
 
 type Intent = "gov" | "buy" | "plan";
 
-// Priority-ordered so specific plan/gov tokens beat generic "insurance".
-const PLAN_KW = ["retire", "retiring", "ready to retire", "sign up", "signup", "enroll", "part a", "part b", "part d", "start medicare", "get on medicare", "social security", "how do i get"];
-const GOV_KW = ["replace", "my card", "new card", "lost my card", "lost card", "didn't get", "did not get", "bill paid", "medicare.gov", "medicare dot gov", "government", "the office", "card"];
-const BUY_KW = ["buy", "quote", "how much", "save money on insurance", "advantage", "medicare advantage", "drug", "drug coverage", "supplement", "medigap", "plan g", "plan n", "need insurance", "insurance quote"];
+// Only STRONG, unambiguous tokens keyword-match; genuinely ambiguous phrasing
+// ("card", "sign up", "enroll", "insurance" alone) falls through to the AI fallback.
+// BUY is checked first so the one monetizable intent is never stolen by a broad
+// gov/plan token ("buy insurance, put it on my card" => buy, not gov).
+const BUY_KW = ["quote", "medicare advantage", "advantage", "medigap", "supplement", "drug coverage", "plan g", "plan n", "how much", "buy insurance", "insurance quote", "save money on insurance", "buy a plan", "purchase"];
+const PLAN_KW = ["social security", "part a", "part b", "part d", "retire", "retiring", "ready to retire", "start medicare", "get on medicare", "sign up for medicare", "signing up for medicare"];
+const GOV_KW = ["medicare card", "replace my card", "replace card", "new card", "lost my card", "lost card", "my card", "medicare.gov", "medicare dot gov", "didn't get a bill", "did not get a bill", "bill paid", "medicare office", "government office"];
 
 function hit(s: string, kws: string[]): boolean {
   return kws.some((k) => s.includes(k));
@@ -14,9 +17,9 @@ function hit(s: string, kws: string[]): boolean {
 export function classifyMedicareIntent(speech: string): Intent | null {
   const s = (speech || "").toLowerCase().trim();
   if (!s) return null;
+  if (hit(s, BUY_KW)) return "buy";
   if (hit(s, PLAN_KW)) return "plan";
   if (hit(s, GOV_KW)) return "gov";
-  if (hit(s, BUY_KW)) return "buy";
   return null;
 }
 
@@ -33,9 +36,12 @@ export function detectYesNo(speech: string, digit: string): "yes" | "no" | null 
 export function medicareInterrupt(speech: string): "what" | "service" | null {
   const s = (speech || "").toLowerCase().trim();
   if (!s) return null;
-  if (/\b(customer service|representative|rep|agent|speak to someone|real person)\b/.test(s)) return "service";
-  // "what" only when it's the gist (short), not embedded in a real intent
-  if (/\bwhat\b/.test(s) && !classifyMedicareIntent(s)) return "what";
+  // Only fire when the utterance carries NO real intent — so "I want an agent to sell me a plan"
+  // classifies as buy, not a service interrupt. "agent"/"rep" are too ambiguous in an insurance
+  // context to treat as a human-handoff request, so they're excluded here.
+  if (classifyMedicareIntent(s)) return null;
+  if (/\b(customer service|customer support|representative|speak to someone|speak to a person|real person|a human|human being)\b/.test(s)) return "service";
+  if (/\bwhat\b/.test(s)) return "what";
   return null;
 }
 
