@@ -85,8 +85,16 @@ export async function markHandled(sender: string): Promise<void> {
 
 // Reply to a consumer FROM the number they texted us on (forces From=ourNumber), then mark handled.
 export async function sendReply(input: { sender: string; ourNumber: string; body: string; leadId?: string | null }): Promise<{ ok: boolean; error?: string }> {
-  const cfg = { ...(await getTwilioCfg()), messagingSid: "", tollFree: input.ourNumber || undefined };
-  const r = await sendSms({ to: input.sender, body: input.body, leadId: input.leadId ?? undefined, cfg });
+  const base = await getTwilioCfg();
+  // 1-800-MEDIGAP main number — our reliable, SMS-capable sender. Reply from the number the
+  // consumer texted when we know it; otherwise (and if that number can't send) use the main number.
+  const MAIN = base.tollFree || "+18006334427";
+  const from = input.ourNumber || MAIN;
+  let r = await sendSms({ to: input.sender, body: input.body, leadId: input.leadId ?? undefined, cfg: { ...base, messagingSid: "", tollFree: from } });
+  if (!r.ok && from !== MAIN) {
+    // the specific number couldn't send (not SMS-capable) — fall back to the main 1-800-MEDIGAP number
+    r = await sendSms({ to: input.sender, body: input.body, leadId: input.leadId ?? undefined, cfg: { ...base, messagingSid: "", tollFree: MAIN } });
+  }
   if (r.ok) await markHandled(input.sender);
   return { ok: r.ok, error: r.error };
 }

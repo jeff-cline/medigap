@@ -80,9 +80,14 @@ export async function POST(req: NextRequest) {
     const canneds = await db.cannedResponse.findMany({ where: { active: true } });
     const hit = matchCanned(body, canneds as any);
     if (hit && hit.reply) {
-      const ourNumber = normalizePhone(to) || to;
-      const cfg = { ...(await (await import("@/lib/sms")).getTwilioCfg()), messagingSid: "", tollFree: ourNumber };
-      const sent = await sendSms({ to: e164, body: hit.reply, leadId: lead?.id, cfg });
+      const base = await (await import("@/lib/sms")).getTwilioCfg();
+      const MAIN = base.tollFree || "+18006334427"; // 1-800-MEDIGAP main number (reliable SMS sender)
+      const ourNumber = normalizePhone(to) || to || MAIN;
+      let sent = await sendSms({ to: e164, body: hit.reply, leadId: lead?.id, cfg: { ...base, messagingSid: "", tollFree: ourNumber } });
+      if (!sent.ok && ourNumber !== MAIN) {
+        // the number they texted can't send — fall back to the main 1-800-MEDIGAP number
+        sent = await sendSms({ to: e164, body: hit.reply, leadId: lead?.id, cfg: { ...base, messagingSid: "", tollFree: MAIN } });
+      }
       if (sent.ok) {
         await db.smsMessage.updateMany({ where: { to: e164, direction: "inbound", readAt: null }, data: { readAt: new Date() } }).catch(() => {});
         if (lead) await db.leadNote.create({ data: { leadId: lead.id, authorName: "Canned", body: `🤖 Auto-answered (${(hit as any).label || "canned"}): ${hit.reply}` } }).catch(() => {});
