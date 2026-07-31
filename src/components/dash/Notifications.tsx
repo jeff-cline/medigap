@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
 type Counts = { textsOutstanding: number; liveCalls: number; today: number; week: number; month: number; total: number };
 const ZERO: Counts = { textsOutstanding: 0, liveCalls: 0, today: 0, week: 0, month: 0, total: 0 };
@@ -51,12 +52,25 @@ export default function Notifications() {
         <div className="absolute right-0 mt-2 w-64 rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-lg z-50 p-3">
           <div className="text-xs uppercase text-[var(--muted)] mb-2">Notifications</div>
           <ul className="space-y-1 text-sm">
-            {rows.map(([label, val, color]) => (
-              <li key={label} className="flex items-center justify-between">
-                <span>{label}</span>
-                <span className="font-bold tabular-nums" style={color ? { color } : undefined}>{val}</span>
-              </li>
-            ))}
+            {rows.map(([label, val, color]) =>
+              label === "Texts to respond" ? (
+                <li key={label}>
+                  <Link
+                    href="/dashboard/unified"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center justify-between rounded px-1 -mx-1 py-0.5 hover:bg-[var(--panel2)]"
+                  >
+                    <span>{label}</span>
+                    <span className="font-bold tabular-nums" style={color ? { color } : undefined}>{val}</span>
+                  </Link>
+                </li>
+              ) : (
+                <li key={label} className="flex items-center justify-between">
+                  <span>{label}</span>
+                  <span className="font-bold tabular-nums" style={color ? { color } : undefined}>{val}</span>
+                </li>
+              )
+            )}
           </ul>
         </div>
       )}
