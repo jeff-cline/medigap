@@ -16,6 +16,7 @@ import { medicarePhoneForState, ssPhoneForState } from "@/lib/static/statephones
 import { sendStaticSms } from "@/lib/static/sms";
 import { routableIds } from "@/lib/static/routable";
 import { matchAgentRule, stuckRule } from "@/lib/static/agent-rules";
+import { nextBusinessDayAtMs } from "@/lib/schedule";
 
 const BASE = "https://medigap.plus";
 function xml(body: string) {
@@ -70,7 +71,15 @@ async function agentInterruptOrStuck(callId: string, phase: string, speech: stri
   let rule = matchAgentRule(speech, rules as any);
   if (!rule && missCount >= 2) rule = stuckRule(rules as any);
   if (!rule) return null;
-  if (rule.sms && call.fromNumber) void sendStaticSms({ to: call.fromNumber, body: rule.sms, leadId: call.leadId });
+  if (rule.sms && call.fromNumber) {
+    if (rule.smsWhen === "next_business_day") {
+      // schedule for the next business day (sent from the main number by the cron tick)
+      const sendAt = new Date(nextBusinessDayAtMs(Date.now(), rule.smsHour ?? 10, rule.smsMinute ?? 0));
+      void db.followupText.create({ data: { toNumber: normalizePhone(call.fromNumber) || call.fromNumber, calledNumber: "+18006334427", body: rule.sms, sendAt, callerName: "", state: call.state || "", leadId: call.leadId || null, callId } }).catch(() => {});
+    } else {
+      void sendStaticSms({ to: call.fromNumber, body: rule.sms, leadId: call.leadId });
+    }
+  }
   const line = rule.continueMenu ? `${rule.response} ${buildMenuPrompt(menu)}` : rule.response;
   await logTurn(callId, "bot", line);
   if (rule.continueMenu) return xml(gather(step(phase, callId), voice, line)); // fresh gather resets the miss counter

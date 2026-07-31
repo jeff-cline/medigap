@@ -32,11 +32,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
+  const clampInt = (v: unknown, lo: number, hi: number, dflt: number) => {
+    const n = Math.round(Number(v));
+    return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : dflt;
+  };
   const fields = {
     trigger: String(b.trigger || "").slice(0, 300),
     label: String(b.label || "").slice(0, 120),
     response: String(b.response || "").slice(0, 1000),
     sms: String(b.sms || "").slice(0, 1000),
+    smsWhen: b.smsWhen === "next_business_day" ? "next_business_day" : "immediate",
+    smsHour: clampInt(b.smsHour, 0, 23, 10),
+    smsMinute: clampInt(b.smsMinute, 0, 59, 0),
     continueMenu: b.continueMenu !== false,
     active: b.active !== false,
   };

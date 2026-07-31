@@ -1575,6 +1575,9 @@ model AgentRule {
   label        String   @default("")
   response     String   @default("") // spoken to the caller
   sms          String   @default("") // optional text sent from the 1-800-MEDIGAP main number
+  smsWhen      String   @default("immediate") // immediate | next_business_day
+  smsHour      Int      @default(10) // send hour (CST) when scheduled
+  smsMinute    Int      @default(0)
   continueMenu Boolean  @default(true) // re-offer the menu after handling (keep qualifying)
   active       Boolean  @default(true)
   builtin      Boolean  @default(false) // built-ins can't be deleted

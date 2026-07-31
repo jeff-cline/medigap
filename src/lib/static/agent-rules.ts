@@ -6,6 +6,9 @@ export type AgentRule = {
   label?: string;
   response: string;
   sms: string;
+  smsWhen?: string; // immediate | next_business_day
+  smsHour?: number;
+  smsMinute?: number;
   continueMenu: boolean;
   active: boolean;
   builtin?: boolean;

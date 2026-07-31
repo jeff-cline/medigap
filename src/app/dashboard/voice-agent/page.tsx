@@ -9,13 +9,17 @@ export const dynamic = "force-dynamic";
 type Turn = { role: "assistant" | "user"; text: string };
 
 export default async function VoiceAgentPage() {
-  const [agent, ai, recent, answeredCount, engineRows] = await Promise.all([
+  const [agent, ai, recent, answeredCount, engineRows, agentRules, moneyWordRows] = await Promise.all([
     getVoiceAgent(),
     getAIProvider(),
     db.call.findMany({ where: { transcript: { not: null } }, orderBy: { createdAt: "desc" }, take: 15, include: { lead: true } }),
     db.call.count({ where: { transcript: { not: null } } }),
     db.integration.findMany({ where: { key: { in: ["xai", "groq"] } } }),
+    db.agentRule.findMany({ select: { kind: true, trigger: true, active: true } }).catch(() => []),
+    db.staticMoneyWord.findMany({ where: { active: true }, select: { word: true } }).catch(() => []),
   ]);
+  const teachRules = agentRules.map((r) => ({ kind: r.kind, trigger: r.trigger, active: r.active }));
+  const teachMoneyWords = moneyWordRows.map((m) => m.word);
   const questions = getIntake(agent);
 
   // Engine cards: which are connected, est cost/call, rank highest/lowest by cost.
@@ -66,7 +70,7 @@ export default async function VoiceAgentPage() {
         {recent.length === 0 ? (
           <div className="card p-6 text-center text-[var(--muted)] text-sm">No AI-handled calls yet. Once xAI Grok is connected and a call comes into 1-800-MEDIGAP, the full conversation appears here.</div>
         ) : (
-          <TranscriptTeach>
+          <TranscriptTeach rules={teachRules} moneyWords={teachMoneyWords}>
           <div className="space-y-4">
             {recent.map((c) => {
               let dialogue: Turn[] = [];
