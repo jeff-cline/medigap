@@ -1403,6 +1403,7 @@ model StaticBuyer {
   active           Boolean         @default(true)
   dailyCap         Int             @default(0) // 0 = unlimited
   priorityWeight   Int             @default(1) // relative weight for weighted round-robin
+  payoutCents      Int             @default(0) // per-call payout ($ we get); 0 = use money-word Value
   dailyCount       Int             @default(0) // resets daily (CST)
   swrrCurrent      Int             @default(0) // smooth-weighted-round-robin running counter
   lastAssignedAt   DateTime?
