@@ -8,6 +8,9 @@ import Notifications from "@/components/dash/Notifications";
 
 const STAFF = ["god", "marketing", "accounting", "assistant"];
 
+// Always render fresh so the engine toggle reflects the live setting (Static is the default).
+export const dynamic = "force-dynamic";
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
   if (!session) redirect("/login");

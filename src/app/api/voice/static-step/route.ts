@@ -265,7 +265,10 @@ export async function POST(req: NextRequest) {
   if (phase === "offer") {
     const yes = /\b(yes|yeah|sure|ok|okay|please)\b/i.test(speech) || digit === "1";
     if (!yes) {
-      const line = "Sorry, we cannot help. We'll contact you when we have a money word available. Have a great day.";
+      const want = (call.moneyWord || "").trim();
+      const line = want
+        ? `Sorry, we can't help with ${want} right now. We'll reach out as soon as we have a ${want} specialist available. Have a great day.`
+        : "Sorry, we can't help right now. We'll reach out as soon as we have a specialist in your area. Have a great day.";
       await logTurn(callId, "bot", line);
       return xml(`<Say voice="${voice}">${esc(line)}</Say><Hangup/>`);
     }
@@ -280,7 +283,10 @@ export async function POST(req: NextRequest) {
         return xml(await transfer(callId, r.number, voice, r.buyerId, r.payoutCents > 0 ? r.payoutCents : (phi.valueCents || 0), r.billableSeconds));
       }
     }
-    const line = "Sorry, we cannot help. We'll contact you when we have a money word available. Have a great day.";
+    const want = (call.moneyWord || "").trim();
+    const line = want
+      ? `Sorry, we can't help with ${want} right now. We'll reach out as soon as we have a ${want} specialist available. Have a great day.`
+      : "Sorry, we can't help right now. We'll reach out as soon as we have a specialist in your area. Have a great day.";
     await logTurn(callId, "bot", line);
     return xml(`<Say voice="${voice}">${esc(line)}</Say><Hangup/>`);
   }
