@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 
 export const LEFT_NAV: [string, string, string][] = [
   ["Overview", "/dashboard", "▦"],
+  ["Unified", "/dashboard/unified", "💬"],
   ["JV / PE / VC", "/dashboard/jv", "💼"],
   ["Leads CRM", "/dashboard/leads", "👥"],
   ["Calls", "/dashboard/calls", "📞"],
