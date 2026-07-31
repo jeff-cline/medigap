@@ -1512,6 +1512,7 @@ model CannedResponse {
 model EducationalProgram {
   id        String   @id @default(cuid())
   phone     String
+  email     String   @default("") // optional; enables email delivery of notifications
   state     String   @default("")
   name      String   @default("")
   source    String   @default("") // e.g. "medicare-plan"
@@ -1520,4 +1521,36 @@ model EducationalProgram {
   createdAt DateTime @default(now())
 
   @@map("educational_program")
+}
+
+// Scheduled notifications for the free "Notification Service" — sent by SMS (and optional email)
+// to enrolled EducationalProgram members on a calendar date. Annual by default (e.g. Oct 15 each year).
+model NotificationEvent {
+  id           String   @id @default(cuid())
+  title        String   @default("")
+  message      String   @default("") // the SMS/email body
+  link         String   @default("") // optional link appended to the text
+  month        Int // 1-12
+  day          Int // 1-31
+  hour         Int      @default(9) // send hour (CST)
+  minute       Int      @default(0)
+  annual       Boolean  @default(true) // true = every year on month/day; false = one-time in `year`
+  year         Int      @default(0) // for one-time events
+  sendEmail    Boolean  @default(false) // also email members who have an email on file
+  active       Boolean  @default(true)
+  lastSentYear Int      @default(0) // idempotency: last calendar year this event fired
+  createdAt    DateTime @default(now())
+
+  @@map("notification_event")
+}
+
+// Saved el.ag short links (word → short URL), so staff can create + reuse them in canned answers.
+model Shortlink {
+  id        String   @id @default(cuid())
+  word      String   @unique
+  url       String
+  short     String
+  createdAt DateTime @default(now())
+
+  @@map("shortlink")
 }

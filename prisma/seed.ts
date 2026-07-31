@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { seedStaticMoneyWords } from "../src/lib/static/seed";
 import { ensureMedicareSubtree } from "../src/lib/static/medicare-seed";
+import { ensureNotificationSeed } from "../src/lib/notify-seed";
 import { seedCanned } from "../src/lib/canned-seed";
 
 const db = new PrismaClient();
@@ -52,6 +53,7 @@ async function main() {
   // --- Static engine money-word tabs (idempotent) ---
   await seedStaticMoneyWords(db);
   await ensureMedicareSubtree(db);
+  await ensureNotificationSeed(db);
 
   // --- Canned SMS responses (idempotent) ---
   await seedCanned(db);
