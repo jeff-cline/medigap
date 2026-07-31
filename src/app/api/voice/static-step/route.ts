@@ -6,7 +6,7 @@ import { getSettings } from "@/lib/logic";
 import { buildTree } from "@/lib/static/tree";
 import { listNodes, toFlat } from "@/lib/static/store";
 import { pickBuyerFor, pickBackupNumber, captureCallback } from "@/lib/static/routing";
-import { buildMenuPrompt, matchSelection, type MenuNode } from "@/lib/static/voice";
+import { buildMenuPrompt, matchSelection, normalizeState, type MenuNode } from "@/lib/static/voice";
 import { getHealthFallbackNumber } from "@/lib/static/settings";
 
 const BASE = "https://medigap.plus";
@@ -123,8 +123,11 @@ export async function POST(req: NextRequest) {
       await logTurn(callId, "bot", line);
       return xml(gather(step("state", callId), voice, line));
     }
-    if (call.leadId) await db.lead.update({ where: { id: call.leadId }, data: { state: speech.slice(0, 40) } }).catch(() => {});
-    await db.call.update({ where: { id: callId }, data: { state: speech.slice(0, 40) } }).catch(() => {});
+    const code = normalizeState(speech);
+    if (code) {
+      if (call.leadId) await db.lead.update({ where: { id: call.leadId }, data: { state: code } }).catch(() => {});
+      await db.call.update({ where: { id: callId }, data: { state: code } }).catch(() => {});
+    }
     const menu = await topMenu();
     const line = `Great. Please listen to the options menu in its entirety and select the one that serves you best. ${buildMenuPrompt(menu)}`;
     await logTurn(callId, "bot", line);

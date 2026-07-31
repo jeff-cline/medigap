@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildMenuPrompt, matchSelection, isAfterHours } from "./voice";
+import { buildMenuPrompt, matchSelection, isAfterHours, normalizeState } from "./voice";
 
 const NODES = [{ id: "a", word: "Precision Medicine" }, { id: "b", word: "Weight Loss" }, { id: "c", word: "Peptides" }];
 
@@ -39,5 +39,38 @@ describe("isAfterHours", () => {
   });
   it("false when days empty", () => {
     expect(isAfterHours({ afterHoursDays: "[]", afterHoursStart: 0, afterHoursEnd: 480 }, Date.UTC(2026, 6, 14, 12, 0, 0))).toBe(false);
+  });
+});
+
+describe("normalizeState", () => {
+  it("maps full state names to 2-letter codes", () => {
+    expect(normalizeState("texas")).toBe("TX");
+    expect(normalizeState("New York")).toBe("NY");
+    expect(normalizeState("CALIFORNIA")).toBe("CA");
+  });
+  it("handles compound state names", () => {
+    expect(normalizeState("north carolina")).toBe("NC");
+    expect(normalizeState("District of Columbia")).toBe("DC");
+  });
+  it("matches state name within longer text", () => {
+    expect(normalizeState("I'm in California")).toBe("CA");
+    expect(normalizeState("I'm calling from Texas")).toBe("TX");
+  });
+  it("accepts valid 2-letter codes case-insensitively", () => {
+    expect(normalizeState("tx")).toBe("TX");
+    expect(normalizeState("TX")).toBe("TX");
+    expect(normalizeState("ny")).toBe("NY");
+  });
+  it("handles DC variations", () => {
+    expect(normalizeState("washington dc")).toBe("DC");
+    expect(normalizeState("dc")).toBe("DC");
+  });
+  it("returns empty string for unrecognized input", () => {
+    expect(normalizeState("gibberish")).toBe("");
+    expect(normalizeState("zz")).toBe("");
+    expect(normalizeState("")).toBe("");
+  });
+  it("returns empty string for invalid 2-letter codes", () => {
+    expect(normalizeState("xx")).toBe("");
   });
 });
