@@ -15,6 +15,7 @@ function twiml(message?: string) {
 export async function POST(req: NextRequest) {
   const form = await req.formData().catch(() => null);
   const from = String(form?.get("From") || "");
+  const to = String(form?.get("To") || "");
   const body = String(form?.get("Body") || "").trim();
   const e164 = normalizePhone(from) || from;
   const keyword = body.toUpperCase();
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
       || (await db.lead.findFirst({ where: { phone: { contains: last10 } }, orderBy: { createdAt: "desc" } }))
     : null;
 
-  await db.smsMessage.create({ data: { to: e164, body, direction: "inbound", status: "received", leadId: lead?.id } });
+  await db.smsMessage.create({ data: { to: e164, body, direction: "inbound", status: "received", leadId: lead?.id, fromLabel: normalizePhone(to) || to } });
 
   if (["STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"].includes(keyword)) {
     if (lead) await db.lead.update({ where: { id: lead.id }, data: { smsOptOut: true } });
@@ -71,5 +72,21 @@ export async function POST(req: NextRequest) {
       sendSms({ to: FOUNDER.cell, body: `↩️ JV reply from ${who}: "${body.slice(0, 200)}" — manage: ${dealUrl}`, batch: "jv-reply-alert" }).catch(() => {});
     }
   }
+
+  // Consumer canned auto-answer: keyword match → reply from the number they texted + mark handled.
+  const { matchCanned } = await import("@/lib/canned");
+  const canneds = await db.cannedResponse.findMany({ where: { active: true } });
+  const hit = matchCanned(body, canneds as any);
+  if (hit && hit.reply) {
+    const ourNumber = normalizePhone(to) || to;
+    const cfg = { ...(await (await import("@/lib/sms")).getTwilioCfg()), messagingSid: "", tollFree: ourNumber };
+    const sent = await sendSms({ to: e164, body: hit.reply, leadId: lead?.id, cfg });
+    if (sent.ok) {
+      await db.smsMessage.updateMany({ where: { to: e164, direction: "inbound", readAt: null }, data: { readAt: new Date() } }).catch(() => {});
+      if (lead) await db.leadNote.create({ data: { leadId: lead.id, authorName: "Canned", body: `🤖 Auto-answered (${(hit as any).label || "canned"}): ${hit.reply}` } }).catch(() => {});
+    }
+    return twiml();
+  }
+  // else: no match → leave unread → shows as "need human response" in the unified inbox
   return twiml(); // no inline TwiML reply — we send via the API so it threads + logs
 }
