@@ -20,6 +20,8 @@ export default async function VoiceAgentPage() {
   ]);
   const teachRules = agentRules.map((r) => ({ kind: r.kind, trigger: r.trigger, active: r.active }));
   const teachMoneyWords = moneyWordRows.map((m) => m.word);
+  const shortlinkRows = await db.shortlink.findMany({ orderBy: { createdAt: "desc" }, take: 200 }).catch(() => []);
+  const teachShortlinks = shortlinkRows.map((s) => ({ id: s.id, word: s.word, short: s.short }));
   const questions = getIntake(agent);
 
   // Engine cards: which are connected, est cost/call, rank highest/lowest by cost.
@@ -70,7 +72,7 @@ export default async function VoiceAgentPage() {
         {recent.length === 0 ? (
           <div className="card p-6 text-center text-[var(--muted)] text-sm">No AI-handled calls yet. Once xAI Grok is connected and a call comes into 1-800-MEDIGAP, the full conversation appears here.</div>
         ) : (
-          <TranscriptTeach rules={teachRules} moneyWords={teachMoneyWords}>
+          <TranscriptTeach rules={teachRules} moneyWords={teachMoneyWords} shortlinks={teachShortlinks}>
           <div className="space-y-4">
             {recent.map((c) => {
               let dialogue: Turn[] = [];
