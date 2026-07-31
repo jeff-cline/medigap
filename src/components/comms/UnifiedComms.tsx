@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Section } from "@/components/ui";
+import { highlightKeywords } from "@/lib/highlight";
 import type { Thread, CannedRow } from "@/lib/inbox";
 
 type Props = { threads: Thread[]; numbers: string[]; canned: CannedRow[] };
@@ -24,6 +25,39 @@ export default function UnifiedComms({ threads, numbers, canned }: Props) {
   const [replyBody, setReplyBody] = useState("");
   const [shortenInput, setShortenInput] = useState("");
   const [cannedOpen, setCannedOpen] = useState(false);
+  const [selectedKeyword, setSelectedKeyword] = useState("");
+
+  // All active canned keywords — used to render known keywords green in the messages.
+  const activeKeywords = useMemo(
+    () => [
+      ...new Set(
+        canned
+          .filter((c) => c.active)
+          .flatMap((c) => parseKeywords(c.keywords))
+          .map((k) => k.trim().toLowerCase())
+          .filter(Boolean),
+      ),
+    ],
+    [canned]
+  );
+
+  // Render a message body with any known canned keyword highlighted green.
+  const renderBody = (body: string) =>
+    highlightKeywords(body, activeKeywords).map((seg, i) =>
+      seg.hit ? (
+        <mark key={i} className="rounded px-0.5 bg-[#12351f] text-[#3fb950]" title="known keyword — auto-answered">
+          {seg.text}
+        </mark>
+      ) : (
+        <span key={i}>{seg.text}</span>
+      )
+    );
+
+  // Capture a text selection inside the messages pane → candidate canned keyword.
+  const captureSelection = () => {
+    const sel = typeof window !== "undefined" ? window.getSelection()?.toString().trim() : "";
+    if (sel) setSelectedKeyword(sel);
+  };
 
   const filtered = useMemo(
     () => (filterNumber ? threads.filter((t) => t.ourNumber === filterNumber) : threads),
@@ -39,6 +73,7 @@ export default function UnifiedComms({ threads, numbers, canned }: Props) {
   useEffect(() => {
     setReplyBody("");
     setShortenInput("");
+    setSelectedKeyword("");
   }, [selected?.sender]);
 
   const run = async (fn: () => Promise<void>) => {
@@ -63,6 +98,32 @@ export default function UnifiedComms({ threads, numbers, canned }: Props) {
       });
       if (!res.ok) throw new Error(`Send failed (${res.status})`);
       setReplyBody("");
+      router.refresh();
+    });
+
+  // Save the highlighted text as a canned keyword AND send the reply now.
+  const canAndSend = () =>
+    run(async () => {
+      if (!selected || !replyBody.trim() || !selectedKeyword.trim()) return;
+      const res = await fetch("/api/inbox/can-and-send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sender: selected.sender,
+          ourNumber: selected.ourNumber,
+          body: replyBody.trim(),
+          leadId: selected.leadId,
+          keyword: selectedKeyword.trim(),
+        }),
+      });
+      if (!res.ok) throw new Error(`Can & Send failed (${res.status})`);
+      const data = await res.json();
+      if (!data.sent) {
+        setErr(`Saved "${selectedKeyword.trim()}" as a canned answer, but the reply could not send from ${selected.ourNumber || "that number"}.`);
+      } else {
+        setReplyBody("");
+      }
+      setSelectedKeyword("");
       router.refresh();
     });
 
@@ -177,7 +238,7 @@ export default function UnifiedComms({ threads, numbers, canned }: Props) {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto max-h-[45vh] space-y-2 mb-3">
+              <div className="flex-1 overflow-y-auto max-h-[45vh] space-y-2 mb-3" onMouseUp={captureSelection}>
                 {[...selected.messages].reverse().map((m) => (
                   <div key={m.id} className={`flex ${m.direction === "outbound" ? "justify-end" : "justify-start"}`}>
                     <div
@@ -185,7 +246,7 @@ export default function UnifiedComms({ threads, numbers, canned }: Props) {
                         m.direction === "outbound" ? "bg-[var(--brand)]/10 text-[var(--text)]" : "bg-[var(--panel2)]"
                       }`}
                     >
-                      <div className="whitespace-pre-wrap">{m.body}</div>
+                      <div className="whitespace-pre-wrap">{renderBody(m.body)}</div>
                       <div className="text-[10px] text-[var(--muted)] mt-1">{new Date(m.at).toLocaleString()}</div>
                     </div>
                   </div>
@@ -223,7 +284,27 @@ export default function UnifiedComms({ threads, numbers, canned }: Props) {
                   </button>
                 </div>
 
-                <div className="flex justify-end">
+                {selectedKeyword ? (
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-[var(--muted)]">Keyword to save:</span>
+                    <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 bg-[#12351f] text-[#3fb950]">
+                      “{selectedKeyword}”
+                      <button className="hover:text-white" title="clear" onClick={() => setSelectedKeyword("")}>✕</button>
+                    </span>
+                  </div>
+                ) : (
+                  <div className="text-[11px] text-[var(--muted)]">Tip: highlight a word in a text above, then “Can &amp; Send” to save it as a keyword.</div>
+                )}
+
+                <div className="flex justify-end gap-2">
+                  <button
+                    className="btn btn-ghost"
+                    title="Send this reply and save the highlighted keyword as a canned answer"
+                    disabled={busy || !replyBody.trim() || !selectedKeyword.trim()}
+                    onClick={canAndSend}
+                  >
+                    Can &amp; Send
+                  </button>
                   <button className="btn" disabled={busy || !replyBody.trim()} onClick={sendReply}>
                     Send
                   </button>
