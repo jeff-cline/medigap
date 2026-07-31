@@ -338,6 +338,7 @@ model Call {
   zip           String   @default("")
   state         String   @default("")
   durationSec   Int      @default(0)
+  connectSec    Int      @default(0) // buyer-leg talk time (DialCallDuration) — Static billing clock
   costCents     Int      @default(0) // Twilio charge for this call (persisted from backfill)
   direction     String   @default("inbound") // inbound|outbound
   status        String   @default("ringing") // ringing|connected|completed|missed
@@ -1404,6 +1405,8 @@ model StaticBuyer {
   dailyCap         Int             @default(0) // 0 = unlimited
   priorityWeight   Int             @default(1) // relative weight for weighted round-robin
   payoutCents      Int             @default(0) // per-call payout ($ we get); 0 = use money-word Value
+  states           String          @default("[]") // JSON 2-letter state codes this buyer takes; [] = all
+  billableSeconds  Int             @default(0)     // connect secs to bill (0 = never auto-bill)
   dailyCount       Int             @default(0) // resets daily (CST)
   swrrCurrent      Int             @default(0) // smooth-weighted-round-robin running counter
   lastAssignedAt   DateTime?
