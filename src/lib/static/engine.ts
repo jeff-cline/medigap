@@ -5,7 +5,8 @@ const KEY = "activeEngine";
 
 export async function getActiveEngine(): Promise<Engine> {
   const row = await db.setting.findUnique({ where: { key: KEY } }).catch(() => null);
-  return row?.value === "static" ? "static" : "fluid";
+  // Static is the default engine — only Fluid when explicitly set.
+  return row?.value === "fluid" ? "fluid" : "static";
 }
 
 export async function setActiveEngine(e: Engine): Promise<void> {
