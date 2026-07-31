@@ -4,6 +4,7 @@ import { getActiveEngine } from "@/lib/static/engine";
 import { Sidebar, UnitTabs } from "@/components/dash/Nav";
 import ImpersonationBar from "@/components/ImpersonationBar";
 import EngineToggle from "@/components/static/EngineToggle";
+import Notifications from "@/components/dash/Notifications";
 
 const STAFF = ["god", "marketing", "accounting", "assistant"];
 
@@ -24,7 +25,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <Sidebar email={session.email} role={session.role} />
       <div className="flex-1 min-w-0">
         {session.impersonatorEmail && <ImpersonationBar email={session.email} impersonator={session.impersonatorEmail} />}
-        {engine && <EngineToggle current={engine} />}
+        <div className="flex items-center justify-between gap-2 px-6 pt-2">
+          <div>{engine && <EngineToggle current={engine} />}</div>
+          <Notifications />
+        </div>
         <UnitTabs role={session.role} />
         <main className="p-6 max-w-[1400px]">{children}</main>
       </div>
