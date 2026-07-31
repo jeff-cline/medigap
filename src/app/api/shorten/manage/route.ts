@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { createShortlink, listShortlinks } from "@/lib/shorten";
+import { createShortlink, listShortlinks, bumpShortlinkUse } from "@/lib/shorten";
 
 const STAFF = ["god", "marketing", "accounting", "assistant"];
 
@@ -21,6 +21,10 @@ export async function POST(req: NextRequest) {
   const denied = await guard();
   if (denied) return denied;
   const b = await req.json().catch(() => ({}) as any);
+  if (b.action === "use") {
+    if (b.id) await bumpShortlinkUse(String(b.id));
+    return NextResponse.json({ ok: true });
+  }
   const r = await createShortlink(String(b.word || ""), String(b.url || ""));
   if (!r.ok) return NextResponse.json({ error: r.error || "Could not create." }, { status: 400 });
   return NextResponse.json({ short: r.short, links: await listShortlinks() });

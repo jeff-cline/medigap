@@ -3,8 +3,17 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { triggerConflicts, type ExistingRule } from "@/lib/static/trigger-check";
 
-type ShortLink = { id: string; word: string; short: string };
+type ShortLink = { id: string; word: string; short: string; uses: number };
 type Props = { children: React.ReactNode; rules: ExistingRule[]; moneyWords: string[]; shortlinks: ShortLink[] };
+
+// Bigger font for links used more often (keyword-cloud feel). All bright white.
+function cloudSize(uses: number): string {
+  if (uses >= 20) return "text-3xl";
+  if (uses >= 10) return "text-2xl";
+  if (uses >= 4) return "text-xl";
+  if (uses >= 1) return "text-lg";
+  return "text-base";
+}
 
 // Wraps transcript content: highlight a phrase → a button opens a modal to teach the agent a
 // response right there (with an overlap check, send-timing, and a click-to-insert link cloud).
@@ -58,12 +67,14 @@ function TeachModal({ initialTrigger, rules, moneyWords, shortlinks, onClose, on
 
   const conflicts = useMemo(() => triggerConflicts(trigger, { rules, moneyWords }), [trigger, rules, moneyWords]);
 
-  // Click a saved link → drop it into the text-to-send box AND copy it to the clipboard.
+  // Click a keyword → copy its short link (with confirmation it matched), drop it into the
+  // text-to-send box, and bump its use count so the most-used keywords grow in the cloud.
   const useLink = (l: ShortLink) => {
-    setSms((prev) => (prev.trim() ? `${prev.trim()} ${l.short}` : l.short));
     navigator.clipboard?.writeText(l.short).catch(() => {});
-    setCopied(l.short);
-    setTimeout(() => setCopied(""), 1500);
+    setSms((prev) => (prev.trim() ? `${prev.trim()} ${l.short}` : l.short));
+    setCopied(l.id);
+    setTimeout(() => setCopied(""), 2000);
+    fetch("/api/shorten/manage", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "use", id: l.id }) }).catch(() => {});
   };
 
   const save = async () => {
@@ -122,16 +133,21 @@ function TeachModal({ initialTrigger, rules, moneyWords, shortlinks, onClose, on
             )}
           </div>
 
-          {/* Right: saved short links — click to add to the text */}
+          {/* Right: keyword cloud — click a keyword to copy its link (+ add to text). Most-used = biggest. */}
           <div className="md:border-l md:border-[var(--border)] md:pl-5">
-            <div className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)] mb-2">Quick links</div>
-            <div className="text-[11px] text-[var(--muted)] mb-3">Click a link to drop it into the text (and copy it). Manage links in Unified.</div>
-            <div className="flex flex-col gap-1.5 max-h-[46vh] overflow-y-auto">
+            <div className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)] mb-1">Link keywords</div>
+            <div className="text-[11px] text-[var(--muted)] mb-3">Click a keyword to copy its link (and add it to the text). Most-used grow biggest.</div>
+            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2 max-h-[48vh] overflow-y-auto content-start">
               {shortlinks.length === 0 && <div className="text-xs text-[var(--muted)]">No saved links yet. Create them in the Unified inbox.</div>}
               {shortlinks.map((l) => (
-                <button key={l.id} onClick={() => useLink(l)} className="text-left rounded border border-[var(--border)] hover:border-[color:#1f6feb] px-2.5 py-1.5">
-                  <div className="text-sm font-medium truncate">{l.word}</div>
-                  <div className="text-[11px] text-[color:#388bfd] truncate">{copied === l.short ? "✓ added & copied" : l.short}</div>
+                <button
+                  key={l.id}
+                  onClick={() => useLink(l)}
+                  title={l.short}
+                  className={`font-semibold leading-tight text-white hover:text-[color:#66b2ff] transition-colors ${cloudSize(l.uses)}`}
+                >
+                  {l.word}
+                  {copied === l.id && <span className="ml-1 align-middle text-xs text-[color:#3fb950] font-normal">✓ copied</span>}
                 </button>
               ))}
             </div>

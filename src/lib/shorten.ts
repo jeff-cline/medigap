@@ -12,7 +12,12 @@ function slug(): string {
   return crypto.randomBytes(6).toString("base64url").replace(/[^a-zA-Z0-9]/g, "").slice(0, 7).toLowerCase() || Math.random().toString(36).slice(2, 9);
 }
 
-export type Shortlink = { id: string; word: string; url: string; short: string; createdAt: Date };
+export type Shortlink = { id: string; word: string; url: string; short: string; uses: number; createdAt: Date };
+
+// Bump a link's use count (drives the keyword-cloud font size). Never throws.
+export async function bumpShortlinkUse(id: string): Promise<void> {
+  await db.shortlink.update({ where: { id }, data: { uses: { increment: 1 } } }).catch(() => {});
+}
 
 // Create a short link with a SPECIFIC word (keyword) via el.ag, and save it locally so staff can
 // reuse it in canned answers. Returns { ok, short?, error? }. Never throws.

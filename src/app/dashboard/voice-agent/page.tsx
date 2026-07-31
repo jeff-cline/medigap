@@ -20,8 +20,8 @@ export default async function VoiceAgentPage() {
   ]);
   const teachRules = agentRules.map((r) => ({ kind: r.kind, trigger: r.trigger, active: r.active }));
   const teachMoneyWords = moneyWordRows.map((m) => m.word);
-  const shortlinkRows = await db.shortlink.findMany({ orderBy: { createdAt: "desc" }, take: 200 }).catch(() => []);
-  const teachShortlinks = shortlinkRows.map((s) => ({ id: s.id, word: s.word, short: s.short }));
+  const shortlinkRows = await db.shortlink.findMany({ orderBy: [{ uses: "desc" }, { createdAt: "desc" }], take: 200 }).catch(() => []);
+  const teachShortlinks = shortlinkRows.map((s) => ({ id: s.id, word: s.word, short: s.short, uses: s.uses }));
   const questions = getIntake(agent);
 
   // Engine cards: which are connected, est cost/call, rank highest/lowest by cost.

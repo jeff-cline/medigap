@@ -1593,6 +1593,7 @@ model Shortlink {
   word      String   @unique
   url       String
   short     String
+  uses      Int      @default(0) // times copied/used — drives the keyword-cloud font size
   createdAt DateTime @default(now())
 
   @@map("shortlink")
