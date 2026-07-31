@@ -35,11 +35,13 @@ async function nodeById(id: string) {
 
 async function logTurn(callId: string, role: "bot" | "caller", text: string) {
   if (!text) return;
-  const c = await db.call.findUnique({ where: { id: callId }, select: { transcript: true } });
-  let arr: { role: string; text: string }[] = [];
-  try { arr = JSON.parse(c?.transcript || "[]"); } catch { arr = []; }
-  arr.push({ role, text });
-  await db.call.update({ where: { id: callId }, data: { transcript: JSON.stringify(arr) } }).catch(() => {});
+  try {
+    const c = await db.call.findUnique({ where: { id: callId }, select: { transcript: true } });
+    let arr: { role: string; text: string }[] = [];
+    try { arr = JSON.parse(c?.transcript || "[]"); } catch { arr = []; }
+    arr.push({ role, text });
+    await db.call.update({ where: { id: callId }, data: { transcript: JSON.stringify(arr) } }).catch(() => {});
+  } catch { /* transcript logging must never break the call */ }
 }
 
 export async function staticGreeting(callId: string): Promise<string> {
@@ -78,23 +80,24 @@ export async function POST(req: NextRequest) {
   // ---- backup: primary dial didn't connect → try the buyer's backup number once ----
   if (phase === "backup") {
     const buyerId = url.searchParams.get("buyer") || "";
-    const amt = parseInt(url.searchParams.get("amt") || "0", 10);
-    const billSec = parseInt(url.searchParams.get("bill") || "0", 10);
-    const dialDur = parseInt(String(form?.get("DialCallDuration") || "0"), 10);
+    const isRetry = url.searchParams.get("retry") === "1";
+    const amt = parseInt(url.searchParams.get("amt") || "0", 10) || 0;
+    const billSec = parseInt(url.searchParams.get("bill") || "0", 10) || 0;
+    const dialDur = parseInt(String(form?.get("DialCallDuration") || "0"), 10) || 0;
     if (dialStatus === "completed") {
       const billed = billSec > 0 && dialDur >= billSec;
       await db.call.update({ where: { id: callId }, data: { connectSec: dialDur, ...(billed ? { priceCents: amt, realized: true } : {}) } }).catch(() => {});
       return xml(`<Hangup/>`);
     }
-    // not completed → record whatever connect time (0) then try backup number once
+    // not completed → record whatever connect time (0) then try backup number once (never on a retry)
     if (dialDur > 0) await db.call.update({ where: { id: callId }, data: { connectSec: dialDur } }).catch(() => {});
-    const backup = await pickBackupNumber(buyerId);
+    const backup = isRetry ? "" : await pickBackupNumber(buyerId);
     if (backup) {
       const call2 = await db.call.findUnique({ where: { id: callId } });
       const s = await getSettings();
       const callerId = normalizePhone(call2?.fromNumber || "") || s.raw["tollFreeCallerId"] || "+18006334427";
       const dest = normalizePhone(backup) || backup;
-      const action = step("backup", callId, `&buyer=${buyerId}&amt=${amt}&bill=${billSec}`);
+      const action = step("backup", callId, `&buyer=${buyerId}&amt=${amt}&bill=${billSec}&retry=1`);
       return xml(`<Dial timeout="25" callerId="${callerId}" record="record-from-answer-dual" action="${action}"><Number>${dest}</Number></Dial>`);
     }
     return xml(`<Say voice="${voice}">We're sorry, our specialist is unavailable. We'll call you right back. Goodbye.</Say><Hangup/>`);
