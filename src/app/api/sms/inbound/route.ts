@@ -73,20 +73,23 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Consumer canned auto-answer: keyword match → reply from the number they texted + mark handled.
-  const { matchCanned } = await import("@/lib/canned");
-  const canneds = await db.cannedResponse.findMany({ where: { active: true } });
-  const hit = matchCanned(body, canneds as any);
-  if (hit && hit.reply) {
-    const ourNumber = normalizePhone(to) || to;
-    const cfg = { ...(await (await import("@/lib/sms")).getTwilioCfg()), messagingSid: "", tollFree: ourNumber };
-    const sent = await sendSms({ to: e164, body: hit.reply, leadId: lead?.id, cfg });
-    if (sent.ok) {
-      await db.smsMessage.updateMany({ where: { to: e164, direction: "inbound", readAt: null }, data: { readAt: new Date() } }).catch(() => {});
-      if (lead) await db.leadNote.create({ data: { leadId: lead.id, authorName: "Canned", body: `🤖 Auto-answered (${(hit as any).label || "canned"}): ${hit.reply}` } }).catch(() => {});
+  // Consumer canned auto-answer — NON-JV, opted-in only (JV prospects get the founder flow above;
+  // opted-out numbers are never auto-messaged). Keyword match → reply from the number they texted + mark handled.
+  if (!isJv && !lead?.smsOptOut) {
+    const { matchCanned } = await import("@/lib/canned");
+    const canneds = await db.cannedResponse.findMany({ where: { active: true } });
+    const hit = matchCanned(body, canneds as any);
+    if (hit && hit.reply) {
+      const ourNumber = normalizePhone(to) || to;
+      const cfg = { ...(await (await import("@/lib/sms")).getTwilioCfg()), messagingSid: "", tollFree: ourNumber };
+      const sent = await sendSms({ to: e164, body: hit.reply, leadId: lead?.id, cfg });
+      if (sent.ok) {
+        await db.smsMessage.updateMany({ where: { to: e164, direction: "inbound", readAt: null }, data: { readAt: new Date() } }).catch(() => {});
+        if (lead) await db.leadNote.create({ data: { leadId: lead.id, authorName: "Canned", body: `🤖 Auto-answered (${(hit as any).label || "canned"}): ${hit.reply}` } }).catch(() => {});
+      }
+      return twiml();
     }
-    return twiml();
   }
-  // else: no match → leave unread → shows as "need human response" in the unified inbox
+  // no match / JV / opted-out → leave unread → shows as "need human response" in the unified inbox
   return twiml(); // no inline TwiML reply — we send via the API so it threads + logs
 }
