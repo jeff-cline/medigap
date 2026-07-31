@@ -15,6 +15,7 @@ import * as SCRIPT from "@/lib/static/medicare-scripts";
 import { medicarePhoneForState, ssPhoneForState } from "@/lib/static/statephones";
 import { sendStaticSms } from "@/lib/static/sms";
 import { routableIds } from "@/lib/static/routable";
+import { matchAgentRule, stuckRule } from "@/lib/static/agent-rules";
 
 const BASE = "https://medigap.plus";
 function xml(body: string) {
@@ -58,6 +59,22 @@ async function routableSet(): Promise<Set<string>> {
 async function routableChildMenu(parentId: string): Promise<MenuNode[]> {
   const [kids, rset] = await Promise.all([childMenu(parentId), routableSet()]);
   return kids.filter((k) => rset.has(k.id));
+}
+
+// Off-menu handling: when a caller's words match no money word, check the trainable AgentRules
+// (representative / "what?" / custom triggers), and after 2 unrecognized answers fire the "stuck"
+// helper. Speaks the rule's response, optionally texts info from the main number, then re-offers
+// the menu to keep qualifying. Returns TwiML or null (null → fall through to the normal re-prompt).
+async function agentInterruptOrStuck(callId: string, phase: string, speech: string, voice: string, call: any, menu: MenuNode[], missCount: number): Promise<Response | null> {
+  const rules = await db.agentRule.findMany({ where: { active: true } });
+  let rule = matchAgentRule(speech, rules as any);
+  if (!rule && missCount >= 2) rule = stuckRule(rules as any);
+  if (!rule) return null;
+  if (rule.sms && call.fromNumber) void sendStaticSms({ to: call.fromNumber, body: rule.sms, leadId: call.leadId });
+  const line = rule.continueMenu ? `${rule.response} ${buildMenuPrompt(menu)}` : rule.response;
+  await logTurn(callId, "bot", line);
+  if (rule.continueMenu) return xml(gather(step(phase, callId), voice, line)); // fresh gather resets the miss counter
+  return xml(`<Say voice="${voice}">${esc(line)}</Say><Hangup/>`);
 }
 
 async function logTurn(callId: string, role: "bot" | "caller", text: string) {
@@ -172,9 +189,12 @@ export async function POST(req: NextRequest) {
     if (menu.length === 0) return xml(`<Say voice="${voice}">We're sorry, no options are available right now. Goodbye.</Say><Hangup/>`);
     const hitId = matchSelection(speech, digit, menu);
     if (!hitId) {
+      const miss = parseInt(url.searchParams.get("nm") || "0", 10) + 1;
+      const handled = await agentInterruptOrStuck(callId, "menu", speech, voice, call, menu, miss);
+      if (handled) return handled;
       const line = `Sorry, I didn't catch that. ${buildMenuPrompt(menu)}`;
       await logTurn(callId, "bot", line);
-      return xml(gather(step("menu", callId), voice, line));
+      return xml(gather(step("menu", callId, `&nm=${miss}`), voice, line));
     }
     const hitNode = await nodeById(hitId);
     if (hitNode?.flowKey === "medicare") {
@@ -201,9 +221,12 @@ export async function POST(req: NextRequest) {
     if (kids.length === 0) return finishLeaf(callId, parentId, voice, call); // placeholders only → route the main word
     const hitId = matchSelection(speech, digit, kids);
     if (!hitId) {
+      const miss = parseInt(url.searchParams.get("nm") || "0", 10) + 1;
+      const handled = await agentInterruptOrStuck(callId, "submenu", speech, voice, call, kids, miss);
+      if (handled) return handled;
       const line = `Sorry, I didn't catch that. ${buildMenuPrompt(kids)}`;
       await logTurn(callId, "bot", line);
-      return xml(gather(step("submenu", callId), voice, line));
+      return xml(gather(step("submenu", callId, `&nm=${miss}`), voice, line));
     }
     const hitNode = await nodeById(hitId);
     if (hitNode?.flowKey === "medicare") {

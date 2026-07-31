@@ -3,6 +3,7 @@ import { getVoiceAgent, getAIProvider, VOICES, ENGINES, estCallCost, getIntake }
 import { Badge, Section, Stat, Card } from "@/components/ui";
 import { num, cst } from "@/lib/format";
 import VoiceAgentForm from "@/components/VoiceAgentForm";
+import TranscriptTeach from "@/components/static/TranscriptTeach";
 
 export const dynamic = "force-dynamic";
 type Turn = { role: "assistant" | "user"; text: string };
@@ -61,10 +62,11 @@ export default async function VoiceAgentPage() {
         />
       </Section>
 
-      <Section title="Call Transcripts" desc="Exactly what the AI said and what each caller answered — use this to refine the script & knowledge above.">
+      <Section title="Call Transcripts" desc="Exactly what the AI said and what each caller answered. Highlight anything a caller said → “Teach a response” to train the agent.">
         {recent.length === 0 ? (
           <div className="card p-6 text-center text-[var(--muted)] text-sm">No AI-handled calls yet. Once xAI Grok is connected and a call comes into 1-800-MEDIGAP, the full conversation appears here.</div>
         ) : (
+          <TranscriptTeach>
           <div className="space-y-4">
             {recent.map((c) => {
               let dialogue: Turn[] = [];
@@ -89,6 +91,7 @@ export default async function VoiceAgentPage() {
               );
             })}
           </div>
+          </TranscriptTeach>
         )}
       </Section>
     </>

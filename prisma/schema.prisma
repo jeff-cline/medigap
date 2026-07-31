@@ -1565,6 +1565,25 @@ model FollowupText {
   @@map("followup_text")
 }
 
+// Trainable off-menu responses for the Static voice agent: when a caller's words don't match a
+// money word, the engine speaks a rule's response, optionally texts info, then keeps qualifying.
+// Built-ins (representative / what / stuck) are editable but not deletable; custom rules match on trigger.
+model AgentRule {
+  id           String   @id @default(cuid())
+  kind         String   @default("custom") // custom | representative | what | stuck
+  trigger      String   @default("") // comma/pipe-separated phrases (custom rules); built-ins use fixed word-sets
+  label        String   @default("")
+  response     String   @default("") // spoken to the caller
+  sms          String   @default("") // optional text sent from the 1-800-MEDIGAP main number
+  continueMenu Boolean  @default(true) // re-offer the menu after handling (keep qualifying)
+  active       Boolean  @default(true)
+  builtin      Boolean  @default(false) // built-ins can't be deleted
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  @@map("agent_rule")
+}
+
 // Saved el.ag short links (word → short URL), so staff can create + reuse them in canned answers.
 model Shortlink {
   id        String   @id @default(cuid())
