@@ -3,7 +3,7 @@ import { selectBuyer, cstDayKey, type SwrrBuyer } from "./swrr";
 import { isAfterHours } from "./voice";
 import { Prisma } from "@prisma/client";
 
-export type RouteResult = { buyerId: string; number: string } | null;
+export type RouteResult = { buyerId: string; number: string; payoutCents: number } | null;
 
 function toSwrr(b: { id: string; priorityWeight: number; swrrCurrent: number; active: boolean; dailyCap: number; dailyCount: number }): SwrrBuyer {
   return { id: b.id, priorityWeight: b.priorityWeight, swrrCurrent: b.swrrCurrent, active: b.active, dailyCap: b.dailyCap, dailyCount: b.dailyCount };
@@ -66,7 +66,7 @@ export async function pickBuyerFor(leafId: string, ctx: { zip?: string }, nowMs:
           const useAfterHours = isAfterHours(chosen, nowMs) && !!chosen.afterHoursNumber;
           const number = (useAfterHours ? chosen.afterHoursNumber : chosen.defaultNumber) || "";
           if (!number) return null;
-          return { buyerId: chosen.id, number };
+          return { buyerId: chosen.id, number, payoutCents: chosen.payoutCents };
         },
         // Serializable + P2034 retry is the Postgres-prod concurrency safeguard against double-assign /
         // cap breach / SWRR skew; SQLite can't exercise that path but the atomic read+write is verified

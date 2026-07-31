@@ -21,10 +21,17 @@ describe("pickBuyerFor", () => {
     const mw = await leaf();
     const b = await db.staticBuyer.create({ data: { moneyWordId: mw, name: "Acme", defaultNumber: "+15551110000" } });
     const r = await pickBuyerFor(mw, {}, NOW);
-    expect(r).toEqual({ buyerId: b.id, number: "+15551110000" });
+    expect(r).toEqual({ buyerId: b.id, number: "+15551110000", payoutCents: 0 });
     const after = await db.staticBuyer.findUnique({ where: { id: b.id } });
     expect(after!.dailyCount).toBe(1);
     expect(after!.lastAssignedAt).not.toBeNull();
+  });
+
+  it("includes buyer payoutCents in routing result", async () => {
+    const mw = await leaf();
+    const b = await db.staticBuyer.create({ data: { moneyWordId: mw, name: "Premium", defaultNumber: "+15551110000", payoutCents: 5000 } });
+    const r = await pickBuyerFor(mw, {}, NOW);
+    expect(r!.payoutCents).toBe(5000);
   });
 
   it("honors an exact-ZIP rule over plain SWRR", async () => {

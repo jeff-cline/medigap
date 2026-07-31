@@ -6,7 +6,7 @@ export type ZipRuleRow = Awaited<ReturnType<typeof db.staticZipRule.findFirstOrT
 const EDITABLE_BUYER = new Set([
   "name", "defaultNumber", "afterHoursNumber", "backupNumber",
   "afterHoursDays", "afterHoursStart", "afterHoursEnd",
-  "active", "dailyCap", "priorityWeight",
+  "active", "dailyCap", "priorityWeight", "payoutCents",
 ]);
 
 export async function listBuyers(moneyWordId: string): Promise<BuyerRow[]> {
