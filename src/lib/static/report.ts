@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 export type CallRow = {
   id: string; createdAt: Date; moneyWord: string; state: string; toNumber: string;
   fromNumber: string; forwardedTo: string; disposition: string; durationSec: number;
-  priceCents: number; costCents: number;
+  connectSec: number; priceCents: number; costCents: number;
 };
 
 // Static calls only (disposition starts with "static"), newest first.
@@ -12,7 +12,7 @@ export async function staticCallReport(limit = 500): Promise<CallRow[]> {
   return rows.map((c) => ({
     id: c.id, createdAt: c.createdAt, moneyWord: c.moneyWord || "", state: c.state, toNumber: c.toNumber,
     fromNumber: c.fromNumber, forwardedTo: c.forwardedTo, disposition: c.disposition, durationSec: c.durationSec,
-    priceCents: c.priceCents, costCents: c.costCents,
+    connectSec: c.connectSec, priceCents: c.priceCents, costCents: c.costCents,
   }));
 }
 

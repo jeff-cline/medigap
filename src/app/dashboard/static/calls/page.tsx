@@ -19,19 +19,20 @@ export default async function StaticCallsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead><tr className="text-left text-[var(--muted)] text-xs uppercase">
-                <th className="py-1 pr-3">Time</th><th className="pr-3">Money Word</th><th className="pr-3">State</th><th className="pr-3">To #</th><th className="pr-3">From #</th><th className="pr-3">Landed</th><th className="pr-3">Duration</th><th className="pr-3">Paid</th><th className="pr-3">Cost</th>
+                <th className="py-1 pr-3">Time</th><th className="pr-3">Money Word</th><th className="pr-3">State</th><th className="pr-3">To #</th><th className="pr-3">From #</th><th className="pr-3">Landed</th><th className="pr-3">Duration</th><th className="pr-3">Connect</th><th className="pr-3">Paid</th><th className="pr-3">Cost</th>
               </tr></thead>
               <tbody>
-                {rows.length === 0 && <tr><td colSpan={9} className="py-3 text-[var(--muted)]">No Static calls yet.</td></tr>}
+                {rows.length === 0 && <tr><td colSpan={10} className="py-3 text-[var(--muted)]">No Static calls yet.</td></tr>}
                 {rows.map((r) => (
                   <tr key={r.id} className="border-t border-[var(--border)]">
                     <td className="py-1 pr-3 whitespace-nowrap">{r.createdAt.toLocaleString()}</td>
                     <td className="pr-3">{r.moneyWord || "—"}</td>
                     <td className="pr-3">{r.state || "—"}</td>
                     <td className="pr-3 font-mono">{r.toNumber}</td>
-                    <td className="pr-3 font-mono">{r.fromNumber}</td>
+                    <td className="pr-3 font-mono"><a className="text-[var(--gold)] underline" href={`/dashboard/static/calls/${r.id}`}>{r.fromNumber}</a></td>
                     <td className="pr-3 font-mono">{r.forwardedTo || (r.disposition === "static-nobuyer" ? "no buyer" : "—")}</td>
                     <td className={`pr-3 font-semibold ${DUR[durationBand(r.durationSec)]}`}>{r.durationSec}s</td>
+                    <td className="pr-3">{r.connectSec}s</td>
                     <td className="pr-3">{usd2(r.priceCents)}</td>
                     <td className="pr-3 text-[var(--muted)]">{usd2(r.costCents)}</td>
                   </tr>
