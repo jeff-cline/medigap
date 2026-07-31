@@ -61,3 +61,8 @@ export async function createZipRule(input: { moneyWordId: string; buyerId: strin
 export async function deleteZipRule(id: string): Promise<void> {
   await db.staticZipRule.delete({ where: { id } });
 }
+
+export async function hasActiveBuyers(moneyWordId: string): Promise<boolean> {
+  const n = await db.staticBuyer.count({ where: { moneyWordId, active: true, NOT: { defaultNumber: "" } } });
+  return n > 0;
+}

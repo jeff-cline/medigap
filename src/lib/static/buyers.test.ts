@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { db } from "@/lib/db";
-import { listBuyers, createBuyer, updateBuyer, deleteBuyer, listZipRules, createZipRule, deleteZipRule } from "./buyers";
+import { listBuyers, createBuyer, updateBuyer, deleteBuyer, listZipRules, createZipRule, deleteZipRule, hasActiveBuyers } from "./buyers";
 
 // self-cleaning: every test money word uses a zzztest- slug; cascade removes its buyers/zip rules
 async function makeLeaf(): Promise<string> {
@@ -53,6 +53,33 @@ describe("buyers store", () => {
     expect(await listZipRules(mw)).toHaveLength(1);
     await deleteBuyer(b.id);
     expect(await listZipRules(mw)).toHaveLength(0);
+  });
+
+  it("hasActiveBuyers: leaf with no buyers → false; after createBuyer → true; after inactive → false; blank number → false", async () => {
+    const mw = await makeLeaf();
+
+    // Leaf with no buyers → false
+    expect(await hasActiveBuyers(mw)).toBe(false);
+
+    // After createBuyer with a defaultNumber → true
+    const b1 = await createBuyer({ moneyWordId: mw, name: "Acme", defaultNumber: "+15551230000" });
+    expect(await hasActiveBuyers(mw)).toBe(true);
+
+    // After updateBuyer({active:false}) → false
+    await updateBuyer(b1.id, { active: false });
+    expect(await hasActiveBuyers(mw)).toBe(false);
+
+    // Activate again for next test
+    await updateBuyer(b1.id, { active: true });
+    expect(await hasActiveBuyers(mw)).toBe(true);
+
+    // A buyer with blank defaultNumber → false
+    const b2 = await createBuyer({ moneyWordId: mw, name: "Inactive Buyer", defaultNumber: "" });
+    await updateBuyer(b2.id, { active: true });
+    expect(await hasActiveBuyers(mw)).toBe(true); // b1 still has a number
+
+    await deleteBuyer(b1.id);
+    expect(await hasActiveBuyers(mw)).toBe(false); // only b2 left, it has no number
   });
 
 });

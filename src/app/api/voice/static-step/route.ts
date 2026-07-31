@@ -6,6 +6,7 @@ import { getSettings } from "@/lib/logic";
 import { buildTree } from "@/lib/static/tree";
 import { listNodes, toFlat } from "@/lib/static/store";
 import { pickBuyerFor, pickBackupNumber, captureCallback } from "@/lib/static/routing";
+import { hasActiveBuyers } from "@/lib/static/buyers";
 import { buildMenuPrompt, matchSelection, normalizeState, type MenuNode } from "@/lib/static/voice";
 import { getHealthFallbackNumber } from "@/lib/static/settings";
 
@@ -144,6 +145,7 @@ export async function POST(req: NextRequest) {
       await logTurn(callId, "bot", line);
       return xml(gather(step("menu", callId), voice, line));
     }
+    if (await hasActiveBuyers(hitId)) return finishLeaf(callId, hitId, voice, call);
     const kids = await childMenu(hitId);
     if (kids.length > 0) {
       await db.call.update({ where: { id: callId }, data: { moneyWord: hitId } }).catch(() => {});
@@ -165,6 +167,7 @@ export async function POST(req: NextRequest) {
       await logTurn(callId, "bot", line);
       return xml(gather(step("submenu", callId), voice, line));
     }
+    if (await hasActiveBuyers(hitId)) return finishLeaf(callId, hitId, voice, call);
     const grand = await childMenu(hitId);
     if (grand.length > 0) {
       await db.call.update({ where: { id: callId }, data: { moneyWord: hitId } }).catch(() => {});
