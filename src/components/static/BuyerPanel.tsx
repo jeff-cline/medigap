@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 type Buyer = {
   id: string; name: string; defaultNumber: string; afterHoursNumber: string | null; backupNumber: string | null;
   afterHoursDays: string; afterHoursStart: number | null; afterHoursEnd: number | null;
-  active: boolean; dailyCap: number; priorityWeight: number;
+  active: boolean; dailyCap: number; priorityWeight: number; payoutCents: number;
 };
 type ZipRule = { id: string; buyerId: string; zip: string; radiusMiles: number };
 
@@ -68,6 +68,7 @@ function BuyerRow({ buyer, busy, onSave, onDelete }: { buyer: Buyer; busy: boole
   const [backup, setBackup] = useState(buyer.backupNumber ?? "");
   const [weight, setWeight] = useState(String(buyer.priorityWeight));
   const [cap, setCap] = useState(String(buyer.dailyCap));
+  const [payout, setPayout] = useState(((buyer.payoutCents ?? 0) / 100).toString());
 
   const save = () => onSave({
     name: name.trim(),
@@ -76,6 +77,7 @@ function BuyerRow({ buyer, busy, onSave, onDelete }: { buyer: Buyer; busy: boole
     backupNumber: backup.trim() || null,
     priorityWeight: Math.max(0, parseInt(weight, 10) || 0),
     dailyCap: Math.max(0, parseInt(cap, 10) || 0),
+    payoutCents: Math.round((parseFloat(payout) || 0) * 100),
   });
 
   return (
@@ -87,6 +89,7 @@ function BuyerRow({ buyer, busy, onSave, onDelete }: { buyer: Buyer; busy: boole
         <div><label className={L}>Backup #</label><input className={F} value={backup} onChange={(e) => setBackup(e.target.value)} placeholder="optional" /></div>
         <div><label className={L}>Weight</label><input className={F} value={weight} onChange={(e) => setWeight(e.target.value)} /></div>
         <div><label className={L}>Daily cap (0=∞)</label><input className={F} value={cap} onChange={(e) => setCap(e.target.value)} /></div>
+        <div><label className={L}>Payout/call ($, 0=use word value)</label><input className={F} value={payout} onChange={(e) => setPayout(e.target.value)} /></div>
       </div>
       <div className="flex gap-2 items-center">
         <button className="btn" disabled={busy} onClick={save}>Save</button>
