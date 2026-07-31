@@ -1282,11 +1282,22 @@ model PdReseller {
   email        String   @unique
   phone        String   @default("")
   passHash     String
-  achName      String   @default("")     // Phase 2 payout capture (manual ACH)
+  role         String   @default("partner") // partner|sales_manager|regional_manager|vice_president|recruiter|accounting
+  parentId     String?                    // upline (who invited them) — override chain rolls up this
+  recruiterId  String?                    // recruiter who gets the first-sale flat bonus (separate from parentId)
+  activeGoodStanding Boolean @default(true) // quarterly-sale / exclusivity compliance
+  balanceCents Int      @default(0)        // chargeback balance owed back to the company
+  bankName     String   @default("")     // Phase 2 payout capture (manual ACH)
+  achName      String   @default("")
   achRouting   String   @default("")
   achAccount   String   @default("")
-  overridePct  Int      @default(0)      // Phase 2: God-set % of monthly (e.g. 10/15)
-  oneTimeCents Int      @default(0)      // Phase 2: God-set one-time payout
+  w9File       String   @default("")     // stored filename of uploaded W-9 (private dir)
+  w9At         DateTime?
+  agreementFile String  @default("")     // stored filename of signed 1099 agreement
+  agreementAt  DateTime?
+  overridePct  Int      @default(0)      // God-set % of monthly (e.g. 10/15)
+  oneTimeCents Int      @default(0)      // God-set one-time payout
+  oneTimePaid  Boolean  @default(false)  // one-time override settled
   createdAt    DateTime @default(now())
   clicks       PdClick[]
   leads        PdLead[]
@@ -1325,6 +1336,9 @@ model PdLead {
   amountCents     Int         @default(0)
   bonusCents      Int         @default(0)    // Phase 2: computed affiliate bonus
   bonusPaid       Boolean     @default(false) // once paid, affiliate stops seeing customer
+  bonusPaidAt     DateTime?
+  attributionConflict Boolean @default(false) // visitor clicked 2+ affiliates — first-touch kept credit, flag for God review
+  disposition     String      @default("New") // New|Interested|Hot|Sold|Not interested|Interested in other services
   createdAt       DateTime    @default(now())
   notes           PdLeadNote[]
   @@index([resellerId])
@@ -1358,6 +1372,39 @@ model PdCoupon {
   @@map("pd_coupon")
 }
 
+// Management-team invites. God (or a manager) creates one for a role; the link is emailed
+// out and the invitee accepts to create an account with that role + upline = inviter.
+model PdInvite {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String   @default("")
+  role      String   @default("partner") // role the invitee will receive
+  inviterId String?                       // upline (God = null)
+  used      Boolean  @default(false)
+  usedById  String?
+  createdAt DateTime @default(now())
+  @@map("pd_invite")
+}
+
+// Sales-side P&L ledger: revenue + expense lines, actual or projected, dated by calendar
+// month. Drives the executive sales pool (5% of sales − expenses, split among VPs).
+model PdLedger {
+  id            String   @id @default(cuid())
+  month         String   @default("")        // "YYYY-MM"
+  kind          String   @default("expense")  // "revenue" | "expense"
+  projected     Boolean  @default(false)      // true = planned, false = actual
+  category      String   @default("")
+  amountCents   Int      @default(0)
+  vendor        String   @default("")
+  note          String   @default("")
+  vpId          String?                        // tagged VP (null = company-wide)
+  createdByName String   @default("")
+  createdAt     DateTime @default(now())
+  @@index([month])
+  @@index([vpId])
+  @@map("pd_ledger")
+}
+
 // ---------------------------------------------------------------------------
 // STATIC ENGINE — Phase 1 money-word tab tree (independent of Fluid's MoneyWord)
 // ---------------------------------------------------------------------------
@@ -1370,6 +1417,7 @@ model StaticMoneyWord {
   active            Boolean           @default(true)
   word              String
   slug              String            @unique
+  flowKey           String            @default("") // non-empty => custom-flow dispatch (e.g. "medicare")
   valueCents        Int               @default(0)
   states            String            @default("[]") // JSON string[] of 2-letter codes; [] = all
   ageRule           String            @default("{}") // JSON { min?: number, max?: number }
@@ -1458,4 +1506,18 @@ model CannedResponse {
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
   @@map("canned_response")
+}
+
+// Free "notification service" signups captured by the Medicare PLAN path (Phase B builds the scheduler).
+model EducationalProgram {
+  id        String   @id @default(cuid())
+  phone     String
+  state     String   @default("")
+  name      String   @default("")
+  source    String   @default("") // e.g. "medicare-plan"
+  enrolled  Boolean  @default(true) // false = declined the notification service but still captured
+  leadId    String?
+  createdAt DateTime @default(now())
+
+  @@map("educational_program")
 }
