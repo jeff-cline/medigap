@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { seedStaticMoneyWords } from "../src/lib/static/seed";
+import { seedCanned } from "../src/lib/canned-seed";
 
 const db = new PrismaClient();
 const DEMO = process.env.SEED_DEMO === "1"; // demo/sample data only when explicitly requested
@@ -48,6 +49,9 @@ async function main() {
 
   // --- Static engine money-word tabs (idempotent) ---
   await seedStaticMoneyWords(db);
+
+  // --- Canned SMS responses (idempotent) ---
+  await seedCanned(db);
 
   if (!DEMO) { console.log("✅ Clean seed complete (no demo data) — God: jeff.cline@me.com / TEMP!234"); return; }
 

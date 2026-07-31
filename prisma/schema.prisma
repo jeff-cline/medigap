@@ -1447,3 +1447,15 @@ model StaticCallback {
   @@index([createdAt])
   @@map("static_callback")
 }
+
+// Keyword-triggered canned SMS answers for the unified consumer inbox.
+model CannedResponse {
+  id        String   @id @default(cuid())
+  label     String   @default("")
+  keywords  String   @default("[]") // JSON lowercase string[]; any match triggers
+  reply     String   @default("")
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  @@map("canned_response")
+}
