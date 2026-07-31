@@ -7,6 +7,7 @@ import { buildTree } from "@/lib/static/tree";
 import { listNodes, toFlat } from "@/lib/static/store";
 import { pickBuyerFor, pickBackupNumber, captureCallback } from "@/lib/static/routing";
 import { buildMenuPrompt, matchSelection, type MenuNode } from "@/lib/static/voice";
+import { getHealthFallbackNumber } from "@/lib/static/settings";
 
 const BASE = "https://medigap.plus";
 function xml(body: string) {
@@ -130,6 +131,26 @@ export async function POST(req: NextRequest) {
     return routeLeaf(callId, leafId, voice, call);
   }
 
+  // ---- offer: no buyer for the chosen leaf; offer the private-health-insurance upgrade ----
+  if (phase === "offer") {
+    const yes = /\byes|yeah|sure|ok|okay|please\b/i.test(speech) || digit === "1";
+    if (!yes) {
+      return xml(`<Say voice="${voice}">Sorry, we cannot help. We'll contact you when we have a money word available. Have a great day.</Say><Hangup/>`);
+    }
+    const fallback = await getHealthFallbackNumber();
+    if (fallback) return xml(await transfer(callId, fallback, voice, "health-fallback", 0));
+    // else route into the Private Health Insurance money word's buyers
+    const phi = await db.staticMoneyWord.findFirst({ where: { word: "Private Health Insurance", parentId: null } });
+    if (phi) {
+      const r = await pickBuyerFor(phi.id, { zip: call.zip || undefined }, Date.now());
+      if (r) {
+        await db.call.update({ where: { id: callId }, data: { moneyWord: "Private Health Insurance" } }).catch(() => {});
+        return xml(await transfer(callId, r.number, voice, r.buyerId, r.payoutCents > 0 ? r.payoutCents : (phi.valueCents || 0)));
+      }
+    }
+    return xml(`<Say voice="${voice}">Sorry, we cannot help. We'll contact you when we have a money word available. Have a great day.</Say><Hangup/>`);
+  }
+
   return xml(`<Say voice="${voice}">Goodbye.</Say><Hangup/>`);
 }
 
@@ -150,7 +171,7 @@ async function routeLeaf(callId: string, leafId: string, voice: string, call: an
   if (!res) {
     await captureCallback({ moneyWordId: leafId, word: node?.word || "", state: call.state || "", zip: call.zip || "", phone: call.fromNumber || "", note: "no buyer in area" });
     await db.call.update({ where: { id: callId }, data: { disposition: "static-nobuyer", moneyWord: node?.word || leafId } }).catch(() => {});
-    return xml(`<Say voice="${voice}">We're sorry, but we don't have ${esc(node?.word || "that")} in your area right now. We'll notify you when we do. Goodbye.</Say><Hangup/>`);
+    return xml(gather(step("offer", callId), voice, `We're sorry, we don't have a professional in your area for ${node?.word || "that"}. Would you like to compare private individual health insurance quotes to save time and money while we have you on the line? Say yes or no.`));
   }
   const revenueCents = res.payoutCents > 0 ? res.payoutCents : (node?.valueCents || 0);
   await db.call.update({ where: { id: callId }, data: { moneyWord: node?.word || leafId } }).catch(() => {});

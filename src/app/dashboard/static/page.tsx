@@ -6,6 +6,7 @@ import { Card, Section } from "@/components/ui";
 import StaticControls from "@/components/static/StaticControls";
 import { moneyWordCloud } from "@/lib/static/hotlist";
 import HotList from "@/components/static/HotList";
+import FallbackNumber from "@/components/static/FallbackNumber";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,11 @@ export default async function StaticPage({ searchParams }: { searchParams: Promi
         </Card>
       </Section>
       <HotList entries={cloud} />
+      <Section title="No-buyer fallback">
+        <Card>
+          <FallbackNumber />
+        </Card>
+      </Section>
       <StaticControls rows={rows} selected={node ?? null} />
     </div>
   );
