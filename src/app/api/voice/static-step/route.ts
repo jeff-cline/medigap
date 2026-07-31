@@ -10,6 +10,10 @@ import { hasActiveBuyers } from "@/lib/static/buyers";
 import { buildMenuPrompt, matchSelection, normalizeState, type MenuNode } from "@/lib/static/voice";
 import { getHealthFallbackNumber } from "@/lib/static/settings";
 import { verifyTwilioRequest } from "@/lib/twilio-verify";
+import { classifyMedicareIntent, classifyMedicareIntentAI, detectYesNo, medicareInterrupt } from "@/lib/static/medicare";
+import * as SCRIPT from "@/lib/static/medicare-scripts";
+import { medicarePhoneForState, ssPhoneForState } from "@/lib/static/statephones";
+import { sendStaticSms } from "@/lib/static/sms";
 
 const BASE = "https://medigap.plus";
 function xml(body: string) {
@@ -151,6 +155,12 @@ export async function POST(req: NextRequest) {
       await logTurn(callId, "bot", line);
       return xml(gather(step("menu", callId), voice, line));
     }
+    const hitNode = await nodeById(hitId);
+    if (hitNode?.flowKey === "medicare") {
+      await db.call.update({ where: { id: callId }, data: { moneyWord: hitId } }).catch(() => {});
+      await logTurn(callId, "bot", SCRIPT.GREETING);
+      return xml(gather(step("mcare_intent", callId), voice, SCRIPT.GREETING));
+    }
     if (await hasActiveBuyers(hitId)) return finishLeaf(callId, hitId, voice, call);
     const kids = await childMenu(hitId);
     if (kids.length > 0) {
@@ -172,6 +182,12 @@ export async function POST(req: NextRequest) {
       const line = `Sorry, I didn't catch that. ${buildMenuPrompt(kids)}`;
       await logTurn(callId, "bot", line);
       return xml(gather(step("submenu", callId), voice, line));
+    }
+    const hitNode = await nodeById(hitId);
+    if (hitNode?.flowKey === "medicare") {
+      await db.call.update({ where: { id: callId }, data: { moneyWord: hitId } }).catch(() => {});
+      await logTurn(callId, "bot", SCRIPT.GREETING);
+      return xml(gather(step("mcare_intent", callId), voice, SCRIPT.GREETING));
     }
     if (await hasActiveBuyers(hitId)) return finishLeaf(callId, hitId, voice, call);
     const grand = await childMenu(hitId);
@@ -215,7 +231,126 @@ export async function POST(req: NextRequest) {
     return xml(`<Say voice="${voice}">${esc(line)}</Say><Hangup/>`);
   }
 
+  // ---- Medicare: intent detection (hybrid keyword + AI) ----
+  if (phase === "mcare_intent") {
+    const intr = medicareInterrupt(speech);
+    if (intr) return medicareInterruptReply(callId, voice, "mcare_intent", intr, SCRIPT.GREETING);
+    let intent = classifyMedicareIntent(speech);
+    if (!intent && speech) intent = await classifyMedicareIntentAI(speech);
+    if (!intent) {
+      const line = `I can help with three things. ${SCRIPT.GREETING}`;
+      await logTurn(callId, "bot", line);
+      return xml(gather(step("mcare_intent", callId), voice, line));
+    }
+    if (intent === "buy") return medicareRouteBySlug(callId, "medicare-insurance", voice, call, "Medicare Insurance");
+    if (intent === "plan") {
+      await logTurn(callId, "bot", SCRIPT.PLAN_SS);
+      return xml(gather(step("mcare_plan", callId), voice, SCRIPT.PLAN_SS));
+    }
+    // gov
+    await logTurn(callId, "bot", SCRIPT.GOV_CONFIRM);
+    return xml(gather(step("mcare_gov_confirm", callId), voice, SCRIPT.GOV_CONFIRM));
+  }
+
+  // ---- Medicare: GOV confirm → text the state Medicare number, then upsell cascade ----
+  if (phase === "mcare_gov_confirm") {
+    const yn = detectYesNo(speech, digit);
+    if (yn === "no") { await logTurn(callId, "bot", SCRIPT.GOODBYE); return xml(`<Say voice="${voice}">${esc(SCRIPT.GOODBYE)}</Say><Hangup/>`); }
+    if (yn !== "yes") { await logTurn(callId, "bot", SCRIPT.GOV_CONFIRM); return xml(gather(step("mcare_gov_confirm", callId), voice, SCRIPT.GOV_CONFIRM)); }
+    // yes → send the state Medicare office number now
+    const num = medicarePhoneForState(call.state || "");
+    await sendStaticSms({ to: call.fromNumber || "", body: `Thank you for calling 1-800-MEDIGAP. Here is the number you requested: ${num}`, leadId: call.leadId });
+    const line = `${SCRIPT.GOV_YES_ACK} ${SCRIPT.LIFE_PITCH}`;
+    await logTurn(callId, "bot", line);
+    return xml(gather(step("mcare_gov_life", callId), voice, line));
+  }
+
+  // ---- Medicare: upsell 1 — Life Insurance ----
+  if (phase === "mcare_gov_life") {
+    const yn = detectYesNo(speech, digit);
+    if (yn === "yes") return medicareRouteBySlug(callId, "life-insurance", voice, call, "Life Insurance");
+    const line = yn === "no" ? SCRIPT.PHI_PITCH : SCRIPT.LIFE_PITCH;
+    await logTurn(callId, "bot", line);
+    return xml(gather(step(yn === "no" ? "mcare_gov_phi" : "mcare_gov_life", callId), voice, line));
+  }
+
+  // ---- Medicare: upsell 2 — Private Health Insurance ----
+  if (phase === "mcare_gov_phi") {
+    const yn = detectYesNo(speech, digit);
+    if (yn === "yes") return medicareRouteBySlug(callId, "private-health-insurance", voice, call, "Private Health Insurance");
+    const line = yn === "no" ? SCRIPT.REVERSE_PITCH : SCRIPT.PHI_PITCH;
+    await logTurn(callId, "bot", line);
+    return xml(gather(step(yn === "no" ? "mcare_gov_reverse" : "mcare_gov_phi", callId), voice, line));
+  }
+
+  // ---- Medicare: upsell 3 — Reverse Mortgage ----
+  if (phase === "mcare_gov_reverse") {
+    const yn = detectYesNo(speech, digit);
+    if (yn === "yes") return medicareRouteBySlug(callId, "reverse-mortgage", voice, call, "Reverse Mortgage");
+    const line = yn === "no" ? SCRIPT.RETIRE_PITCH : SCRIPT.REVERSE_PITCH;
+    await logTurn(callId, "bot", line);
+    return xml(gather(step(yn === "no" ? "mcare_gov_retire" : "mcare_gov_reverse", callId), voice, line));
+  }
+
+  // ---- Medicare: upsell 4 — Retirement Planner ----
+  if (phase === "mcare_gov_retire") {
+    const yn = detectYesNo(speech, digit);
+    if (yn === "yes") return medicareRouteBySlug(callId, "retirement-planner", voice, call, "Retirement Planner");
+    await logTurn(callId, "bot", SCRIPT.GOODBYE);
+    return xml(`<Say voice="${voice}">${esc(SCRIPT.GOODBYE)}</Say><Hangup/>`);
+  }
+
+  // ---- Medicare: PLAN — Social Security + Educational Program enroll ----
+  if (phase === "mcare_plan") {
+    const intr = medicareInterrupt(speech);
+    if (intr) return medicareInterruptReply(callId, voice, "mcare_plan", intr, SCRIPT.PLAN_SS);
+    const yn = detectYesNo(speech, digit);
+    const enrolled = yn === "yes";
+    await db.educationalProgram.create({ data: { phone: call.fromNumber || "", state: call.state || "", source: "medicare-plan", enrolled, leadId: call.leadId } }).catch(() => {});
+    const ss = ssPhoneForState(call.state || "");
+    const body = enrolled
+      ? `Thanks for calling 1-800-MEDIGAP. Here is the Social Security number you requested: ${ss}. You're enrolled in our free notification service — we'll text you timely reminders.`
+      : `Thanks for calling 1-800-MEDIGAP. Here is the Social Security number you requested: ${ss}.`;
+    await sendStaticSms({ to: call.fromNumber || "", body, leadId: call.leadId });
+    const line = `Here is the number for Social Security: ${ss}. ${SCRIPT.GOODBYE}`;
+    await logTurn(callId, "bot", line);
+    return xml(`<Say voice="${voice}">${esc(line)}</Say><Hangup/>`);
+  }
+
   return xml(`<Say voice="${voice}">Goodbye.</Say><Hangup/>`);
+}
+
+// Re-speak a Medicare prompt after a "what"/"customer service" interrupt.
+async function medicareMenuLine(): Promise<string> {
+  const menu = await topMenu();
+  return buildMenuPrompt(menu);
+}
+async function medicareInterruptReply(callId: string, voice: string, phase: string, kind: "what" | "service", prompt: string): Promise<Response> {
+  const ctx = kind === "what" ? SCRIPT.WHAT_CONTEXT : SCRIPT.CUSTOMER_SERVICE_CONTEXT;
+  const line = `${ctx} ${await medicareMenuLine()} ${prompt}`;
+  await logTurn(callId, "bot", line);
+  return xml(gather(step(phase, callId), voice, line));
+}
+
+// Speak the transfer script for a target money word (by slug) then route to its buyer, or fall back.
+async function medicareRouteBySlug(callId: string, slug: string, voice: string, call: any, label: string): Promise<Response> {
+  const node = await db.staticMoneyWord.findFirst({ where: { slug } });
+  if (!node) {
+    await logTurn(callId, "bot", SCRIPT.GOODBYE);
+    return xml(`<Say voice="${voice}">${esc(SCRIPT.GOODBYE)}</Say><Hangup/>`);
+  }
+  const res = await pickBuyerFor(node.id, { zip: call.zip || undefined, state: call.state || undefined }, Date.now());
+  if (!res) {
+    await captureCallback({ moneyWordId: node.id, word: node.word, state: call.state || "", zip: call.zip || "", phone: call.fromNumber || "", note: "medicare route: no buyer" });
+    await db.call.update({ where: { id: callId }, data: { disposition: "static-nobuyer", moneyWord: node.word } }).catch(() => {});
+    const line = `We don't have a ${label} professional available right now, but we have you and will follow up. ${SCRIPT.GOODBYE}`;
+    await logTurn(callId, "bot", line);
+    return xml(`<Say voice="${voice}">${esc(line)}</Say><Hangup/>`);
+  }
+  const revenueCents = res.payoutCents > 0 ? res.payoutCents : (node.valueCents || 0);
+  await db.call.update({ where: { id: callId }, data: { moneyWord: node.word, disposition: "static" } }).catch(() => {});
+  const say = `<Say voice="${voice}">${esc(SCRIPT.transferScript(label))}</Say>`;
+  return xml(say + (await transfer(callId, res.number, voice, res.buyerId, revenueCents, res.billableSeconds)));
 }
 
 // A leaf was selected: speak its askQuestionPrompt (if any) then route on the next hop.
