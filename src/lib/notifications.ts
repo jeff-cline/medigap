@@ -44,10 +44,10 @@ export function cstStartOf(now: Date, unit: "day" | "week" | "month"): Date {
 const LIVE = ["in-progress", "ringing", "connected", "transferring"];
 
 export async function notificationCounts(now: Date = new Date()): Promise<Counts> {
-  const threeHoursAgo = new Date(now.getTime() - 3 * 3600_000);
+  const activeCutoff = new Date(now.getTime() - 15 * 60_000); // live = active status within 15 min (avoids stuck never-completed calls)
   const [textsOutstanding, liveCalls, today, week, month, total] = await Promise.all([
     db.smsMessage.count({ where: { direction: "inbound", readAt: null } }),
-    db.call.count({ where: { status: { in: LIVE }, createdAt: { gte: threeHoursAgo } } }),
+    db.call.count({ where: { status: { in: LIVE }, createdAt: { gte: activeCutoff } } }),
     db.call.count({ where: { createdAt: { gte: cstStartOf(now, "day") } } }),
     db.call.count({ where: { createdAt: { gte: cstStartOf(now, "week") } } }),
     db.call.count({ where: { createdAt: { gte: cstStartOf(now, "month") } } }),
