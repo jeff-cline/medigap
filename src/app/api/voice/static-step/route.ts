@@ -38,12 +38,12 @@ export async function staticGreeting(callId: string): Promise<string> {
 }
 
 // Build the buyer transfer (caller-ID passthrough), with backup on no-answer via the status action.
-async function transfer(callId: string, number: string, voice: string, buyerId: string): Promise<string> {
+async function transfer(callId: string, number: string, voice: string, buyerId: string, revenueCents: number): Promise<string> {
   const call = await db.call.findUnique({ where: { id: callId } });
   const s = await getSettings();
   const dest = normalizePhone(number) || number;
   const callerId = normalizePhone(call?.fromNumber || "") || s.raw["tollFreeCallerId"] || "+18006334427";
-  await db.call.update({ where: { id: callId }, data: { forwardedTo: dest, status: "transferring", disposition: "static" } }).catch(() => {});
+  await db.call.update({ where: { id: callId }, data: { forwardedTo: dest, status: "transferring", disposition: "static", priceCents: revenueCents, realized: true } }).catch(() => {});
   const action = step("backup", callId, `&buyer=${buyerId}`);
   return `<Dial timeout="25" callerId="${callerId}" record="record-from-answer-dual" action="${action}"><Number>${dest}</Number></Dial>`;
 }
@@ -152,6 +152,7 @@ async function routeLeaf(callId: string, leafId: string, voice: string, call: an
     await db.call.update({ where: { id: callId }, data: { disposition: "static-nobuyer", moneyWord: node?.word || leafId } }).catch(() => {});
     return xml(`<Say voice="${voice}">We're sorry, but we don't have ${esc(node?.word || "that")} in your area right now. We'll notify you when we do. Goodbye.</Say><Hangup/>`);
   }
+  const revenueCents = res.payoutCents > 0 ? res.payoutCents : (node?.valueCents || 0);
   await db.call.update({ where: { id: callId }, data: { moneyWord: node?.word || leafId } }).catch(() => {});
-  return xml(await transfer(callId, res.number, voice, res.buyerId));
+  return xml(await transfer(callId, res.number, voice, res.buyerId, revenueCents));
 }
