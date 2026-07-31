@@ -8,7 +8,8 @@ export async function POST(req: NextRequest) {
   const callSid = String(form?.get("CallSid") || "");
   const status = String(form?.get("CallStatus") || form?.get("DialCallStatus") || "");
   const duration = parseInt(String(form?.get("CallDuration") || form?.get("DialCallDuration") || "0"), 10);
-  const recordingUrl = String(form?.get("RecordingUrl") || "");
+  const recordingUrlRaw = String(form?.get("RecordingUrl") || "");
+  const recordingUrl = recordingUrlRaw.startsWith("https://api.twilio.com/") ? recordingUrlRaw : "";
 
   if (callSid) {
     const data: Record<string, unknown> = {};
