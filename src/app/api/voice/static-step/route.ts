@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
 
   // ---- offer: no buyer for the chosen leaf; offer the private-health-insurance upgrade ----
   if (phase === "offer") {
-    const yes = /\byes|yeah|sure|ok|okay|please\b/i.test(speech) || digit === "1";
+    const yes = /\b(yes|yeah|sure|ok|okay|please)\b/i.test(speech) || digit === "1";
     if (!yes) {
       return xml(`<Say voice="${voice}">Sorry, we cannot help. We'll contact you when we have a money word available. Have a great day.</Say><Hangup/>`);
     }
