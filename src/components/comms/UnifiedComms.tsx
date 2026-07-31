@@ -54,9 +54,12 @@ export default function UnifiedComms({ threads, numbers, canned }: Props) {
     );
 
   // Capture a text selection inside the messages pane → candidate canned keyword.
+  // Collapse whitespace + cap length so a sloppy multi-line drag can't become a junk keyword
+  // (mirrors the server's normalizeKeyword).
   const captureSelection = () => {
-    const sel = typeof window !== "undefined" ? window.getSelection()?.toString().trim() : "";
-    if (sel) setSelectedKeyword(sel);
+    const raw = typeof window !== "undefined" ? window.getSelection()?.toString() ?? "" : "";
+    const kw = raw.replace(/\s+/g, " ").trim().slice(0, 60);
+    if (kw) setSelectedKeyword(kw);
   };
 
   const filtered = useMemo(
@@ -116,10 +119,13 @@ export default function UnifiedComms({ threads, numbers, canned }: Props) {
           keyword: selectedKeyword.trim(),
         }),
       });
-      if (!res.ok) throw new Error(`Can & Send failed (${res.status})`);
-      const data = await res.json();
-      if (!data.sent) {
-        setErr(`Saved "${selectedKeyword.trim()}" as a canned answer, but the reply could not send from ${selected.ourNumber || "that number"}.`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Can & Send failed (${res.status})`);
+      const kw = selectedKeyword.trim();
+      if (!data.saved) {
+        setErr(`The reply sent, but "${kw}" could not be saved as a canned answer — add it manually below.`);
+      } else if (!data.sent) {
+        setErr(`Saved "${kw}" as a canned answer, but the reply could not send from ${selected.ourNumber || "that number"}.`);
       } else {
         setReplyBody("");
       }
