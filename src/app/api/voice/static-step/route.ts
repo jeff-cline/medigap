@@ -9,6 +9,7 @@ import { pickBuyerFor, pickBackupNumber, captureCallback } from "@/lib/static/ro
 import { hasActiveBuyers } from "@/lib/static/buyers";
 import { buildMenuPrompt, matchSelection, normalizeState, type MenuNode } from "@/lib/static/voice";
 import { getHealthFallbackNumber } from "@/lib/static/settings";
+import { verifyTwilioRequest } from "@/lib/twilio-verify";
 
 const BASE = "https://medigap.plus";
 function xml(body: string) {
@@ -68,6 +69,11 @@ export async function POST(req: NextRequest) {
   const callId = url.searchParams.get("callId") || "";
   const phase = url.searchParams.get("phase") || "age";
   const form = await req.formData().catch(() => null);
+  const params: Record<string, string> = {};
+  if (form) for (const [k, v] of form.entries()) params[k] = String(v);
+  if (!(await verifyTwilioRequest(req, params))) {
+    return new Response("forbidden", { status: 403 });
+  }
   const speech = String(form?.get("SpeechResult") || "").trim();
   const digit = String(form?.get("Digits") || "").trim();
   const dialStatus = String(form?.get("DialCallStatus") || "");
