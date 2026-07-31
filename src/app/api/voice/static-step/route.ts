@@ -14,6 +14,7 @@ import { classifyMedicareIntent, classifyMedicareIntentAI, detectYesNo, medicare
 import * as SCRIPT from "@/lib/static/medicare-scripts";
 import { medicarePhoneForState, ssPhoneForState } from "@/lib/static/statephones";
 import { sendStaticSms } from "@/lib/static/sms";
+import { routableIds } from "@/lib/static/routable";
 
 const BASE = "https://medigap.plus";
 function xml(body: string) {
@@ -37,6 +38,26 @@ async function childMenu(parentId: string): Promise<MenuNode[]> {
 }
 async function nodeById(id: string) {
   return db.staticMoneyWord.findUnique({ where: { id } });
+}
+
+// Money words that can actually route a call (have active buyers, a custom flow, or a routable
+// descendant). Empty placeholder sub-words (e.g. the default "New Sub-Word") are excluded.
+async function routableSet(): Promise<Set<string>> {
+  const [rows, buyers, flows] = await Promise.all([
+    listNodes(),
+    db.staticBuyer.findMany({ where: { active: true }, select: { moneyWordId: true } }),
+    db.staticMoneyWord.findMany({ where: { NOT: { flowKey: "" } }, select: { id: true } }),
+  ]);
+  const tree = buildTree(toFlat(rows));
+  // seed = nodes that are directly routable (have buyers OR run a custom flow); routableIds bubbles up
+  const seed = new Set<string>([...buyers.map((b) => b.moneyWordId), ...flows.map((f) => f.id)]);
+  return routableIds(tree as any, seed);
+}
+// Children of a node that are worth offering — hides unconfigured placeholders so the engine
+// never speaks "New Sub-Word" and instead routes the parent ("main word").
+async function routableChildMenu(parentId: string): Promise<MenuNode[]> {
+  const [kids, rset] = await Promise.all([childMenu(parentId), routableSet()]);
+  return kids.filter((k) => rset.has(k.id));
 }
 
 async function logTurn(callId: string, role: "bot" | "caller", text: string) {
@@ -162,21 +183,22 @@ export async function POST(req: NextRequest) {
       return xml(gather(step("mcare_intent", callId), voice, SCRIPT.GREETING));
     }
     if (await hasActiveBuyers(hitId)) return finishLeaf(callId, hitId, voice, call);
-    const kids = await childMenu(hitId);
+    const kids = await routableChildMenu(hitId);
     if (kids.length > 0) {
       await db.call.update({ where: { id: callId }, data: { moneyWord: hitId } }).catch(() => {});
       const line = `${buildMenuPrompt(kids)}`;
       await logTurn(callId, "bot", line);
       return xml(gather(step("submenu", callId), voice, line));
     }
+    // no real sub-words configured → route the main word itself (never announce a placeholder)
     return finishLeaf(callId, hitId, voice, call);
   }
 
   // ---- submenu (children of the selected category) ----
   if (phase === "submenu") {
     const parentId = call.moneyWord || "";
-    const kids = await childMenu(parentId);
-    if (kids.length === 0) return xml(`<Say voice="${voice}">We're sorry, no options are available right now. Goodbye.</Say><Hangup/>`);
+    const kids = await routableChildMenu(parentId);
+    if (kids.length === 0) return finishLeaf(callId, parentId, voice, call); // placeholders only → route the main word
     const hitId = matchSelection(speech, digit, kids);
     if (!hitId) {
       const line = `Sorry, I didn't catch that. ${buildMenuPrompt(kids)}`;
@@ -190,7 +212,7 @@ export async function POST(req: NextRequest) {
       return xml(gather(step("mcare_intent", callId), voice, SCRIPT.GREETING));
     }
     if (await hasActiveBuyers(hitId)) return finishLeaf(callId, hitId, voice, call);
-    const grand = await childMenu(hitId);
+    const grand = await routableChildMenu(hitId);
     if (grand.length > 0) {
       await db.call.update({ where: { id: callId }, data: { moneyWord: hitId } }).catch(() => {});
       const line = `${buildMenuPrompt(grand)}`;
