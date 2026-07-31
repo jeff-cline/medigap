@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
-import { unifiedThreads, cannedList } from "@/lib/inbox";
+import { unifiedThreads, cannedList, outboundLog } from "@/lib/inbox";
+import { listShortlinks } from "@/lib/shorten";
 import UnifiedComms from "@/components/comms/UnifiedComms";
 
 const STAFF = ["god", "marketing", "accounting", "assistant"];
@@ -12,7 +13,7 @@ export default async function UnifiedPage() {
   if (!s || !STAFF.includes(s.role)) redirect("/dashboard");
 
   const { threads, numbers } = await unifiedThreads();
-  const canned = await cannedList();
+  const [canned, outbound, shortlinks] = await Promise.all([cannedList(), outboundLog(), listShortlinks()]);
 
-  return <UnifiedComms threads={threads} numbers={numbers} canned={canned} />;
+  return <UnifiedComms threads={threads} numbers={numbers} canned={canned} outbound={outbound} shortlinks={shortlinks} />;
 }

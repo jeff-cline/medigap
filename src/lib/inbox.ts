@@ -53,6 +53,15 @@ export async function unifiedThreads(limit = 500): Promise<{ threads: Thread[]; 
   return { threads, numbers };
 }
 
+export type OutboundRow = { id: string; to: string; from: string; body: string; status: string; at: string };
+
+// Every outbound SMS we've sent — to whom, what, and from which number — newest first.
+// Lets staff watch that the flow is actually delivering.
+export async function outboundLog(limit = 300): Promise<OutboundRow[]> {
+  const rows = await db.smsMessage.findMany({ where: { direction: "outbound" }, orderBy: { createdAt: "desc" }, take: limit });
+  return rows.map((r) => ({ id: r.id, to: r.to, from: r.fromLabel || "", body: r.body, status: r.status, at: r.createdAt.toISOString() }));
+}
+
 export async function cannedList(): Promise<CannedRow[]> {
   return db.cannedResponse.findMany({ orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] });
 }

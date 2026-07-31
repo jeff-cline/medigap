@@ -3,9 +3,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Section } from "@/components/ui";
 import { highlightKeywords } from "@/lib/highlight";
-import type { Thread, CannedRow } from "@/lib/inbox";
+import type { Thread, CannedRow, OutboundRow } from "@/lib/inbox";
+import type { Shortlink } from "@/lib/shorten";
 
-type Props = { threads: Thread[]; numbers: string[]; canned: CannedRow[] };
+type Props = { threads: Thread[]; numbers: string[]; canned: CannedRow[]; outbound: OutboundRow[]; shortlinks: Shortlink[] };
+type View = "needs" | "responded" | "outbound";
 
 function parseKeywords(raw: string): string[] {
   try {
@@ -16,8 +18,9 @@ function parseKeywords(raw: string): string[] {
   }
 }
 
-export default function UnifiedComms({ threads, numbers, canned }: Props) {
+export default function UnifiedComms({ threads, numbers, canned, outbound, shortlinks }: Props) {
   const router = useRouter();
+  const [view, setView] = useState<View>("needs");
   const [filterNumber, setFilterNumber] = useState("");
   const [selectedSender, setSelectedSender] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -62,9 +65,16 @@ export default function UnifiedComms({ threads, numbers, canned }: Props) {
     if (kw) setSelectedKeyword(kw);
   };
 
-  const filtered = useMemo(
-    () => (filterNumber ? threads.filter((t) => t.ourNumber === filterNumber) : threads),
-    [threads, filterNumber]
+  const filtered = useMemo(() => {
+    let ts = filterNumber ? threads.filter((t) => t.ourNumber === filterNumber) : threads;
+    if (view === "needs") ts = ts.filter((t) => t.needsHuman);
+    else if (view === "responded") ts = ts.filter((t) => !t.needsHuman);
+    return ts;
+  }, [threads, filterNumber, view]);
+
+  const filteredOutbound = useMemo(
+    () => (filterNumber ? outbound.filter((o) => o.from === filterNumber) : outbound),
+    [outbound, filterNumber]
   );
 
   const selected = useMemo(
@@ -200,12 +210,47 @@ export default function UnifiedComms({ threads, numbers, canned }: Props) {
         </div>
       </div>
 
+      <div className="flex gap-1 mb-4 border-b border-[var(--border)]">
+        {([
+          ["needs", `Needs response (${threads.filter((t) => t.needsHuman).length})`],
+          ["responded", "Responded"],
+          ["outbound", `Outbound log (${outbound.length})`],
+        ] as [View, string][]).map(([v, label]) => (
+          <button
+            key={v}
+            onClick={() => setView(v)}
+            className={`px-3 py-2 text-sm font-medium -mb-px border-b-2 ${view === v ? "border-[var(--brand)] text-[var(--text)]" : "border-transparent text-[var(--muted)] hover:text-[var(--text)]"}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       {err && <div className="rounded border border-[var(--danger)] text-[var(--danger)] text-sm px-3 py-2 mb-4">{err}</div>}
 
+      {view === "outbound" ? (
+        <div className="card !p-0 overflow-hidden">
+          <div className="max-h-[70vh] overflow-y-auto divide-y divide-[var(--border)]">
+            {filteredOutbound.length === 0 && <div className="p-4 text-sm text-[var(--muted)]">No outbound messages yet.</div>}
+            {filteredOutbound.map((o) => (
+              <div key={o.id} className="px-4 py-2.5">
+                <div className="flex items-center justify-between gap-2 text-xs text-[var(--muted)]">
+                  <span>to {o.to} · from {o.from || "—"}</span>
+                  <span className="flex items-center gap-2">
+                    <span className={o.status === "failed" || o.status === "skipped" ? "text-[var(--danger)]" : "text-[color:#3fb950]"}>{o.status}</span>
+                    {new Date(o.at).toLocaleString()}
+                  </span>
+                </div>
+                <div className="text-sm mt-0.5 whitespace-pre-wrap">{o.body}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
       <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
         <div className="card !p-0 overflow-hidden">
           <div className="max-h-[70vh] overflow-y-auto divide-y divide-[var(--border)]">
-            {filtered.length === 0 && <div className="p-4 text-sm text-[var(--muted)]">No threads.</div>}
+            {filtered.length === 0 && <div className="p-4 text-sm text-[var(--muted)]">{view === "needs" ? "Nothing needs a response right now. 🎉" : "No responded threads yet."}</div>}
             {filtered.map((t) => {
               const active = selected?.sender === t.sender;
               const snippet = t.messages[0]?.body ?? "";
@@ -321,6 +366,8 @@ export default function UnifiedComms({ threads, numbers, canned }: Props) {
         </div>
       </div>
 
+      )}
+
       <div className="mt-6">
         <button className="text-sm font-semibold text-[var(--muted)] hover:text-[var(--text)]" onClick={() => setCannedOpen((v) => !v)}>
           {cannedOpen ? "▾" : "▸"} Canned answers
@@ -331,7 +378,71 @@ export default function UnifiedComms({ threads, numbers, canned }: Props) {
           </div>
         )}
       </div>
+
+      <div className="mt-8 pt-6 border-t border-[var(--border)]">
+        <ShortenerManager shortlinks={shortlinks} />
+      </div>
     </>
+  );
+}
+
+function ShortenerManager({ shortlinks }: { shortlinks: Shortlink[] }) {
+  const router = useRouter();
+  const [word, setWord] = useState("");
+  const [url, setUrl] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [copied, setCopied] = useState("");
+
+  const create = async () => {
+    setBusy(true);
+    setErr(null);
+    try {
+      const res = await fetch("/api/shorten/manage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ word: word.trim(), url: url.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Failed (${res.status})`);
+      setWord("");
+      setUrl("");
+      router.refresh();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const copy = (s: string) => {
+    navigator.clipboard?.writeText(s).then(() => {
+      setCopied(s);
+      setTimeout(() => setCopied(""), 1500);
+    }).catch(() => {});
+  };
+
+  return (
+    <Section title="Link shortener" desc="Create a short el.ag link from a word + URL, then reuse it in canned answers.">
+      {err && <div className="rounded border border-[var(--danger)] text-[var(--danger)] text-sm px-3 py-2 mb-3">{err}</div>}
+      <div className="card mb-3">
+        <div className="grid gap-2 md:grid-cols-[180px_1fr_auto] items-center">
+          <input className="rounded border border-[var(--border)] bg-[var(--panel)] px-2 py-1 text-sm" placeholder="word (e.g. medicare-plans)" value={word} onChange={(e) => setWord(e.target.value)} />
+          <input className="rounded border border-[var(--border)] bg-[var(--panel)] px-2 py-1 text-sm" placeholder="https://…" value={url} onChange={(e) => setUrl(e.target.value)} />
+          <button className="btn" disabled={busy || !word.trim() || !url.trim()} onClick={create}>Create link</button>
+        </div>
+      </div>
+      <div className="space-y-1">
+        {shortlinks.length === 0 && <div className="text-sm text-[var(--muted)]">No short links yet.</div>}
+        {shortlinks.map((l) => (
+          <div key={l.id} className="flex items-center gap-3 rounded border border-[var(--border)] px-3 py-2 text-sm">
+            <span className="font-medium w-40 truncate" title={l.word}>{l.word}</span>
+            <a href={l.short} target="_blank" rel="noreferrer" className="text-[var(--brand)] truncate flex-1" title={l.url}>{l.short}</a>
+            <button className="btn btn-ghost text-xs shrink-0" onClick={() => copy(l.short)}>{copied === l.short ? "Copied!" : "Copy"}</button>
+          </div>
+        ))}
+      </div>
+    </Section>
   );
 }
 
