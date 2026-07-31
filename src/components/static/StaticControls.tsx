@@ -109,9 +109,8 @@ function NodeForm({ row, busy, isLeaf, onSave, onDelete }: { row: Row; busy: boo
         <button className="btn" disabled={busy} onClick={onDelete}>Delete</button>
       </div>
       <div className="text-[11px] text-[var(--muted)] mb-2">Saves the fields above. Buyers below each save on their own.</div>
-      {isLeaf
-        ? <BuyerPanel moneyWordId={row.id} />
-        : <div className="text-xs text-[var(--muted)] mb-3">This is a <b>category</b> (has sub-tabs) — only leaf money words route to buyers.</div>}
+      {!isLeaf && <div className="text-xs text-[var(--muted)] mb-2">This tab has sub-tabs. If you add buyers here, callers route to the <b>buyers</b>; with no buyers they hear the sub-tab menu.</div>}
+      <BuyerPanel moneyWordId={row.id} />
       <div className="text-xs text-[var(--muted)] mt-3 mb-0">Text template · voice — <b>Phase 4</b>.</div>
     </div>
   );
