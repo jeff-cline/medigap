@@ -104,7 +104,7 @@ function RuleEditor({ rule, busy, onSave, desc, deletable }: { rule: Rule; busy:
       {!rule.builtin && (
         <input className="w-full rounded border border-[var(--border)] bg-[var(--panel)] px-2 py-1 text-sm mb-2" placeholder="Trigger phrases (comma-separated)" value={trigger} onChange={(e) => setTrigger(e.target.value)} />
       )}
-      <label className="block text-xs text-[var(--muted)] mb-1">What the agent says</label>
+      <label className="block text-xs text-[var(--muted)] mb-1">Guidance for the agent <span className="text-[var(--muted)]">(context — replies in its own words)</span></label>
       <textarea className="w-full rounded border border-[var(--border)] bg-[var(--panel)] px-2 py-2 text-sm min-h-[60px] mb-2" value={response} onChange={(e) => setResponse(e.target.value)} />
       <label className="block text-xs text-[var(--muted)] mb-1">Text to send from 1-800-MEDIGAP (optional)</label>
       <textarea className="w-full rounded border border-[var(--border)] bg-[var(--panel)] px-2 py-2 text-sm min-h-[50px] mb-2" value={sms} onChange={(e) => setSms(e.target.value)} />
@@ -140,7 +140,7 @@ function NewRule({ busy, onSave, prefillTrigger, rules, moneyWords }: { busy: bo
           {conflicts.map((c, i) => <div key={i}>• {c}</div>)}
         </div>
       ) : (trigger.trim() && <div className="text-xs text-[color:#3fb950] mb-2">✓ No overlap — unique trigger.</div>)}
-      <textarea className="w-full rounded border border-[var(--border)] bg-[var(--panel)] px-2 py-2 text-sm min-h-[60px] mb-2" placeholder="What the agent should say…" value={response} onChange={(e) => setResponse(e.target.value)} />
+      <textarea className="w-full rounded border border-[var(--border)] bg-[var(--panel)] px-2 py-2 text-sm min-h-[60px] mb-2" placeholder="Guidance / context for the agent (it replies in its own words)…" value={response} onChange={(e) => setResponse(e.target.value)} />
       <textarea className="w-full rounded border border-[var(--border)] bg-[var(--panel)] px-2 py-2 text-sm min-h-[50px] mb-2" placeholder="Text to send from 1-800-MEDIGAP (optional)…" value={sms} onChange={(e) => setSms(e.target.value)} />
       <TimingControls sms={sms} smsWhen={smsWhen} setSmsWhen={setSmsWhen} smsHour={smsHour} setSmsHour={setSmsHour} />
       <button className="btn" disabled={busy || !trigger.trim()} onClick={add}>+ Add rule</button>

@@ -6,14 +6,17 @@ import { triggerConflicts, type ExistingRule } from "@/lib/static/trigger-check"
 type ShortLink = { id: string; word: string; short: string; uses: number };
 type Props = { children: React.ReactNode; rules: ExistingRule[]; moneyWords: string[]; shortlinks: ShortLink[] };
 
-// Bigger font for links used more often (keyword-cloud feel). All bright white.
-function cloudSize(uses: number): string {
-  if (uses >= 20) return "text-3xl";
-  if (uses >= 10) return "text-2xl";
-  if (uses >= 4) return "text-xl";
-  if (uses >= 1) return "text-lg";
-  return "text-base";
+// Keyword-cloud font size: varied by word (so it looks like a cloud immediately) and boosted by use.
+const CLOUD_SIZES = ["text-base", "text-lg", "text-xl", "text-2xl", "text-3xl", "text-4xl"];
+function cloudSize(word: string, uses: number): string {
+  let h = 0;
+  for (let i = 0; i < word.length; i++) h += word.charCodeAt(i);
+  const base = h % 3; // 0..2 — deterministic variety so a fresh cloud has different sizes
+  const boost = uses >= 15 ? 3 : uses >= 8 ? 2 : uses >= 3 ? 1 : 0;
+  return CLOUD_SIZES[Math.min(CLOUD_SIZES.length - 1, base + boost)];
 }
+// Show the keyword as plain words (no hyphens); the copied link keeps its real slug.
+const prettyWord = (w: string) => w.replace(/[-_]+/g, " ").trim();
 
 // Wraps transcript content: highlight a phrase → a button opens a modal to teach the agent a
 // response right there (with an overlap check, send-timing, and a click-to-insert link cloud).
@@ -115,8 +118,8 @@ function TeachModal({ initialTrigger, rules, moneyWords, shortlinks, onClose, on
               trigger.trim() && <div className="text-xs text-[color:#3fb950] mb-3">✓ No overlap — this trigger is unique.</div>
             )}
 
-            <label className="block text-xs text-[var(--muted)] mb-1">What the agent says</label>
-            <textarea className="w-full rounded border border-[var(--border)] bg-[var(--panel2)] px-2 py-2 text-sm min-h-[80px] mb-3" placeholder="e.g. I can text you more information — meanwhile, let me see how we can help." value={response} onChange={(e) => setResponse(e.target.value)} />
+            <label className="block text-xs text-[var(--muted)] mb-1">Guidance for the agent <span className="text-[var(--muted)]">(context — the agent replies in its own words, not read verbatim)</span></label>
+            <textarea className="w-full rounded border border-[var(--border)] bg-[var(--panel2)] px-2 py-2 text-sm min-h-[80px] mb-3" placeholder="e.g. Reassure them, offer to text more info, and steer back to how we can help." value={response} onChange={(e) => setResponse(e.target.value)} />
 
             <label className="block text-xs text-[var(--muted)] mb-1">Text to send from 1-800-MEDIGAP (optional)</label>
             <textarea className="w-full rounded border border-[var(--border)] bg-[var(--panel2)] px-2 py-2 text-sm min-h-[70px] mb-2" placeholder="Info + a link (click a link on the right to add it)…" value={sms} onChange={(e) => setSms(e.target.value)} />
@@ -144,9 +147,9 @@ function TeachModal({ initialTrigger, rules, moneyWords, shortlinks, onClose, on
                   key={l.id}
                   onClick={() => useLink(l)}
                   title={l.short}
-                  className={`font-semibold leading-tight text-white hover:text-[color:#66b2ff] transition-colors ${cloudSize(l.uses)}`}
+                  className={`font-semibold leading-tight text-white hover:text-[color:#66b2ff] transition-colors ${cloudSize(l.word, l.uses)}`}
                 >
-                  {l.word}
+                  {prettyWord(l.word)}
                   {copied === l.id && <span className="ml-1 align-middle text-xs text-[color:#3fb950] font-normal">✓ copied</span>}
                 </button>
               ))}

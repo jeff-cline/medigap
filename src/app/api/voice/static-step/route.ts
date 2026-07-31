@@ -16,6 +16,7 @@ import { medicarePhoneForState, ssPhoneForState } from "@/lib/static/statephones
 import { sendStaticSms } from "@/lib/static/sms";
 import { routableIds } from "@/lib/static/routable";
 import { matchAgentRule, stuckRule } from "@/lib/static/agent-rules";
+import { responseFromContext } from "@/lib/static/agent-response";
 import { nextBusinessDayAtMs } from "@/lib/schedule";
 
 const BASE = "https://medigap.plus";
@@ -80,7 +81,10 @@ async function agentInterruptOrStuck(callId: string, phase: string, speech: stri
       void sendStaticSms({ to: call.fromNumber, body: rule.sms, leadId: call.leadId });
     }
   }
-  const line = rule.continueMenu ? `${rule.response} ${buildMenuPrompt(menu)}` : rule.response;
+  // The rule's "response" is guidance/context — the agent phrases its own reply (AI, with a
+  // verbatim fallback if no AI provider is configured).
+  const spoken = (await responseFromContext(rule.response, speech)) || rule.response;
+  const line = rule.continueMenu ? `${spoken} ${buildMenuPrompt(menu)}` : spoken;
   await logTurn(callId, "bot", line);
   if (rule.continueMenu) return xml(gather(step(phase, callId), voice, line)); // fresh gather resets the miss counter
   return xml(`<Say voice="${voice}">${esc(line)}</Say><Hangup/>`);
