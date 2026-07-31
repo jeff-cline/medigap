@@ -1544,6 +1544,27 @@ model NotificationEvent {
   @@map("notification_event")
 }
 
+// U65 missed-call follow-up texts (scheduled, sent on the next business day by the fire tick).
+// (Reconstructed from the production table — was previously box-only, never committed.)
+model FollowupText {
+  id           String    @id @default(cuid())
+  leadId       String?
+  callId       String?
+  toNumber     String    @default("")
+  calledNumber String    @default("")
+  callerName   String    @default("")
+  state        String    @default("")
+  body         String    @default("")
+  sendAt       DateTime
+  status       String    @default("scheduled")
+  sentAt       DateTime?
+  smsId        String    @default("")
+  createdAt    DateTime  @default(now())
+
+  @@index([status, sendAt])
+  @@map("followup_text")
+}
+
 // Saved el.ag short links (word → short URL), so staff can create + reuse them in canned answers.
 model Shortlink {
   id        String   @id @default(cuid())
