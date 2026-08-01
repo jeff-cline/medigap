@@ -86,7 +86,7 @@ async function agentInterruptOrStuck(callId: string, phase: string, speech: stri
   const spoken = (await responseFromContext(rule.response, speech)) || rule.response;
   const line = rule.continueMenu ? `${spoken} ${buildMenuPrompt(menu)}` : spoken;
   await logTurn(callId, "bot", line);
-  if (rule.continueMenu) return xml(gather(step(phase, callId), voice, line)); // fresh gather resets the miss counter
+  if (rule.continueMenu) return xml(gather(step(phase, callId, `&nm=${missCount}`), voice, line)); // carry the counter so dead loops still cap
   return xml(`<Say voice="${voice}">${esc(line)}</Say><Hangup/>`);
 }
 
@@ -117,6 +117,15 @@ async function transfer(callId: string, number: string, voice: string, buyerId: 
   await db.call.update({ where: { id: callId }, data: { forwardedTo: dest, status: "transferring", disposition: "static", priceCents: 0, realized: false } }).catch(() => {});
   const action = step("backup", callId, `&buyer=${buyerId}&amt=${amountCents}&bill=${billSec}`);
   return `<Dial timeout="25" callerId="${callerId}" record="record-from-answer-dual" action="${action}"><Number>${dest}</Number></Dial>`;
+}
+
+// End the call gracefully after too many dead turns (silence / nothing we can use), so a caller we
+// can't hear never loops the same prompt forever.
+async function giveUp(callId: string, voice: string): Promise<Response> {
+  await db.call.update({ where: { id: callId }, data: { disposition: "static-noinput" } }).catch(() => {});
+  const line = "I'm having trouble hearing you. We'll follow up with you shortly. Thank you for calling 1-800-MEDIGAP. Goodbye.";
+  await logTurn(callId, "bot", line);
+  return xml(`<Say voice="${voice}">${esc(line)}</Say><Hangup/>`);
 }
 
 export async function POST(req: NextRequest) {
@@ -165,12 +174,19 @@ export async function POST(req: NextRequest) {
     return xml(`<Say voice="${voice}">We're sorry, our specialist is unavailable. We'll call you right back. Goodbye.</Say><Hangup/>`);
   }
 
+  // Global backstop: if the agent has spoken many turns without resolving, end gracefully so no
+  // phase can loop the same prompt forever (belt-and-suspenders over the per-phase caps below).
+  const botTurns = (() => { try { return (JSON.parse(call.transcript || "[]") as { role: string }[]).filter((t) => t.role === "bot").length; } catch { return 0; } })();
+  if (botTurns > 15) return giveUp(callId, voice);
+
   // ---- age ----
   if (phase === "age") {
     if (!speech) {
-      const line = "Please tell me your age.";
+      const at = parseInt(url.searchParams.get("at") || "0", 10) + 1;
+      if (at > 2) return giveUp(callId, voice); // 3 silent turns → stop looping
+      const line = at <= 1 ? "In order to serve you better, please tell me your age." : "Sorry, I didn't catch that. Please tell me your age — for example, say sixty-five.";
       await logTurn(callId, "bot", line);
-      return xml(gather(step("age", callId), voice, line));
+      return xml(gather(step("age", callId, `&at=${at}`), voice, line));
     }
     if (call.leadId) await db.lead.update({ where: { id: call.leadId }, data: { dob: speech } }).catch(() => {});
     const line = "Thank you. What state are you calling from?";
@@ -181,9 +197,11 @@ export async function POST(req: NextRequest) {
   // ---- state ----
   if (phase === "state") {
     if (!speech) {
-      const line = "What state are you calling from?";
+      const at = parseInt(url.searchParams.get("at") || "0", 10) + 1;
+      if (at > 2) return giveUp(callId, voice); // 3 silent turns → stop looping
+      const line = at <= 1 ? "What state are you calling from?" : "Sorry, I didn't catch that. What state are you calling from?";
       await logTurn(callId, "bot", line);
-      return xml(gather(step("state", callId), voice, line));
+      return xml(gather(step("state", callId, `&at=${at}`), voice, line));
     }
     const code = normalizeState(speech);
     if (code) {
@@ -203,6 +221,7 @@ export async function POST(req: NextRequest) {
     const hitId = matchSelection(speech, digit, menu);
     if (!hitId) {
       const miss = parseInt(url.searchParams.get("nm") || "0", 10) + 1;
+      if (miss > 4) return giveUp(callId, voice); // too many unrecognized/silent turns
       const handled = await agentInterruptOrStuck(callId, "menu", speech, voice, call, menu, miss);
       if (handled) return handled;
       const line = `Sorry, I didn't catch that. ${buildMenuPrompt(menu)}`;
@@ -235,6 +254,7 @@ export async function POST(req: NextRequest) {
     const hitId = matchSelection(speech, digit, kids);
     if (!hitId) {
       const miss = parseInt(url.searchParams.get("nm") || "0", 10) + 1;
+      if (miss > 4) return giveUp(callId, voice); // too many unrecognized/silent turns
       const handled = await agentInterruptOrStuck(callId, "submenu", speech, voice, call, kids, miss);
       if (handled) return handled;
       const line = `Sorry, I didn't catch that. ${buildMenuPrompt(kids)}`;
