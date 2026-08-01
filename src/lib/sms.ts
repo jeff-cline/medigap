@@ -40,6 +40,8 @@ export async function sendSms({ to, body, leadId, batch = "", cfg }: SendArgs) {
   const form = new URLSearchParams({ To: e164, Body: finalBody });
   if (c.messagingSid) form.set("MessagingServiceSid", c.messagingSid);
   else form.set("From", normalizePhone(c.tollFree!) || c.tollFree!);
+  // Twilio posts delivery updates here so the outbound log reflects the true status (not just "queued").
+  form.set("StatusCallback", (c as { statusCallback?: string }).statusCallback || "https://medigap.plus/api/sms/status");
 
   try {
     const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${c.accountSid}/Messages.json`, {
