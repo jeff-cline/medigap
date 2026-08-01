@@ -1565,6 +1565,24 @@ model FollowupText {
   @@map("followup_text")
 }
 
+// A tracked inbound number (e.g. a TV-commercial DID). "flow" = the normal AI static flow;
+// "direct" = skip the AI and route straight to a money word's buyers. Both are tracked so calls
+// show in the As-Seen-on-TV report for A/B comparison.
+model TrackingNumber {
+  id              String   @id @default(cuid())
+  number          String   @unique // digits only, matches Call.toNumber (e.g. "18888877595")
+  label           String   @default("") // "National TV Campaign"
+  campaign        String   @default("tv")
+  mode            String   @default("flow") // flow | direct
+  moneyWordSlug   String   @default("") // direct mode → route to this money word's buyers
+  thankYouText    String   @default("") // post-call text; blank = default
+  billableSeconds Int      @default(120)
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@map("tracking_number")
+}
+
 // Trainable off-menu responses for the Static voice agent: when a caller's words don't match a
 // money word, the engine speaks a rule's response, optionally texts info, then keeps qualifying.
 // Built-ins (representative / what / stuck) are editable but not deletable; custom rules match on trigger.

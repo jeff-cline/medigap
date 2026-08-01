@@ -26,6 +26,7 @@ export default async function StaticPage({ searchParams }: { searchParams: Promi
         <a href="/dashboard/static/calls" className="inline-block rounded-md bg-[color:#238636] hover:bg-[color:#2ea043] text-white font-semibold px-4 py-2">Call Reports</a>
         <a href="/dashboard/notifications" className="inline-block rounded-md bg-black border border-white text-white font-semibold px-4 py-2 hover:bg-neutral-900">🚀 Notification Service</a>
         <a href="/dashboard/static/training" className="inline-block rounded-md bg-[color:#1f6feb] hover:bg-[color:#388bfd] text-white font-semibold px-4 py-2">🎓 Agent Training</a>
+        <a href="/dashboard/tv-campaign" className="inline-block rounded-md bg-[color:#7c3aed] hover:bg-[color:#8b5cf6] text-white font-semibold px-4 py-2">📺 As Seen on TV</a>
       </div>
       <Section title="Static — Money Words">
         <Card>

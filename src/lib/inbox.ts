@@ -5,7 +5,7 @@ import { sendSms, getTwilioCfg, normalizePhone } from "@/lib/sms";
 // NOTE: distinct from src/lib/comms.ts (audience blasts) and src/lib/canned.ts (matcher + Canned type).
 
 export type CommsMsg = { id: string; direction: string; body: string; at: string; read: boolean };
-export type Thread = { sender: string; ourNumber: string; leadId: string | null; name: string; lastAt: string; needsHuman: boolean; messages: CommsMsg[] };
+export type Thread = { sender: string; ourNumber: string; leadId: string | null; name: string; lastAt: string; needsHuman: boolean; tvBadge: string; messages: CommsMsg[] };
 export type CannedRow = { id: string; label: string; keywords: string; reply: string; active: boolean; sortOrder: number };
 
 // Build the unified inbox: recent SMS (both directions) grouped by the CONSUMER number = `to`.
@@ -26,6 +26,19 @@ export async function unifiedThreads(limit = 500): Promise<{ threads: Thread[]; 
   const leads = leadIds.length ? await db.lead.findMany({ where: { id: { in: leadIds } }, select: { id: true, name: true } }) : [];
   const nameById = new Map(leads.map((l) => [l.id, l.name]));
 
+  // TV-campaign callers → a "📺 888" badge next to their name. Map each consumer's last-10 digits
+  // to the area code of the tracking number they called.
+  const tvNums = await db.trackingNumber.findMany({ where: { campaign: "tv", active: true }, select: { number: true } }).catch(() => [] as { number: string }[]);
+  const tvBadgeByLast10 = new Map<string, string>();
+  if (tvNums.length) {
+    const tvCalls = await db.call.findMany({ where: { toNumber: { in: tvNums.map((n) => n.number) } }, select: { fromNumber: true, toNumber: true } }).catch(() => [] as { fromNumber: string; toNumber: string }[]);
+    for (const c of tvCalls) {
+      const l10 = (c.fromNumber || "").replace(/\D/g, "").slice(-10);
+      const area = c.toNumber.replace(/\D/g, "").slice(-10).slice(0, 3);
+      if (l10) tvBadgeByLast10.set(l10, area);
+    }
+  }
+
   const threads: Thread[] = [];
   for (const [sender, msgs] of groups) {
     // rows are already newest-first from the query
@@ -40,7 +53,8 @@ export async function unifiedThreads(limit = 500): Promise<{ threads: Thread[]; 
     // rows are newest-first from the query, so no re-sort needed
     const messages: CommsMsg[] = msgs.map((m) => ({ id: m.id, direction: m.direction, body: m.body, at: m.createdAt.toISOString(), read: m.direction === "outbound" || m.readAt != null }));
 
-    threads.push({ sender, ourNumber, leadId, name, lastAt: messages[0]?.at || "", needsHuman, messages });
+    const tvBadge = tvBadgeByLast10.get(sender.replace(/\D/g, "").slice(-10)) || "";
+    threads.push({ sender, ourNumber, leadId, name, lastAt: messages[0]?.at || "", needsHuman, tvBadge, messages });
   }
 
   // needsHuman first, then most-recent activity.

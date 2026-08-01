@@ -263,6 +263,7 @@ export default function UnifiedComms({ threads, numbers, canned, outbound, short
                   <div className="flex items-center gap-2">
                     {t.needsHuman && <span className="w-2 h-2 rounded-full bg-[var(--danger)] shrink-0" title="needs response" />}
                     <span className="font-medium text-sm truncate">{t.name}</span>
+                    {t.tvBadge && <span className="shrink-0 rounded bg-[color:#7c3aed] text-white text-[10px] px-1.5 py-0.5" title="TV campaign caller">📺 {t.tvBadge}</span>}
                     {t.needsHuman && <span className="text-[10px] uppercase text-[var(--danger)] ml-auto shrink-0">needs response</span>}
                   </div>
                   <div className="text-xs text-[var(--muted)] truncate">{t.sender}</div>
