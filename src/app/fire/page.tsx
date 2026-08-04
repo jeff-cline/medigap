@@ -8,6 +8,7 @@ import { DEFAULT_TEMPLATE } from "@/lib/fire";
 import ListUploader from "@/components/fire/ListUploader";
 import CampaignBuilder from "@/components/fire/CampaignBuilder";
 import CampaignControls from "@/components/fire/CampaignControls";
+import AddToBucket from "@/components/fire/AddToBucket";
 import VoiceDripCard from "@/components/voicedrip/VoiceDripCard";
 import { tvReport, tvAgeReport } from "@/lib/tv";
 
@@ -365,7 +366,7 @@ export default async function FirePage({ searchParams }: { searchParams: Promise
                       <td className="p-3">{num(sent)}</td>
                       <td className="p-3">{num(left)}</td>
                       <td className="p-3 text-xs text-[var(--muted)]">{camp.sendStart}–{camp.sendEnd} · {camp.sendDays.split(",").length}d</td>
-                      <td className="p-3"><CampaignControls id={camp.id} status={camp.status} /></td>
+                      <td className="p-3"><div className="flex items-center gap-2"><CampaignControls id={camp.id} status={camp.status} /><AddToBucket campaignId={camp.id} campaignName={camp.name} lists={listOpts} /></div></td>
                     </tr>
                   ))}
                   {campaigns.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-[var(--muted)]">No campaigns yet — create one above.</td></tr>}

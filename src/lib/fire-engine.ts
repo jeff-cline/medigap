@@ -36,6 +36,36 @@ export function inSendWindow(camp: { sendStart: string; sendEnd: string; sendDay
 }
 
 // Enroll every contact of the campaign's list (resolve the send address). Idempotent.
+// Add another list's contacts into an existing campaign (the "Add to Bucket" flow). Dedupes by
+// email against everyone already enrolled in this campaign, so nobody gets a duplicate send.
+export async function enrollListIntoCampaign(campaignId: string, listId: string): Promise<{ added: number; skipped: number }> {
+  const camp = await db.emailCampaign.findUnique({ where: { id: campaignId } });
+  if (!camp) return { added: 0, skipped: 0 };
+  const list = await db.emailList.findUnique({ where: { id: listId } });
+  if (!list) return { added: 0, skipped: 0 };
+  const contacts = await db.emailContact.findMany({ where: { listId } });
+  const existing = await db.campaignRecipient.findMany({ where: { campaignId }, select: { email: true } });
+  const have = new Set(existing.map((r) => (r.email || "").toLowerCase()).filter(Boolean));
+  let added = 0, skipped = 0;
+  for (let i = 0; i < contacts.length; i += 500) {
+    const chunk = contacts
+      .slice(i, i + 500)
+      .map((c) => ({ campaignId, contactId: c.id, email: pickEmail(c, camp.emailField as EmailField), firstName: c.firstName, status: "pending" }))
+      .filter((r) => {
+        const key = (r.email || "").toLowerCase();
+        if (!key || have.has(key)) { skipped++; return false; }
+        have.add(key);
+        return true;
+      });
+    if (chunk.length) {
+      // deduped by email above; contact ids are fresh per list upload, so no unique collisions
+      const res = await db.campaignRecipient.createMany({ data: chunk });
+      added += res.count;
+    }
+  }
+  return { added, skipped };
+}
+
 export async function enrollRecipients(campaignId: string): Promise<number> {
   const camp = await db.emailCampaign.findUnique({ where: { id: campaignId } });
   if (!camp) return 0;
