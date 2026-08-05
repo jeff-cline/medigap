@@ -44,6 +44,23 @@ export default async function FirePage({ searchParams }: { searchParams: Promise
   const roas = costCents > 0 ? revenueCents / costCents : 0;
   const convRate = sentTotal > 0 ? (conversions / sentTotal) * 100 : 0;
 
+  // Per-channel conversion attribution (channels tab only). Last-touch by timing: a callback is
+  // credited to VoiceDrip if the person had a voicemail left before they called back; else to Email.
+  let vdConversions = 0;
+  let emailConversions = conversions;
+  if (tab === "channels") {
+    const convRecips = await db.campaignRecipient.findMany({ where: { calledBackAt: { not: null } }, select: { id: true, calledBackAt: true } });
+    const drops = convRecips.length ? await db.voiceDrop.findMany({ where: { recipientId: { in: convRecips.map((r) => r.id) }, answeredBy: { startsWith: "machine" } }, select: { recipientId: true, createdAt: true } }) : [];
+    const dropAt = new Map<string, Date>();
+    for (const d of drops) if (d.recipientId) { const cur = dropAt.get(d.recipientId); if (!cur || d.createdAt < cur) dropAt.set(d.recipientId, d.createdAt); }
+    vdConversions = convRecips.filter((r) => { const dt = dropAt.get(r.id); return !!dt && !!r.calledBackAt && dt <= r.calledBackAt; }).length;
+    emailConversions = conversions - vdConversions;
+  }
+  const emailRevenueCents = emailConversions * REVENUE_PER_CALL;
+  const vdRevenueCents = vdConversions * REVENUE_PER_CALL;
+  const emailRoas = emailCostCents > 0 ? emailRevenueCents / emailCostCents : 0;
+  const vdRoas = dropCostCents > 0 ? vdRevenueCents / dropCostCents : 0;
+
   // Tab data
   const convertedRecips = await db.campaignRecipient.findMany({ where: { calledBackAt: { not: null } }, select: { email: true } });
   const convertedSet = new Set(convertedRecips.map((r) => r.email.toLowerCase()));
@@ -270,22 +287,32 @@ export default async function FirePage({ searchParams }: { searchParams: Promise
                   </div>
                 </div>
 
-                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">By channel</div>
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">By channel <span className="normal-case font-normal">— conversions credited last‑touch (who called back after that channel&rsquo;s touch)</span></div>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="rounded-2xl border border-[var(--brand)]/30 bg-[var(--brand)]/5 p-4">
                     <div className="mb-3 text-sm font-bold text-[var(--brand)]">✉️ Email <span className="font-normal text-[var(--muted)]">· via Zapmail</span></div>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-3 gap-3 mb-3">
                       <Stat label="Sent" value={num(sentTotal)} sub="delivered" tone="default" />
                       <Stat label="Opened" value={num(openedTotal)} sub={sentTotal ? `${((openedTotal / sentTotal) * 100).toFixed(0)}% open` : "—"} tone="up" />
                       <Stat label="Cost" value={usd2(emailCostCents)} sub="$0.05 each" tone="down" />
                     </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <Stat label="Conversions" value={num(emailConversions)} sub="callbacks credited" tone="up" />
+                      <Stat label="Revenue" value={usd2(emailRevenueCents)} sub={`${num(emailConversions)} × $75`} tone="up" />
+                      <Stat label="ROAS" value={emailRoas ? `${emailRoas.toFixed(1)}×` : "—"} sub="rev ÷ cost" tone="gold" />
+                    </div>
                   </div>
                   <div className="rounded-2xl border border-[#f59e0b]/30 bg-[#f59e0b]/5 p-4">
                     <div className="mb-3 text-sm font-bold text-[#f59e0b]">📞 VoiceDrip <span className="font-normal text-[var(--muted)]">· ringless voicemail</span></div>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-3 gap-3 mb-3">
                       <Stat label="Drops" value={num(dropsSent)} sub="attempted" tone="default" />
                       <Stat label="Voicemails left" value={num(voicemailsLeft)} sub={dropsSent ? `${((voicemailsLeft / dropsSent) * 100).toFixed(0)}% landed` : "—"} tone="up" />
-                      <Stat label="Cost" value={usd2(dropCostCents)} sub="Twilio AMD" tone="down" />
+                      <Stat label="Cost" value={usd2(dropCostCents)} sub="Twilio, actual" tone="down" />
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <Stat label="Conversions" value={num(vdConversions)} sub="called back after VM" tone="up" />
+                      <Stat label="Revenue" value={usd2(vdRevenueCents)} sub={`${num(vdConversions)} × $75`} tone="up" />
+                      <Stat label="ROAS" value={vdRoas ? `${vdRoas.toFixed(1)}×` : "—"} sub="rev ÷ cost" tone="gold" />
                     </div>
                   </div>
                 </div>
