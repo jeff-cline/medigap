@@ -79,7 +79,7 @@ export default function OpportunityForm({ persona, onClose }: { persona: string;
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-label={`${label} opportunity`}>
-      <div className="w-full max-w-md rounded-3xl bg-white p-6 md:p-7 shadow-2xl max-h-[92vh] overflow-y-auto" style={{ color: C.ink }}>
+      <div className="w-full max-w-md rounded-3xl bg-white p-5 md:p-7 shadow-2xl max-h-[92vh] overflow-y-auto overflow-x-hidden box-border" style={{ color: C.ink }}>
         <button onClick={onClose} aria-label="Close" className="float-right -mt-2 -mr-1 text-3xl leading-none" style={{ color: C.muted }}>×</button>
 
         <h2 className="text-xl md:text-2xl font-extrabold tracking-tight pr-6">
@@ -104,7 +104,7 @@ export default function OpportunityForm({ persona, onClose }: { persona: string;
 
         {/* STEP 1 — contact */}
         {step === 1 && (
-          <form onSubmit={submitStep1} className="mt-4 grid gap-3">
+          <form onSubmit={submitStep1} className="mt-4 grid grid-cols-1 gap-3">
             {/* honeypot */}
             <input type="text" name="website" value={website} onChange={(e) => setWebsite(e.target.value)} tabIndex={-1} autoComplete="off" aria-hidden style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }} />
             <div className="grid grid-cols-2 gap-3">
@@ -121,14 +121,14 @@ export default function OpportunityForm({ persona, onClose }: { persona: string;
 
         {/* STEP 2 — company + interests */}
         {step === 2 && (
-          <form onSubmit={(e) => { e.preventDefault(); setStep(3); }} className="mt-4 grid gap-3">
+          <form onSubmit={(e) => { e.preventDefault(); setStep(3); }} className="mt-4 grid grid-cols-1 gap-3">
             <input className={inputCls} style={inputStyle} placeholder="Company name" value={company} onChange={(e) => setCompany(e.target.value)} />
             <div>
               <div className="text-sm font-semibold mb-1.5">I am interested in <span style={{ color: C.muted }}>(select all that apply)</span></div>
-              <div className="grid gap-1.5">
+              <div className="grid grid-cols-1 gap-1.5">
                 {INTERESTS.map((it) => (
                   <label key={it} className="flex items-center gap-2.5 rounded-xl border px-3 py-2 text-sm cursor-pointer" style={{ borderColor: interests.includes(it) ? C.brand : "#e5e7eb", background: interests.includes(it) ? C.soft : "#fff" }}>
-                    <input type="checkbox" checked={interests.includes(it)} onChange={() => toggle(it)} className="h-4 w-4" />
+                    <input type="checkbox" checked={interests.includes(it)} onChange={() => toggle(it)} className="h-4 w-4 shrink-0" />
                     <span>{it}</span>
                   </label>
                 ))}
@@ -143,9 +143,9 @@ export default function OpportunityForm({ persona, onClose }: { persona: string;
 
         {/* STEP 3 — SMID / budget / start */}
         {step === 3 && (
-          <form onSubmit={submitFinal} className="mt-4 grid gap-3">
+          <form onSubmit={submitFinal} className="mt-4 grid grid-cols-1 gap-3">
             <label className="flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-sm cursor-pointer" style={{ borderColor: hasSmid ? C.brand : "#e5e7eb", background: hasSmid ? C.soft : "#fff" }}>
-              <input type="checkbox" checked={hasSmid} onChange={(e) => setHasSmid(e.target.checked)} className="h-4 w-4" />
+              <input type="checkbox" checked={hasSmid} onChange={(e) => setHasSmid(e.target.checked)} className="h-4 w-4 shrink-0" />
               <span>I have approved SMID for my state(s)</span>
             </label>
             <input className={inputCls} style={inputStyle} placeholder="Which state(s)? e.g. TX, FL, CA" value={smidStates} onChange={(e) => setSmidStates(e.target.value)} />

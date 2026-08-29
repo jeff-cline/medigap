@@ -5,7 +5,9 @@ import { sendEmail } from "@/lib/email";
 export const dynamic = "force-dynamic";
 
 // Business / partnership inquiries from the 1-800-MEDIGAP welcome popover.
-// Every submission alerts the founder + Darlin Brown (Zapmail).
+// Every submission alerts the founder + Darlin Brown via the authenticated
+// Google Workspace mailbox (support@1800medigap.com) for inbox deliverability
+// — NOT the cold-outreach Zapmail pool, which lands in spam.
 const NOTIFY = "jeff.cline@me.com, Darlin_Brown@outlook.com";
 
 const PERSONAS: Record<string, string> = {
@@ -89,8 +91,17 @@ export async function POST(req: NextRequest) {
   const text = `1-800-MEDIGAP ${label} inquiry | ${name} | ${email} | ${phone || "no phone"}` +
     (detail ? ` | company:${company} | interests:${interests.join("/")} | smid:${hasSmid ? "yes" : "no"} ${smidStates} | budget:${budget} | start:${startDate}` : "");
 
-  const send = sendEmail(NOTIFY, subject, html, "zapmail", { text });
-  if (b._test) { const r = await send; return NextResponse.json({ ok: true, notify: r }); }
-  send.catch(() => {});
+  // Prefer the authenticated Google Workspace mailbox (inbox placement). If its
+  // credentials are down, fall back to the Zapmail pool so a lead is never lost.
+  async function notify() {
+    let r = await sendEmail(NOTIFY, subject, html, "google_workspace", { text });
+    if (!r.ok) {
+      const fb = await sendEmail(NOTIFY, subject, html, "zapmail", { text });
+      return { ...fb, via: fb.ok ? "zapmail-fallback" : "all-failed", primaryError: r.error };
+    }
+    return { ...r, via: "google_workspace" };
+  }
+  if (b._test) { const r = await notify(); return NextResponse.json({ ok: true, notify: r }); }
+  notify().catch(() => {});
   return NextResponse.json({ ok: true });
 }
