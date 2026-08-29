@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isSpamSubmission } from "@/lib/spam-guard";
 import { db } from "@/lib/db";
 import { EXIT } from "@/lib/exit";
 
@@ -15,6 +16,7 @@ async function exitSite() {
 
 export async function POST(req: NextRequest) {
   const b = await req.json().catch(() => ({}));
+  if (isSpamSubmission(req, { honeypot: b._hp, texts: [b.name, b.firstName, b.lastName, b.business, b.company, b.moneyWord, b.word, b.subject, b.message, b.adjacent, b.supporting], email: b.email, phone: b.phone }).blocked) return NextResponse.json({ ok: true });
   const name = String(b.name || "").trim();
   const email = String(b.email || "").trim();
   if (!name || !email) return NextResponse.json({ error: "Name and email are required." }, { status: 400 });

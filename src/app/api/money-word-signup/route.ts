@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isSpamSubmission } from "@/lib/spam-guard";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/logic";
@@ -8,6 +9,7 @@ import { notifyNewAccount } from "@/lib/email";
 // and hands back a free demo lead. The growth hook from the Money Word Cloud.
 export async function POST(req: NextRequest) {
   const b = await req.json().catch(() => ({}));
+  if (isSpamSubmission(req, { honeypot: b._hp, texts: [b.name, b.firstName, b.lastName, b.business, b.company, b.moneyWord, b.word, b.subject, b.message, b.adjacent, b.supporting], email: b.email, phone: b.phone }).blocked) return NextResponse.json({ ok: true });
   const email = String(b.email || "").trim().toLowerCase();
   const word = String(b.word || "").trim().toLowerCase();
   const scope = ["zip", "state", "national"].includes(String(b.scope)) ? String(b.scope) : "zip";
