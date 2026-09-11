@@ -1636,3 +1636,18 @@ model SpamBlock {
   @@index([createdAt])
   @@index([form, createdAt])
 }
+
+// ---------------------------------------------------------------------------
+// TV AUDIENCE — phone numbers matched against TV spot audiences.
+//
+// This table exists in production with ~145k rows but was missing from this
+// schema, so `prisma db push` wanted to DROP it and the deploy guard rightly
+// refused. Declaring it here preserves the data and unblocks deploys. Shape
+// taken from the live table, not guessed.
+// ---------------------------------------------------------------------------
+model TvAudience {
+  phone  String  @id
+  over65 Boolean @default(false)
+
+  @@map("tv_audience")
+}
