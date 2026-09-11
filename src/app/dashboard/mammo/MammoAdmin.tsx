@@ -20,15 +20,20 @@ const input = "w-full rounded-lg border px-3 py-2 text-sm";
 /** Conversion rate, guarding the divide-by-zero that would read as NaN%. */
 const pct = (n: number, d: number) => (d > 0 ? `${Math.round((n / d) * 100)}%` : "—");
 
+type Manager = { id: string; email: string; name: string; active: boolean; lastLoginAt: string | null; createdAt: string };
+
 export default function MammoAdmin({
-  locations, bookings, stats,
+  locations, bookings, managers, stats,
 }: {
   locations: Loc[];
   bookings: Booking[];
+  managers: Manager[];
   stats: { leads: number; attempts: number; leads30: number; attempts30: number; visitors30: number };
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<"locations" | "bookings">("locations");
+  const [tab, setTab] = useState<"locations" | "bookings" | "managers">("locations");
+  const [mgr, setMgr] = useState({ email: "", name: "", password: "" });
+  const [inviteUrl, setInviteUrl] = useState("");
   const [draft, setDraft] = useState<Partial<Loc> | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -43,6 +48,20 @@ export default function MammoAdmin({
     setBusy(false);
     if (!r.ok) { setErr(j.error ?? "Could not save."); return; }
     setDraft(null); router.refresh();
+  }
+
+  async function manage(action: string, id?: string) {
+    setBusy(true); setErr(""); setInviteUrl("");
+    const r = await fetch("/api/mammo/managers", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action, id, ...mgr }),
+    });
+    const j = await r.json().catch(() => ({}));
+    setBusy(false);
+    if (!r.ok) { setErr(j.error ?? "Could not do that."); return; }
+    if (j.url) setInviteUrl(j.url);
+    setMgr({ email: "", name: "", password: "" });
+    router.refresh();
   }
 
   async function remove(id: string) {
@@ -101,12 +120,15 @@ export default function MammoAdmin({
       </div>
 
       <div className="flex gap-2 mb-5">
-        {(["locations", "bookings"] as const).map((t) => (
+        {(["locations", "bookings", "managers"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
             className={`rounded-lg px-4 py-2 text-sm font-semibold border ${tab === t ? "bg-[var(--brand)] text-white" : "border-[var(--line)]"}`}>
-            {t === "locations" ? `Locations (${locations.length})` : `Bookings (${bookings.length})`}
+            {t === "locations" ? `Locations (${locations.length})`
+              : t === "bookings" ? `Bookings (${bookings.length})`
+              : `Managers (${managers.length})`}
           </button>
         ))}
+        <a href="/api/mammo/leads.csv" className="ml-auto btn btn-ghost text-sm !py-2">Download leads CSV ↓</a>
       </div>
 
       {err && <p className="mb-4 rounded-lg bg-red-50 border border-red-200 text-red-700 px-4 py-2 text-sm font-semibold">{err}</p>}
@@ -243,6 +265,86 @@ export default function MammoAdmin({
               </div>
             ))}
           </div>
+        </>
+      )}
+
+      {tab === "managers" && (
+        <>
+          <p className="text-sm text-[var(--muted)] mb-4 max-w-2xl">
+            Managers sign in at <code>mammo.express/manager</code> to review leads and download the
+            reconciliation CSV. They cannot edit locations or see anything else in the Core.
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-4 mb-6">
+            <div className="rounded-lg border border-[var(--line)] p-5">
+              <h3 className="font-semibold mb-1">Send an invite</h3>
+              <p className="text-xs text-[var(--muted)] mb-3">
+                They set their own password. Preferable — a password you type is one that has been
+                in an email and a clipboard.
+              </p>
+              <div className="space-y-2">
+                <input className={input} placeholder="their@email.com" value={mgr.email}
+                  onChange={(e) => setMgr({ ...mgr, email: e.target.value })} />
+                <input className={input} placeholder="Their name (optional)" value={mgr.name}
+                  onChange={(e) => setMgr({ ...mgr, name: e.target.value })} />
+                <button disabled={busy} onClick={() => manage("invite")} className="btn btn-brand text-sm !py-2">
+                  {busy ? "Sending…" : "Email the invite"}
+                </button>
+              </div>
+              {inviteUrl && (
+                <div className="mt-3 rounded-lg bg-[var(--panel-2)] p-3">
+                  <p className="text-xs text-[var(--muted)] mb-1">Invite link — hand it over directly if mail is slow:</p>
+                  <code className="text-xs break-all">{inviteUrl}</code>
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-lg border border-[var(--line)] p-5">
+              <h3 className="font-semibold mb-1">Or create it yourself</h3>
+              <p className="text-xs text-[var(--muted)] mb-3">
+                Set a password now and hand it over. Ask them to change it.
+              </p>
+              <div className="space-y-2">
+                <input className={input} placeholder="their@email.com" value={mgr.email}
+                  onChange={(e) => setMgr({ ...mgr, email: e.target.value })} />
+                <input className={input} placeholder="Their name (optional)" value={mgr.name}
+                  onChange={(e) => setMgr({ ...mgr, name: e.target.value })} />
+                <input className={input} type="text" placeholder="Password (9+ characters)" value={mgr.password}
+                  onChange={(e) => setMgr({ ...mgr, password: e.target.value })} />
+                <button disabled={busy} onClick={() => manage("create")} className="btn btn-ghost text-sm !py-2">
+                  {busy ? "Creating…" : "Create the account"}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {managers.length === 0 ? (
+            <p className="text-sm text-[var(--muted)]">No managers yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {managers.map((m) => (
+                <div key={m.id} className="rounded-lg border border-[var(--line)] p-4 flex items-center justify-between gap-4 flex-wrap">
+                  <div>
+                    <div className="font-semibold">
+                      {m.name || m.email} {!m.active && <span className="text-xs text-[var(--muted)]">(deactivated)</span>}
+                    </div>
+                    <div className="text-sm text-[var(--muted)]">{m.email}</div>
+                    <div className="text-xs text-[var(--muted)] mt-0.5">
+                      {m.lastLoginAt ? `last signed in ${new Date(m.lastLoginAt).toLocaleDateString("en-US")}` : "never signed in"}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button disabled={busy} onClick={() => manage(m.active ? "deactivate" : "reactivate", m.id)}
+                      className="btn btn-ghost text-xs !py-1.5">
+                      {m.active ? "Deactivate" : "Reactivate"}
+                    </button>
+                    <button disabled={busy} onClick={() => manage("delete", m.id)}
+                      className="btn btn-ghost text-xs !py-1.5 text-red-600">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </>
       )}
 

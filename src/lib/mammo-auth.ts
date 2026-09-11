@@ -80,3 +80,47 @@ export async function loginMammo(email: string, password: string) {
   }
   return { account: acct };
 }
+
+
+// --- manager accounts -------------------------------------------------------
+// Managers get their own cookie, separate again from the consumer session.
+// Three audiences, three session surfaces: a bug in one cannot expose another.
+
+const MGR_COOKIE = "mx_mgr";
+
+export type ManagerSession = { id: string; email: string; name: string };
+
+export async function createManagerSession(m: ManagerSession) {
+  const token = await new SignJWT({ ...m, kind: "manager" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("7d")
+    .sign(secret());
+  (await cookies()).set(MGR_COOKIE, token, {
+    httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7,
+  });
+}
+
+export async function getManagerSession(): Promise<ManagerSession | null> {
+  const token = (await cookies()).get(MGR_COOKIE)?.value;
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, secret());
+    if (payload.kind !== "manager" || !payload.id) return null;
+    return { id: String(payload.id), email: String(payload.email), name: String(payload.name ?? "") };
+  } catch { return null; }
+}
+
+export async function destroyManagerSession() {
+  (await cookies()).delete(MGR_COOKIE);
+}
+
+export async function loginManager(email: string, password: string) {
+  const m = await db.mammoManager.findUnique({ where: { email: email.trim().toLowerCase() } });
+  if (!m || !m.active || !m.passwordHash) return { error: "Invalid email or password." as const };
+  if (!(await bcrypt.compare(password, m.passwordHash))) return { error: "Invalid email or password." as const };
+  await db.mammoManager.update({ where: { id: m.id }, data: { lastLoginAt: new Date() } }).catch(() => {});
+  return { manager: m };
+}
+
+export const hashFor = (pw: string) => bcrypt.hash(pw, 12);

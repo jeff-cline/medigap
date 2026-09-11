@@ -31,6 +31,9 @@ export default function LocationPicker({
   const [open, setOpen] = useState<PickerLoc | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [signup, setSignup] = useState({ firstName: "", lastName: "", email: "", phone: "", password: "" });
+  const [emailOptIn, setEmailOptIn] = useState(true);
+  const [smsOptIn, setSmsOptIn] = useState(false);
   const mapEl = useRef<HTMLDivElement>(null);
   const mapRef = useRef<unknown>(null);
   const markers = useRef<Record<string, unknown>>({});
@@ -83,16 +86,38 @@ export default function LocationPicker({
   }, [open]);
 
   async function book(l: PickerLoc) {
-    setBusy(true); setErr("");
     const res = await fetch("/api/mammo/book", {
       method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ locationId: l.id, zip }),
     });
     const j = await res.json().catch(() => ({}));
-    setBusy(false);
-    if (!res.ok) { setErr(j.error ?? "Something went wrong. Please try again."); return; }
-    if (j.calendarUrl) window.location.href = j.calendarUrl;
-    else setErr("That location has not published its calendar yet — please call them, or pick another.");
+    if (!res.ok) { setBusy(false); setErr(j.error ?? "Something went wrong. Please try again."); return; }
+    if (!j.calendarUrl) {
+      setBusy(false);
+      setErr("That location has not published its calendar yet — please call them, or pick another.");
+      return;
+    }
+    // Booking is recorded before we hand over, so a lead that reaches the
+    // clinic's portal is always counted even if they never come back.
+    window.location.href = j.calendarUrl;
+  }
+
+  /** Create the account, then book, then hand off — one submit, no detour. */
+  async function signUpAndBook(l: PickerLoc) {
+    setBusy(true); setErr("");
+    const res = await fetch("/api/mammo/register", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ...signup, zip, emailOptIn, smsOptIn }),
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setBusy(false);
+      setErr(j.existing
+        ? "That email already has an account — sign in and we will take you straight there."
+        : (j.error ?? "Could not create your account."));
+      return;
+    }
+    await book(l);
   }
 
   return (
@@ -206,10 +231,43 @@ export default function LocationPicker({
                     {busy ? "One moment…" : "Book now →"}
                   </button>
                 ) : (
-                  <a href="/signup"
-                    className="block text-center w-full rounded-2xl bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-black py-4 text-lg transition-colors">
-                    Create an account to book →
-                  </a>
+                  <form onSubmit={(e) => { e.preventDefault(); signUpAndBook(open); }} className="space-y-3">
+                    <p className="text-sm font-black text-[#2E1065]">
+                      Create your account and we will take you straight to their calendar.
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <input required placeholder="First name" autoComplete="given-name"
+                        value={signup.firstName} onChange={(e) => setSignup({ ...signup, firstName: e.target.value })} />
+                      <input required placeholder="Last name" autoComplete="family-name"
+                        value={signup.lastName} onChange={(e) => setSignup({ ...signup, lastName: e.target.value })} />
+                    </div>
+                    <input required type="email" placeholder="Email" autoComplete="email"
+                      value={signup.email} onChange={(e) => setSignup({ ...signup, email: e.target.value })} />
+                    <input placeholder="Mobile number" autoComplete="tel"
+                      value={signup.phone} onChange={(e) => setSignup({ ...signup, phone: e.target.value })} />
+                    <input required type="password" minLength={9} placeholder="Password (9+ characters)" autoComplete="new-password"
+                      value={signup.password} onChange={(e) => setSignup({ ...signup, password: e.target.value })} />
+
+                    <label className="flex items-start gap-2.5 cursor-pointer">
+                      <input type="checkbox" checked={emailOptIn} onChange={(e) => setEmailOptIn(e.target.checked)} />
+                      <span className="text-xs text-[#2E1065]/80">Email me when my next screening is due.</span>
+                    </label>
+                    {/* Unticked and separate: consent has to be express and unbundled. */}
+                    <label className="flex items-start gap-2.5 cursor-pointer">
+                      <input type="checkbox" checked={smsOptIn} onChange={(e) => setSmsOptIn(e.target.checked)} />
+                      <span className="text-xs text-[#2E1065]/80">
+                        Text me reminders too. Reply STOP to cancel. Message and data rates may apply.
+                      </span>
+                    </label>
+
+                    <button type="submit" disabled={busy}
+                      className="w-full rounded-2xl bg-[#7C3AED] hover:bg-[#5B21B6] disabled:opacity-60 text-white font-black py-4 text-lg transition-colors">
+                      {busy ? "One moment…" : "Create account & book →"}
+                    </button>
+                    <p className="text-center text-xs text-[#2E1065]/60">
+                      Already have an account? <a href="/login" className="font-bold text-[#6D28D9] underline">Sign in</a>
+                    </p>
+                  </form>
                 )}
                 <p className="text-xs text-[#2E1065]/50 mt-3 text-center">
                   Takes you to this location’s own calendar to choose your time.

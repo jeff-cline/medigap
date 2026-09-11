@@ -1756,3 +1756,32 @@ model MammoVisitor {
   @@index([createdAt])
   @@map("mammo_visitor")
 }
+
+// Manager accounts for Mammo Express. Managers review leads and reconcile via
+// CSV; they never see the rest of the Core. Separate from MammoAccount (that
+// is a consumer) and from the Core's staff User (that is the whole platform).
+model MammoManager {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String    @default("")
+  passwordHash String    @default("")
+  active       Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@map("mammo_manager")
+}
+
+// One-time invite so a manager sets their own password rather than having one
+// emailed to them in clear text.
+model MammoInvite {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  email     String    @default("")
+  name      String    @default("")
+  usedAt    DateTime?
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+
+  @@map("mammo_invite")
+}
