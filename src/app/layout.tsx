@@ -31,6 +31,25 @@ export async function generateMetadata(): Promise<Metadata> {
   const icons: Metadata["icons"] = (host.includes("exitoptimization") || host.includes("experientialmarketing"))
     ? { icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9A%80%3C/text%3E%3C/svg%3E" }
     : undefined;
+  // mammo.express is its own site, not a white-label Site row, so it would
+  // otherwise inherit the medigap.plus title on any page without its own —
+  // which on a signup form reads as having landed on the wrong website.
+  if (host.replace(/^www\./, "").split(":")[0] === "mammo.express") {
+    return {
+      title: {
+        default: "Mammo Express — Book Your Mammogram Yourself",
+        template: "%s",
+      },
+      description:
+        "Schedule a screening mammogram without a referral appointment. Pick a location, pick a time, walk in and walk out.",
+      openGraph: {
+        title: "Mammo Express — Book Your Mammogram Yourself",
+        description: "No referral appointment. No copay to get permission. Pick a time and go.",
+      },
+      icons: { icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A9%BA%3C/text%3E%3C/svg%3E" },
+    };
+  }
+
   const site = await getCurrentSite();
   if (!site) {
     return {
