@@ -48,7 +48,16 @@ echo "  • form-guard coverage…"
 node scripts/check-form-guard.mjs
 
 npm run build
-pm2 reload medigap
+
+# medigap.plus is served by an nginx upstream pool of TWO pm2 instances
+# (medigap on :3020, medigap-2 on :3021 — see /etc/nginx/conf.d/medigap_upstream.conf).
+# Reloading only the first leaves half the traffic on the previous build, which
+# looks like a route that exists on some page loads and 404s on others. Reload
+# every instance that serves this directory.
+for app in $(pm2 jlist | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>{JSON.parse(d).filter(p=>p.pm2_env&&p.pm2_env.pm_cwd==="/var/www/medigap").forEach(p=>console.log(p.name))})'); do
+  echo "  • reloading $app"
+  pm2 reload "$app" >/dev/null
+done
 npx tsx scripts/ensure-god.ts
 npx tsx scripts/seed-quinstreet.ts
 echo "  • build + reload done"
