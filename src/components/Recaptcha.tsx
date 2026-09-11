@@ -31,7 +31,7 @@ declare global {
 let configPromise: Promise<PublicConfig> | null = null;
 function loadConfig(): Promise<PublicConfig> {
   // One fetch per page load however many forms are on it.
-  configPromise ??= fetch("/api/recaptcha/config")
+  configPromise ??= fetch("/api/recaptcha/config", { cache: "no-store" })
     .then((r) => r.json())
     .catch(() => ({ siteKey: "", version: "v3", enabled: false }) as PublicConfig);
   return configPromise;

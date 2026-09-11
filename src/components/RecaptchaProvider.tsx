@@ -34,7 +34,7 @@ export default function RecaptchaProvider() {
 
     const setup = async () => {
       try {
-        const res = await fetch("/api/recaptcha/config");
+        const res = await fetch("/api/recaptcha/config", { cache: "no-store" });
         cfg = (await res.json()) as PublicConfig;
       } catch { return; }
       if (!cfg?.enabled || !cfg.siteKey || cfg.version !== "v3") return;
