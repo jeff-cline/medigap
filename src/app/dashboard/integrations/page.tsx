@@ -21,6 +21,7 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
       "Copy the SITE KEY into the first box below (this is the one that goes in the HTML) and the SECRET KEY into the second (this is the one used for siteverify).",
       "Pick the version you created, then hit Test connection. It calls Google with the secret key and goes green if the pair is valid.",
             "v3 only: score floor. 0.5 is Google’s default. Raise it toward 0.7 if spam still gets through, lower it toward 0.3 if real people are being turned away.",
+      "UNIVERSAL KEY: in the Google console you can untick “Verify the origin of reCAPTCHA solutions”, and then this key works on ANY domain with no list to maintain. Do that and fill in “Allowed domains” below instead — we check the origin ourselves, in one place, for every site at once. Leave that box blank and NOTHING checks the origin, which lets anyone use this site key on their own pages.",
       "Leave it on MONITOR for a day. Open Dashboard → Form Spam: you should see real submissions scoring high and bot traffic scoring low. Once that looks right, switch to ENFORCE. Monitor mode blocks nothing, so it cannot cost you a lead while you check.",
     ],
     fields: [
@@ -35,6 +36,7 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
         { value: "enforce", label: "Enforce — actually block" },
       ] },
       { name: "minScore", label: "v3 score floor (0.1–0.9) — blank means 0.5", placeholder: "0.5" },
+      { name: "allowedHosts", label: "Allowed domains (comma separated) — our own origin check; blank means no check", placeholder: "medigap.plus, exitoptimization.com, predictivedata.org" },
     ],
   },
   {

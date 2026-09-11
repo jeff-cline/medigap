@@ -49,9 +49,31 @@ export function textLooksSpammy(text: string | undefined | null): boolean {
 export type GuardInput = {
   honeypot?: unknown;             // a hidden field real users never fill
   texts?: (string | undefined)[];  // name / company / keywords to gibberish-check
+  /**
+   * NAME-like fields only (first/last name, business name). These get strict
+   * rules that would be wrong on a message body: a real person's name never
+   * contains a URL or an emoji, but a legitimate enquiry might.
+   */
+  names?: (string | undefined)[];
   email?: string;
   phone?: string;
 };
+
+// A bare domain ("graph.org/x") counts — the payloads in the wild skip the scheme.
+const URLISH = /(https?:\/\/|www\.|\b[a-z0-9-]+\.(com|org|net|io|ru|cn|xyz|top|info|biz|app|link|site|online|shop|club|live|vip)\b)/i;
+// Pictographs, dingbats, arrows, numero sign — none belong in a name field.
+const SYMBOLS = /[\u{1F000}-\u{1FAFF}\u{2190}-\u{21FF}\u{2300}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u2116]/u;
+
+/** A name field carrying a link or emoji is spam, full stop. */
+export function nameLooksSpammy(text: string | undefined | null): string | null {
+  const t = String(text ?? "");
+  if (!t.trim()) return null;
+  if (URLISH.test(t)) return "url-in-name";
+  if (SYMBOLS.test(t)) return "symbol-in-name";
+  // Real names are short. 70+ characters is a payload, not a person.
+  if (t.length > 70) return "overlong-name";
+  return null;
+}
 
 export function spamScore(inp: GuardInput): { score: number; reasons: string[] } {
   const reasons: string[] = [];
@@ -62,8 +84,14 @@ export function spamScore(inp: GuardInput): { score: number; reasons: string[] }
   // A phone number with real letters in it is always a bot.
   if (inp.phone && (inp.phone.replace(/[^A-Za-z]/g, "").length >= 3)) { score += 100; reasons.push("alpha-phone"); }
 
+  // Name-field rules first: these are the high-confidence ones.
+  for (const n of inp.names ?? []) {
+    const hit = nameLooksSpammy(n);
+    if (hit) { score += 100; reasons.push(hit); break; }
+  }
+
   let gib = 0;
-  for (const t of inp.texts ?? []) if (textLooksSpammy(t)) gib++;
+  for (const t of [...(inp.texts ?? []), ...(inp.names ?? [])]) if (textLooksSpammy(t)) gib++;
   if (gib >= 2) { score += 100; reasons.push(`gibberish×${gib}`); }
   else if (gib === 1) { score += 50; reasons.push("gibberish×1"); }
 

@@ -39,6 +39,20 @@ export type RecaptchaConfig = {
   mode: RecaptchaMode;
   /** v3 only: submissions scoring below this are treated as bots. */
   minScore: number;
+  /**
+   * Hostnames allowed to mint tokens for this key.
+   *
+   * This replaces Google's "Verify the origin of reCAPTCHA solutions". With
+   * that switch OFF the key works on ANY domain — which is what we want across
+   * dozens of sites — but it also means someone could drop our public site key
+   * on their own page. Google still tells us where the token came from, so we
+   * do the check here instead, in ONE place, for every site at once.
+   *
+   * Empty list = no host check (Google is presumably still doing it).
+   * Entries match the host exactly or as a parent domain (example.com also
+   * allows www.example.com and any subdomain).
+   */
+  allowedHosts: string[];
 };
 
 export async function getRecaptchaConfig(): Promise<RecaptchaConfig> {
@@ -51,6 +65,10 @@ export async function getRecaptchaConfig(): Promise<RecaptchaConfig> {
     secretKey: String(c.secretKey ?? "").trim(),
     version: c.version === "v2" ? "v2" : "v3",
     mode: c.mode === "enforce" ? "enforce" : "monitor",
+    allowedHosts: String(c.allowedHosts ?? "")
+      .split(/[\s,]+/)
+      .map((h) => h.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, ""))
+      .filter(Boolean),
     // 0.5 is Google's own default recommendation.
     minScore: Number.isFinite(min) && min > 0 && min < 1 ? min : 0.5,
   };
@@ -102,6 +120,14 @@ function enforcingNow(cfg: RecaptchaConfig): boolean {
 
 export function recaptchaBreakerState(): { open: boolean; consecutiveFails: number } {
   return { open: breakerOpen, consecutiveFails };
+}
+
+/** Exact host, or a subdomain of an allowed parent. */
+export function hostAllowed(hostname: string, allowed: string[]): boolean {
+  if (!allowed.length) return true;          // not configured — nothing to enforce
+  const h = String(hostname ?? "").toLowerCase().replace(/\.$/, "");
+  if (!h) return false;
+  return allowed.some((a) => h === a || h.endsWith("." + a));
 }
 
 type SiteVerifyResponse = {
@@ -173,6 +199,18 @@ export async function verifyRecaptcha(
     // this branch. It lives in the circuit breaker below and in monitor mode.
     noteVerdict(false);
     return { ok: false, skipped: false, reason: codes || "rejected", enforcing: enforcingNow(cfg) };
+  }
+
+  // The token verified — but WHERE was it minted? With Google's own origin
+  // check turned off, this is the only thing standing between our site key and
+  // anyone who copies it onto their own page.
+  if (!hostAllowed(data.hostname ?? "", cfg.allowedHosts)) {
+    noteVerdict(true); // the key itself is fine — do not trip the breaker
+    return {
+      ok: false, skipped: false, score: data.score,
+      reason: `host-not-allowed(${data.hostname ?? "unknown"})`,
+      enforcing: enforcingNow(cfg),
+    };
   }
 
   if (cfg.version === "v3") {

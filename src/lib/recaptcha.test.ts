@@ -4,20 +4,20 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 // wrong — a mistake here either lets every bot through or blocks every
 // customer. These tests pin each branch down.
 
-const cfg = { siteKey: "", secretKey: "", version: "v3", mode: "enforce", minScore: 0.5 };
+const cfg: Record<string, unknown> = { siteKey: "", secretKey: "", version: "v3", mode: "enforce", minScore: 0.5, allowedHosts: "" };
 
 vi.mock("./db", () => ({
   db: { integration: { findUnique: async () => ({ config: JSON.stringify(cfg) }) } },
 }));
 
-const { verifyRecaptcha, recaptchaBreakerState } = await import("./recaptcha");
+const { verifyRecaptcha, recaptchaBreakerState, hostAllowed } = await import("./recaptcha");
 
 function googleSays(body: unknown, ok = true, status = 200) {
   vi.stubGlobal("fetch", vi.fn(async () => ({ ok, status, json: async () => body }) as unknown as Response));
 }
 
 beforeEach(() => {
-  Object.assign(cfg, { siteKey: "site", secretKey: "secret", version: "v3", mode: "enforce", minScore: 0.5 });
+  Object.assign(cfg, { siteKey: "site", secretKey: "secret", version: "v3", mode: "enforce", minScore: 0.5, allowedHosts: "" });
 });
 afterEach(() => vi.unstubAllGlobals());
 
@@ -128,5 +128,55 @@ describe("circuit breaker — the real protection against a wrong secret key", (
     for (let i = 0; i < 40; i++) await verifyRecaptcha("tok");
     expect(recaptchaBreakerState().open).toBe(false);
     expect((await verifyRecaptcha("tok")).enforcing).toBe(true);
+  });
+});
+
+describe("hostAllowed — replaces Google's origin check", () => {
+  const list = ["medigap.plus", "exitoptimization.com", "el.ag"];
+
+  it("allows an exact host", () => {
+    expect(hostAllowed("medigap.plus", list)).toBe(true);
+  });
+  it("allows subdomains of an allowed parent", () => {
+    expect(hostAllowed("www.medigap.plus", list)).toBe(true);
+    expect(hostAllowed("go.exitoptimization.com", list)).toBe(true);
+  });
+  it("rejects a different domain", () => {
+    expect(hostAllowed("evil.com", list)).toBe(false);
+  });
+  it("rejects a lookalike that merely ENDS with the domain text", () => {
+    // The classic suffix-match bug: "notmedigap.plus" must not pass.
+    expect(hostAllowed("notmedigap.plus", list)).toBe(false);
+    expect(hostAllowed("medigap.plus.evil.com", list)).toBe(false);
+  });
+  it("is case- and trailing-dot-insensitive", () => {
+    expect(hostAllowed("WWW.Medigap.Plus.", list)).toBe(true);
+  });
+  it("allows everything when the list is empty (not configured)", () => {
+    expect(hostAllowed("anything.com", [])).toBe(true);
+  });
+  it("rejects an empty hostname when a list IS configured", () => {
+    expect(hostAllowed("", list)).toBe(false);
+  });
+});
+
+describe("verifyRecaptcha host enforcement", () => {
+  it("blocks a token minted on a host that is not on the list", async () => {
+    Object.assign(cfg, { allowedHosts: "medigap.plus, exitoptimization.com" });
+    googleSays({ success: true, score: 0.9, hostname: "someoneelse.com" });
+    const r = await verifyRecaptcha("tok");
+    expect(r.ok).toBe(false);
+    expect(r.reason).toContain("host-not-allowed");
+  });
+  it("allows a token from an allowed host", async () => {
+    Object.assign(cfg, { allowedHosts: "medigap.plus" });
+    googleSays({ success: true, score: 0.9, hostname: "www.medigap.plus" });
+    expect((await verifyRecaptcha("tok")).ok).toBe(true);
+  });
+  it("a bad host does NOT trip the circuit breaker", async () => {
+    Object.assign(cfg, { allowedHosts: "medigap.plus" });
+    googleSays({ success: true, score: 0.9, hostname: "evil.com" });
+    for (let i = 0; i < 25; i++) await verifyRecaptcha("tok");
+    expect(recaptchaBreakerState().open).toBe(false);
   });
 });
