@@ -17,9 +17,16 @@ type Booking = {
 
 const input = "w-full rounded-lg border px-3 py-2 text-sm";
 
+/** Conversion rate, guarding the divide-by-zero that would read as NaN%. */
+const pct = (n: number, d: number) => (d > 0 ? `${Math.round((n / d) * 100)}%` : "—");
+
 export default function MammoAdmin({
   locations, bookings, stats,
-}: { locations: Loc[]; bookings: Booking[]; stats: { accounts: number; visitors: number; bookings: number } }) {
+}: {
+  locations: Loc[];
+  bookings: Booking[];
+  stats: { leads: number; attempts: number; leads30: number; attempts30: number; visitors30: number };
+}) {
   const router = useRouter();
   const [tab, setTab] = useState<"locations" | "bookings">("locations");
   const [draft, setDraft] = useState<Partial<Loc> | null>(null);
@@ -51,9 +58,41 @@ export default function MammoAdmin({
 
   return (
     <>
-      <div className="grid sm:grid-cols-4 gap-4 mb-6">
-        {[["Locations", locations.length], ["Bookings", stats.bookings],
-          ["Accounts", stats.accounts], ["Visitors, 30d", stats.visitors]].map(([l, v]) => (
+      {/* The funnel: visitors -> leads -> appointment attempted. An
+          "appointment attempted" is a click through to a location's own
+          scheduler, which is the last thing we can observe — the booking
+          itself happens on their system, not ours. */}
+      <div className="rounded-lg border border-[var(--line)] p-5 mb-4">
+        <div className="text-xs uppercase tracking-wide text-[var(--muted)] mb-4">
+          Funnel — all time
+        </div>
+        <div className="grid sm:grid-cols-3 gap-4">
+          {[
+            ["Visitors (30d)", stats.visitors30, null],
+            ["Leads", stats.leads, null],
+            ["Appointment attempted", stats.attempts, pct(stats.attempts, stats.leads)],
+          ].map(([label, value, rate]) => (
+            <div key={String(label)}>
+              <div className="text-3xl font-semibold tabular-nums">{value as number}</div>
+              <div className="text-xs text-[var(--muted)]">{label as string}</div>
+              {rate !== null && (
+                <div className="mt-1 text-xs font-semibold" style={{ color: "var(--brand)" }}>
+                  {rate as string} of leads
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="mt-5 pt-4 border-t border-[var(--line)] grid sm:grid-cols-3 gap-4 text-sm">
+          <div><span className="text-[var(--muted)]">Leads, 30d:</span> <b className="tabular-nums">{stats.leads30}</b></div>
+          <div><span className="text-[var(--muted)]">Attempted, 30d:</span> <b className="tabular-nums">{stats.attempts30}</b></div>
+          <div><span className="text-[var(--muted)]">Conversion, 30d:</span> <b>{pct(stats.attempts30, stats.leads30)}</b></div>
+        </div>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-4 mb-6">
+        {[["Locations live", locations.filter((l) => l.active).length],
+          ["Awaiting an address", locations.filter((l) => !l.active).length]].map(([l, v]) => (
           <div key={String(l)} className="rounded-lg border border-[var(--line)] p-4">
             <div className="text-2xl font-semibold tabular-nums">{v as number}</div>
             <div className="text-xs text-[var(--muted)]">{l as string}</div>
@@ -212,7 +251,7 @@ export default function MammoAdmin({
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="text-left text-xs uppercase tracking-wide text-[var(--muted)]">
-                <tr><th className="py-2 pr-4">When</th><th className="py-2 pr-4">Person</th><th className="py-2 pr-4">Contact</th><th className="py-2 pr-4">Location picked</th><th className="py-2">Next due</th></tr>
+                <tr><th className="py-2 pr-4">When</th><th className="py-2 pr-4">Person</th><th className="py-2 pr-4">Contact</th><th className="py-2 pr-4">Location picked</th><th className="py-2 pr-4">Status</th><th className="py-2">Next due</th></tr>
               </thead>
               <tbody>
                 {bookings.map((b) => (
@@ -221,6 +260,11 @@ export default function MammoAdmin({
                     <td className="py-2 pr-4 font-semibold">{b.name || "—"}</td>
                     <td className="py-2 pr-4 text-[var(--muted)]"><div className="break-all">{b.email}</div>{b.phone && <div className="text-xs">{b.phone}</div>}</td>
                     <td className="py-2 pr-4"><div className="font-semibold">{b.locationName}</div><div className="text-xs text-[var(--muted)]">{b.locationAddr}</div></td>
+                    <td className="py-2 pr-4 whitespace-nowrap">
+                      <span className="text-xs font-semibold rounded px-2 py-0.5 bg-[var(--panel-2)]">
+                        {b.status === "appointment_attempted" ? "appointment attempted" : b.status.replace(/_/g, " ")}
+                      </span>
+                    </td>
                     <td className="py-2 whitespace-nowrap text-[var(--muted)]">{b.remindAt ? new Date(b.remindAt).toLocaleDateString("en-US") : "—"}</td>
                   </tr>
                 ))}

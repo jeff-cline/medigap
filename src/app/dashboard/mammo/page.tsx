@@ -12,14 +12,20 @@ export default async function MammoDashboard() {
   if (!session) redirect("/login");
   if (session.role !== "god") redirect("/dashboard");
 
-  const [locations, bookings, accounts, visitors] = await Promise.all([
+  const since = (d: number) => new Date(Date.now() - d * 864e5);
+
+  const [locations, bookings, leads, attempts, leads30, attempts30, visitors30] = await Promise.all([
     allLocations(),
     db.mammoBooking.findMany({ orderBy: { createdAt: "desc" }, take: 300 }),
+    // A LEAD is an account created. An APPOINTMENT ATTEMPTED is a click
+    // through to a location's scheduler — the moment we hand them over.
     db.mammoAccount.count(),
+    db.mammoBooking.count(),
+    db.mammoAccount.count({ where: { createdAt: { gte: since(30) } } }),
+    db.mammoBooking.count({ where: { createdAt: { gte: since(30) } } }),
     db.mammoVisitor.findMany({
-      where: { createdAt: { gte: new Date(Date.now() - 30 * 864e5) } },
-      select: { visitorId: true },
-      distinct: ["visitorId"],
+      where: { createdAt: { gte: since(30) } },
+      select: { visitorId: true }, distinct: ["visitorId"],
     }).then((r) => r.length).catch(() => 0),
   ]);
 
@@ -33,7 +39,7 @@ export default async function MammoDashboard() {
       <MammoAdmin
         locations={JSON.parse(JSON.stringify(locations))}
         bookings={JSON.parse(JSON.stringify(bookings))}
-        stats={{ accounts, visitors, bookings: bookings.length }}
+        stats={{ leads, attempts, leads30, attempts30, visitors30 }}
       />
     </div>
   );

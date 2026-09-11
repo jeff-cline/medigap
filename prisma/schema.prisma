@@ -1680,6 +1680,8 @@ model MammoLocation {
   lng           Float?
   notes         String   @default("")
   hours         String   @default("")
+  county        String   @default("")
+  operator      String   @default("") // e.g. Arizona Diagnostic Radiology
   // Some states (New York) require a written order even for a screening exam.
   // Per-location so the site never makes a blanket claim.
   requiresOrder Boolean  @default(false)
@@ -1707,7 +1709,7 @@ model MammoBooking {
   email        String    @default("")
   phone        String    @default("")
   zip          String    @default("")
-  status       String    @default("handed_off") // handed_off|confirmed|completed|cancelled
+  status       String    @default("appointment_attempted") // appointment_attempted|confirmed|completed|cancelled
   remindAt     DateTime? // annual follow-up
   remindedAt   DateTime?
   ip           String    @default("")
