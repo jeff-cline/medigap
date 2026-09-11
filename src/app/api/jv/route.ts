@@ -3,12 +3,14 @@ import { upsertJvLead, FOUNDER, interestLabel } from "@/lib/jv";
 import { sendEmail } from "@/lib/email";
 import { normalizePhone } from "@/lib/sms";
 import { appendLeadBackground } from "@/lib/predictivedata";
-
+import { guardForm } from "@/lib/form-guard";
 // Public intake for ALL 1-800-MEDIGAP partner/opportunity CTAs. Every lead lands in
 // the founder's personal JV CRM (tagged jv-pe-vc-op). "Book a call" also emails the
 // founder via Zapmail and hands back the Calendly link to redirect to.
 export async function POST(req: NextRequest) {
   const b = await req.json().catch(() => ({}));
+  const gate = await guardForm(req, "jv", b, { texts: [b.name, b.firstName, b.lastName, b.contactName, b.businessName, b.business, b.company, b.brand, b.website, b.moneyWord, b.word, b.subject, b.message, b.notes, b.usp, b.audience, b.services, b.competitors, b.city, b.goals], email: b.email, phone: b.phone });
+  if (gate.blocked) return gate.response;
   const name = String(b.name || "").trim();
   const rawPhone = String(b.phone || "").trim();
   const phone = normalizePhone(rawPhone) || rawPhone.replace(/\D/g, "").slice(0, 15); // never store garbage

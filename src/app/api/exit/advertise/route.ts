@@ -2,13 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { EXIT } from "@/lib/exit";
 import { sendEmail } from "@/lib/email";
-
+import { guardForm } from "@/lib/form-guard";
 export const dynamic = "force-dynamic";
 const GOD = "jeff.cline@me.com";
 
 // "Advertise with us" — save the inquiry to the Core (under exitoptimization) and notify god.
 export async function POST(req: NextRequest) {
   const b = await req.json().catch(() => ({}));
+  const gate = await guardForm(req, "exit_advertise", b, { texts: [b.name, b.firstName, b.lastName, b.contactName, b.businessName, b.business, b.company, b.brand, b.website, b.moneyWord, b.word, b.subject, b.message, b.notes, b.usp, b.audience, b.services, b.competitors, b.city, b.goals], email: b.email, phone: b.phone });
+  if (gate.blocked) return gate.response;
   const firstName = String(b.firstName || "").trim(), lastName = String(b.lastName || "").trim();
   const email = String(b.email || "").trim(), phone = String(b.phone || "").trim();
   if (!firstName || !email) return NextResponse.json({ error: "First name and email are required." }, { status: 400 });

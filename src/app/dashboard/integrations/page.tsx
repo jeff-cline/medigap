@@ -10,6 +10,34 @@ type Status = "unconfigured" | "saved" | "verified" | "failed";
 // Ordered top-down: do these in sequence to go live and start making money.
 const ITEMS: (IntegrationMeta & { phase: string })[] = [
   {
+    phase: "Protect the forms", key: "recaptcha", label: "Google reCAPTCHA — Form Spam Defence ★",
+    blurb: "Two keys stop the bot submissions across every form on the network. Nothing is enforced until BOTH keys are saved, so pasting them in is the on-switch.",
+    dataFlow: "every blocked submission → Dashboard → Form Spam (proof it is working + any form still unprotected)",
+    oauth: false,
+    steps: [
+      "Go to google.com/recaptcha/admin and open (or create) your site.",
+      "Choose the type. reCAPTCHA v3 is invisible and scores every submission — recommended. v2 shows the “I’m not a robot” checkbox.",
+      "Add every domain you run forms on to the key’s domain list — medigap.plus, providerbackoffice.com, providerreferral.net, and any marketing hostname. A domain that is missing here fails every submission from that site.",
+      "Copy the SITE KEY into the first box below (this is the one that goes in the HTML) and the SECRET KEY into the second (this is the one used for siteverify).",
+      "Pick the version you created, then hit Test connection. It calls Google with the secret key and goes green if the pair is valid.",
+            "v3 only: score floor. 0.5 is Google’s default. Raise it toward 0.7 if spam still gets through, lower it toward 0.3 if real people are being turned away.",
+      "Leave it on MONITOR for a day. Open Dashboard → Form Spam: you should see real submissions scoring high and bot traffic scoring low. Once that looks right, switch to ENFORCE. Monitor mode blocks nothing, so it cannot cost you a lead while you check.",
+    ],
+    fields: [
+      { name: "siteKey", label: "Site key — goes in the HTML (public)", placeholder: "6Lc…" },
+      { name: "secretKey", label: "Secret key — used for siteverify (never leaves the server)", type: "password", placeholder: "6Lc…" },
+      { name: "version", label: "Which version did you create?", options: [
+        { value: "v3", label: "v3 — invisible, scores every submission (recommended)" },
+        { value: "v2", label: "v2 — “I’m not a robot” checkbox (needs a widget added per form)" },
+      ] },
+      { name: "mode", label: "Enforcement", options: [
+        { value: "monitor", label: "Monitor only — log what WOULD be blocked, block nothing (start here)" },
+        { value: "enforce", label: "Enforce — actually block" },
+      ] },
+      { name: "minScore", label: "v3 score floor (0.1–0.9) — blank means 0.5", placeholder: "0.5" },
+    ],
+  },
+  {
     phase: "Start earning", key: "twilio", label: "Twilio — Toll-Free Call Tracking",
     blurb: `Routes & tracks 1-800-MEDIGAP (${TOLLFREE} / 1-800-633-4427). You already have the account.`,
     dataFlow: "every inbound call → Calls + the auction + call revenue in the ledger",
@@ -192,7 +220,7 @@ const ITEMS: (IntegrationMeta & { phase: string })[] = [
   },
 ];
 
-const PHASES = ["Start earning", "Money rails", "Remarketing", "Paid acquisition", "Scale & arbitrage"];
+const PHASES = ["Protect the forms", "Start earning", "Money rails", "Remarketing", "Paid acquisition", "Scale & arbitrage"];
 
 export default async function IntegrationsPage({ searchParams }: { searchParams: Promise<{ oauth?: string; needs?: string }> }) {
   const sp = await searchParams;

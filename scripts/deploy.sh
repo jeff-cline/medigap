@@ -42,6 +42,11 @@ if ! npx prisma db push --skip-generate 2>/tmp/push.err; then
   exit 1
 fi
 
+echo "  • form-guard coverage…"
+# A public form endpoint that does not call guardForm() fails the deploy —
+# "we forgot reCAPTCHA on the new form" must not be discovered from spam.
+node scripts/check-form-guard.mjs
+
 npm run build
 pm2 reload medigap
 npx tsx scripts/ensure-god.ts

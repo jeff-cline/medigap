@@ -35,6 +35,45 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ key: strin
   const need = (...f: string[]) => f.filter((x) => !cfg[x] || !cfg[x].trim());
 
   switch (key) {
+    case "recaptcha": {
+      const miss = need("siteKey", "secretKey");
+      if (miss.length) { message = `Missing: ${miss.join(", ")}`; break; }
+
+      // IMPORTANT: there is no way to validate a reCAPTCHA secret key on its own.
+      // Verified against the live API — a garbage secret, an empty secret, and a
+      // SITE key pasted into the secret field all return `invalid-input-response`,
+      // exactly the same as a bad token. So this test checks the things it
+      // honestly can, and says plainly where the real proof comes from.
+      const site = cfg.siteKey.trim();
+      const secret = cfg.secretKey.trim();
+      const looksLikeKey = (k: string) => /^6L[\w-]{30,}$/.test(k);
+
+      if (site === secret) {
+        message = "The site key and secret key are identical — one of them is pasted in the wrong box.";
+        break;
+      }
+      if (!looksLikeKey(site)) {
+        message = "That does not look like a reCAPTCHA site key (they start with 6L and are ~40 characters).";
+        break;
+      }
+      if (!looksLikeKey(secret)) {
+        message = "That does not look like a reCAPTCHA secret key (they start with 6L and are ~40 characters).";
+        break;
+      }
+
+      const r = await ping("https://www.google.com/recaptcha/api/siteverify", {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ secret, response: "core-integration-test" }).toString(),
+      });
+      if (r.code === 0) { message = `Could not reach Google: ${r.body}`; break; }
+
+      ok = true;
+      const ver = cfg.version === "v2" ? "v2 checkbox" : "v3 invisible";
+      const mode = cfg.mode === "enforce" ? "ENFORCING" : "monitor only";
+      message = `Keys saved (${ver}, ${mode}) and Google is reachable. Google cannot confirm a secret key on its own, so this does NOT prove the pair is correct — leave it on monitor and check Dashboard → Form Spam: real submissions passing is the proof. Also add every form domain to this key's domain list.`;
+      break;
+    }
     case "twilio": {
       const miss = need("accountSid", "authToken");
       if (miss.length) { message = `Missing: ${miss.join(", ")}`; break; }

@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isSpamSubmission } from "@/lib/spam-guard";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { getSettings } from "@/lib/logic";
 import { notifyNewAccount } from "@/lib/email";
-
+import { guardForm } from "@/lib/form-guard";
 // Public claim-a-money-word signup: creates a partner account + a keyword bid in their area,
 // and hands back a free demo lead. The growth hook from the Money Word Cloud.
 export async function POST(req: NextRequest) {
   const b = await req.json().catch(() => ({}));
-  if (isSpamSubmission(req, { honeypot: b._hp, texts: [b.name, b.firstName, b.lastName, b.business, b.company, b.moneyWord, b.word, b.subject, b.message, b.adjacent, b.supporting], email: b.email, phone: b.phone }).blocked) return NextResponse.json({ ok: true });
+  const gate = await guardForm(req, "money_word_signup", b, { texts: [b.name, b.firstName, b.lastName, b.contactName, b.businessName, b.business, b.company, b.brand, b.website, b.moneyWord, b.word, b.subject, b.message, b.notes, b.usp, b.audience, b.services, b.competitors, b.city, b.goals], email: b.email, phone: b.phone });
+  if (gate.blocked) return gate.response;
   const email = String(b.email || "").trim().toLowerCase();
   const word = String(b.word || "").trim().toLowerCase();
   const scope = ["zip", "state", "national"].includes(String(b.scope)) ? String(b.scope) : "zip";

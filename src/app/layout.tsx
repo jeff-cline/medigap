@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import "./globals.css";
 import { Suspense } from "react";
 import TrackingPixels from "@/components/TrackingPixels";
+import RecaptchaProvider from "@/components/RecaptchaProvider";
 import { getCurrentSite } from "@/lib/site";
 import { adsenseEnabledForHost, adsensePubIdForHost } from "@/lib/adsense";
 
@@ -72,6 +73,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     s.pixelClientId = i;
 })(window, "https://predictivedata.org/script", "${pixelId}", document, "script");` }} />
         <Suspense fallback={null}><TrackingPixels /></Suspense>
+        {/* Attaches a reCAPTCHA token to every public form submission. Does
+            nothing at all until the keys are saved in Integrations. */}
+        <RecaptchaProvider />
         {children}
       </body>
     </html>

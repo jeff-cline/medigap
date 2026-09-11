@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-export type Field = { name: string; label: string; placeholder?: string; type?: string };
+export type Field = { name: string; label: string; placeholder?: string; type?: string; options?: { value: string; label: string }[] };
 export type IntegrationMeta = {
   key: string;
   label: string;
@@ -102,7 +102,13 @@ export default function IntegrationCard({
             {meta.fields.map((f) => (
               <div key={f.name} className={meta.fields.length % 2 && f === meta.fields[meta.fields.length - 1] ? "sm:col-span-2" : ""}>
                 <label className="text-xs text-[var(--muted)]">{f.label}</label>
-                <input className="mt-1" type={f.type || "text"} placeholder={f.placeholder} value={values[f.name] || ""} onChange={(e) => setValues({ ...values, [f.name]: e.target.value })} />
+                {f.options ? (
+                  <select className="mt-1" value={values[f.name] || f.options[0].value} onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}>
+                    {f.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                ) : (
+                  <input className="mt-1" type={f.type || "text"} placeholder={f.placeholder} value={values[f.name] || ""} onChange={(e) => setValues({ ...values, [f.name]: e.target.value })} />
+                )}
               </div>
             ))}
           </div>

@@ -1616,3 +1616,23 @@ model Shortlink {
 
   @@map("shortlink")
 }
+
+// ---------------------------------------------------------------------------
+// FORM DEFENCE — every blocked submission, so we can prove reCAPTCHA is
+// working and spot a form that was missed. See lib/form-guard.ts.
+// ---------------------------------------------------------------------------
+model SpamBlock {
+  id        String   @id @default(cuid())
+  form      String   @default("") // the route that rejected it, e.g. "leads"
+  reason    String   @default("") // recaptcha:low-score(0.1) | heuristic:gibberish×2 | rate-limit
+  source    String   @default("") // recaptcha|heuristic|rate-limit
+  score     Float? // v3 score when reCAPTCHA supplied one
+  ip        String   @default("")
+  host      String   @default("")
+  userAgent String   @default("")
+  payload   String   @default("{}") // redacted snapshot of the submission
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([form, createdAt])
+}

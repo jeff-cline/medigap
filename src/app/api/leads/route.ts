@@ -5,9 +5,11 @@ import { appendLeadBackground } from "@/lib/predictivedata";
 import { assignLeadBackground, routeStandaloneLeadBackground } from "@/lib/logic";
 import { normalizePhone } from "@/lib/sms";
 import { promoteStage } from "@/lib/recapture";
-
+import { guardForm } from "@/lib/form-guard";
 export async function POST(req: NextRequest) {
   const b = await req.json().catch(() => ({}));
+  const gate = await guardForm(req, "leads", b, { texts: [b.name, b.firstName, b.lastName, b.contactName, b.businessName, b.business, b.company, b.brand, b.website, b.moneyWord, b.word, b.subject, b.message, b.notes, b.usp, b.audience, b.services, b.competitors, b.city, b.goals], email: b.email, phone: b.phone });
+  if (gate.blocked) return gate.response;
   const host = (await headers()).get("host") || "";
   const site = await db.site.findUnique({ where: { hostname: host } }).catch(() => null);
 

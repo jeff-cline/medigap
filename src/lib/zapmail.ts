@@ -12,7 +12,12 @@ import { db } from "./db";
 const BASE = "https://api.zapmail.ai/api/v2";
 
 export type ZapMailbox = { id: string; email: string; smtpUser: string; smtpPass: string; smtpHost: string; smtpPort: number; imapHost: string; imapPort: number };
-export type ZapConfig = { apiKey?: string; workspaceId?: string; serviceProvider?: string; mailboxes?: ZapMailbox[]; rotateIdx?: number };
+export type ZapConfig = {
+  apiKey?: string; workspaceId?: string; serviceProvider?: string;
+  mailboxes?: ZapMailbox[]; rotateIdx?: number;
+  /** Held out of the send rotation and used only as the spam-review inbox. */
+  reservedInbox?: string;
+};
 
 export async function getZapConfig(): Promise<ZapConfig | null> {
   const row = await db.integration.findUnique({ where: { key: "zapmail" } });
@@ -140,7 +145,10 @@ export async function refreshMailboxes(): Promise<{ ok: boolean; stored: number;
 // Pick the next mailbox round-robin (deliverability), advancing the saved index.
 export async function nextMailbox(): Promise<ZapMailbox | null> {
   const cfg = await getZapConfig();
-  const mbs = cfg?.mailboxes || [];
+  const reserved = (cfg?.reservedInbox || "").toLowerCase();
+  // The reserved mailbox is the spam-review inbox — never send from it, or the
+  // forwarded spam gets buried under bounces and auto-replies.
+  const mbs = (cfg?.mailboxes || []).filter((m) => m.email.toLowerCase() !== reserved);
   if (!mbs.length) return null;
   const idx = (cfg?.rotateIdx || 0) % mbs.length;
   await saveZapConfig({ rotateIdx: idx + 1 });

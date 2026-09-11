@@ -4,7 +4,7 @@ import { appendLeadBackground } from "@/lib/predictivedata";
 import { sendEmail } from "@/lib/email";
 import { normalizePhone } from "@/lib/sms";
 import { INTERESTS, INVESTOR_TYPES, BIZ } from "@/lib/biz";
-
+import { guardForm } from "@/lib/form-guard";
 export const dynamic = "force-dynamic";
 
 // Map the biz form's "select all that apply" to the founder's JV interest keys (primary = highest priority).
@@ -15,6 +15,8 @@ const PRIMARY: [string, string][] = [
 
 export async function POST(req: NextRequest) {
   const b = await req.json().catch(() => ({}));
+  const gate = await guardForm(req, "biz_lead", b, { texts: [b.name, b.firstName, b.lastName, b.contactName, b.businessName, b.business, b.company, b.brand, b.website, b.moneyWord, b.word, b.subject, b.message, b.notes, b.usp, b.audience, b.services, b.competitors, b.city, b.goals], email: b.email, phone: b.phone });
+  if (gate.blocked) return gate.response;
   const name = String(b.name || "").trim();
   const company = String(b.company || "").trim();
   const website = String(b.website || "").trim();

@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { hashPassword, createSession } from "@/lib/auth";
 import { sendEmail } from "@/lib/email";
 import { EXIT } from "@/lib/exit";
-
+import { guardForm } from "@/lib/form-guard";
 export const dynamic = "force-dynamic";
 const GOD = "jeff.cline@me.com";
 
@@ -15,6 +15,8 @@ export async function partnerSignupOn(): Promise<boolean> {
 export async function POST(req: NextRequest) {
   if (!(await partnerSignupOn())) return NextResponse.json({ error: "We're not accepting new partners right now — check back soon." }, { status: 403 });
   const b = await req.json().catch(() => ({}));
+  const gate = await guardForm(req, "exit_partner_signup", b, { texts: [b.name, b.firstName, b.lastName, b.contactName, b.businessName, b.business, b.company, b.brand, b.website, b.moneyWord, b.word, b.subject, b.message, b.notes, b.usp, b.audience, b.services, b.competitors, b.city, b.goals], email: b.email, phone: b.phone });
+  if (gate.blocked) return gate.response;
   const email = String(b.email || "").trim().toLowerCase();
   const name = String(b.name || "").trim();
   const business = String(b.businessName || "").trim();
