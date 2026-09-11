@@ -1651,3 +1651,106 @@ model TvAudience {
 
   @@map("tv_audience")
 }
+
+// ---------------------------------------------------------------------------
+// MAMMO EXPRESS — mammo.express
+//
+// Self-scheduled screening mammography. The owner adds screening locations
+// (1 to 100+) with their own booking calendar URL; a consumer picks one near
+// their ZIP on a map and is handed to that location's calendar. We record
+// which location they chose so the CRM shows it and the owner is notified.
+//
+// No clinical information is stored anywhere here — this is a scheduling
+// front door, not a medical record.
+// ---------------------------------------------------------------------------
+
+model MammoLocation {
+  id            String   @id @default(cuid())
+  name          String
+  title         String   @default("") // e.g. "Breast Imaging Center"
+  address1      String   @default("")
+  city          String   @default("")
+  state         String   @default("")
+  zip           String
+  phone         String   @default("")
+  calendarUrl   String   @default("") // the hand-off target
+  imageUrl      String   @default("") // photo of the clinic, shown in the popup
+  serviceZips   String   @default("") // comma separated extra ZIPs served
+  lat           Float?
+  lng           Float?
+  notes         String   @default("")
+  hours         String   @default("")
+  // Some states (New York) require a written order even for a screening exam.
+  // Per-location so the site never makes a blanket claim.
+  requiresOrder Boolean  @default(false)
+  active        Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+
+  bookings MammoBooking[]
+
+  @@index([zip])
+  @@index([active, sortOrder])
+  @@map("mammo_location")
+}
+
+model MammoBooking {
+  id           String    @id @default(cuid())
+  userId       String    @default("")
+  locationId   String?
+  location     MammoLocation? @relation(fields: [locationId], references: [id])
+  // Snapshot, so history still reads correctly if a location is edited later.
+  locationName String    @default("")
+  locationAddr String    @default("")
+  name         String    @default("")
+  email        String    @default("")
+  phone        String    @default("")
+  zip          String    @default("")
+  status       String    @default("handed_off") // handed_off|confirmed|completed|cancelled
+  remindAt     DateTime? // annual follow-up
+  remindedAt   DateTime?
+  ip           String    @default("")
+  userAgent    String    @default("")
+  createdAt    DateTime  @default(now())
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@map("mammo_booking")
+}
+
+model MammoAccount {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String
+  firstName     String   @default("")
+  lastName      String   @default("")
+  phone         String   @default("")
+  zip           String   @default("")
+  // TCPA consent has to be provable, so the exact wording, time and IP are
+  // stored — not merely a boolean.
+  smsOptIn      Boolean  @default(false)
+  smsOptInAt    DateTime?
+  smsOptInText  String   @default("")
+  smsOptInIp    String   @default("")
+  emailOptIn    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@map("mammo_account")
+}
+
+model MammoVisitor {
+  id         String   @id @default(cuid())
+  visitorId  String
+  path       String   @default("")
+  referer    String   @default("")
+  utm        String   @default("{}")
+  ip         String   @default("")
+  userAgent  String   @default("")
+  accountId  String   @default("")
+  createdAt  DateTime @default(now())
+
+  @@index([visitorId, createdAt])
+  @@index([createdAt])
+  @@map("mammo_visitor")
+}

@@ -34,6 +34,7 @@ export const LEFT_NAV: [string, string, string][] = [
   ["Partner Payouts", "/dashboard/payouts", "💸"],
   ["Marketing / Ads", "/dashboard/marketing", "📣"],
   ["Integrations", "/dashboard/integrations", "🔌"],
+  ["Mammo Express", "/dashboard/mammo", "🩺"],
   ["Form Spam", "/dashboard/form-spam", "🛡️"],
   ["CORE API & SDK", "/core-api", "🧩"],
   ["User Management", "/dashboard/users", "🔐"],

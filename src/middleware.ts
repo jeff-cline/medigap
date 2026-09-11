@@ -16,6 +16,17 @@ export function middleware(req: NextRequest) {
   // doublewide.ai is a separate brand on the same Core: serve its landing at the root,
   // while /login, /dashboard, /api, etc. still pass through to the shared Core.
   const host = (req.headers.get("host") || "").split(":")[0].toLowerCase();
+  // mammo.express — the whole host is its own site, so everything that is not
+  // shared infrastructure rewrites into /mammo.
+  if (host === "mammo.express" || host === "www.mammo.express") {
+    const SHARED = ["/api", "/_next", "/favicon", "/dashboard", "/login", "/logout"];
+    if (!SHARED.some((p) => path === p || path.startsWith(p))) {
+      const url = req.nextUrl.clone();
+      url.pathname = path === "/" ? "/mammo" : `/mammo${path}`;
+      return NextResponse.rewrite(url);
+    }
+  }
+
   if ((host === "doublewide.ai" || host === "www.doublewide.ai") && path === "/") {
     const url = req.nextUrl.clone();
     url.pathname = "/doublewide";

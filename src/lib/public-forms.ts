@@ -23,6 +23,9 @@ export const PUBLIC_FORM_ENDPOINTS = [
   "/api/xm/lead",
   "/api/calc/account",
   "/api/money-word-signup",
+  "/api/mammo/register",  // mammo.express — consumer signup
+  "/api/mammo/login",     // mammo.express — consumer login
+  "/api/mammo/book",      // mammo.express — location hand-off
 ] as const;
 
 /** Does this URL path point at a public form endpoint? */
