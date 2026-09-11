@@ -7,6 +7,11 @@ import { siloGroups, siloIndex } from "@/lib/silos";
 
 export const revalidate = 86400;
 
+// SunFire Matrix consumer quoting/doctor-finder tool.
+const SUNFIRE = "https://www.sunfirematrix.com/app/consumer/emp/7837904/#/";
+// Guides that should jump straight to the quoting tool instead of the article.
+const SUNFIRE_SLUGS = new Set(["medicare-basics-enrollment", "medicare-supplement-medigap"]);
+
 export const metadata: Metadata = {
   title: "1-800-MEDIGAP — America's Trusted Toll-Free Number for Seniors",
   description: "One free call for everything senior — Medicare, senior living & care, retirement, insurance and benefits. Licensed US agents, no pressure. Call 1-800-MEDIGAP (1-800-633-4427).",
@@ -45,12 +50,16 @@ export default function MedigapHome() {
             <div className="mt-6 flex flex-wrap gap-x-5 gap-y-1 text-sm text-[var(--muted)]">
               <span>✓ 100% free</span><span>✓ Licensed US agents</span><span>✓ No obligation</span><span>✓ Every senior need</span>
             </div>
+            <div className="mt-6 flex flex-wrap gap-4">
+              <a href={SUNFIRE} className="inline-flex items-center gap-3 rounded-2xl px-12 py-6 text-3xl font-extrabold text-white shadow-lg" style={{ background: MEDIGAP.colors.brand2 }}>💲 Free Quotes</a>
+              <a href={SUNFIRE} className="inline-flex items-center gap-3 rounded-2xl px-12 py-6 text-3xl font-extrabold text-white shadow-lg" style={{ background: MEDIGAP.colors.gold }}>🩺 Find Doctors</a>
+            </div>
           </div>
           {/* lead form — wired to the Core CRM (/api/leads → append + routing) */}
           <div id="help" className="rounded-2xl border border-[var(--border)] bg-white p-6 shadow-xl">
             <div className="font-bold text-lg">Request a free call back</div>
             <p className="text-sm text-[var(--muted)] mb-3">Tell us how to reach you — a licensed specialist will help, free.</p>
-            <LeadForm vertical="senior" compact />
+            <LeadForm vertical="senior" compact redirectTo={SUNFIRE} />
             <p className="text-[11px] text-[var(--muted)] mt-3">By submitting you agree we may contact you about senior products &amp; services. Not affiliated with the U.S. government.</p>
           </div>
         </div>
@@ -78,21 +87,28 @@ export default function MedigapHome() {
         <div className="mx-auto max-w-6xl px-5 py-12">
           <h2 className="text-2xl font-bold text-center mb-8">Most-searched guides</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {popular.map((s) => (
-              <Link key={s.slug} href={`/${s.slug}`} className="rounded-xl border border-[var(--border)] bg-white p-4 hover:border-[var(--brand)] transition">
-                <div className="font-semibold">{s.name}</div>
-                <div className="text-xs text-[var(--muted)] mt-1">{s.group}</div>
-              </Link>
-            ))}
+            {popular.map((s) => {
+              const href = SUNFIRE_SLUGS.has(s.slug) ? SUNFIRE : `/${s.slug}`;
+              return (
+                <a key={s.slug} href={href} className="rounded-xl border border-[var(--border)] bg-white p-4 hover:border-[var(--brand)] transition">
+                  <div className="font-semibold">{s.name}</div>
+                  <div className="text-xs text-[var(--muted)] mt-1">{s.group}</div>
+                </a>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* final CTA */}
       <section className="mx-auto max-w-6xl px-5 py-16 text-center">
-        <h2 className="text-3xl md:text-4xl font-extrabold">Not sure where to start? <span style={{ color: MEDIGAP.colors.brand }}>Just call.</span></h2>
+        <h2 className="text-3xl md:text-4xl font-extrabold">Not sure where to start? <span style={{ color: MEDIGAP.colors.brand }}>Just call or click.</span></h2>
         <p className="mt-3 text-[var(--muted)]">One conversation with a licensed specialist points you in the right direction — free.</p>
-        <a href={`tel:${MEDIGAP.tel}`} className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 mt-6 text-lg font-bold text-white" style={{ background: MEDIGAP.colors.brand }}>📞 Call {MEDIGAP.brand}</a>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <a href={`tel:${MEDIGAP.tel}`} className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-lg font-bold text-white shadow" style={{ background: MEDIGAP.colors.brand }}>📞 Call {MEDIGAP.brand}</a>
+          <a href={SUNFIRE} className="inline-flex items-center gap-3 rounded-2xl px-12 py-6 text-3xl font-extrabold text-white shadow-lg" style={{ background: MEDIGAP.colors.brand2 }}>💲 Free Quotes</a>
+          <a href={SUNFIRE} className="inline-flex items-center gap-3 rounded-2xl px-12 py-6 text-3xl font-extrabold text-white shadow-lg" style={{ background: MEDIGAP.colors.gold }}>🩺 Find Doctors</a>
+        </div>
       </section>
     </SiloShell>
   );

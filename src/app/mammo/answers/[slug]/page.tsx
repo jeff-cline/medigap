@@ -94,7 +94,7 @@ export default async function AnswerPage({ params }: { params: Promise<{ slug: s
             </Link>
           </div>
 
-          <p className="text-xs text-[#2E1065]/55 leading-relaxed rounded-2xl bg-[#F3EEFF] p-5">{MEDICAL_DISCLAIMER}</p>
+          <p className="text-xs text-[#2E1065]/55 leading-relaxed rounded-2xl bg-white border-2 border-[#7C3AED]/35 p-5">{MEDICAL_DISCLAIMER}</p>
 
           {others.length > 0 && (
             <section className="mt-12 pt-10 border-t border-[#2E1065]/10">
@@ -102,7 +102,7 @@ export default async function AnswerPage({ params }: { params: Promise<{ slug: s
               <div className="grid sm:grid-cols-3 gap-4">
                 {others.map((o) => (
                   <Link key={o.slug} href={`/answers/${o.slug}`}
-                    className="rounded-2xl border-2 border-[#2E1065]/12 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors">
+                    className="rounded-2xl border-2 border-[#7C3AED]/30 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors">
                     <span className="block font-black text-sm leading-snug mb-1.5">{o.h1}</span>
                     <span className="block text-xs text-[#2E1065]/60 line-clamp-3">{o.description}</span>
                   </Link>

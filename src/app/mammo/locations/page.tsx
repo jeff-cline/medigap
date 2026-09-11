@@ -59,12 +59,12 @@ export default async function Locations() {
           <nav className="mt-14 pt-10 border-t border-[#2E1065]/10 max-w-3xl">
             <h2 className="text-xl font-black mb-5">Read next</h2>
             <div className="grid sm:grid-cols-2 gap-4">
-              <Link href="/prepare" className="rounded-2xl border-2 border-[#2E1065]/12 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors">
+              <Link href="/prepare" className="rounded-2xl border-2 border-[#7C3AED]/30 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors">
                 <span className="font-black">How to prepare for your visit</span>
               </Link>
               {SEO_PAGES.filter((p) => ['walk-in-mammogram-near-me', 'mammogram-without-a-doctor-referral', 'mammogram-cost-and-insurance'].includes(p.slug)).map((p) => (
                 <Link key={p.slug} href={`/answers/${p.slug}`}
-                  className="rounded-2xl border-2 border-[#2E1065]/12 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors">
+                  className="rounded-2xl border-2 border-[#7C3AED]/30 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors">
                   <span className="font-black">{p.h1}</span>
                 </Link>
               ))}

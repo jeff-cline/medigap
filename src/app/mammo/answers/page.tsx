@@ -26,7 +26,7 @@ export default function Answers() {
           <div className="grid sm:grid-cols-2 gap-5">
             {SEO_PAGES.map((p) => (
               <Link key={p.slug} href={`/answers/${p.slug}`}
-                className="rounded-3xl border-2 border-[#2E1065]/12 hover:border-[#7C3AED]/50 bg-white p-7 transition-all hover:shadow-md">
+                className="rounded-3xl border-2 border-[#7C3AED]/30 hover:border-[#7C3AED]/50 bg-white p-7 transition-all hover:shadow-md">
                 <h2 className="text-xl font-black leading-snug mb-3">{p.h1}</h2>
                 <p className="text-sm text-[#2E1065]/65 leading-relaxed">{p.description}</p>
                 <span className="inline-block mt-4 font-black text-[#7C3AED] text-sm">Read →</span>
@@ -41,9 +41,9 @@ export default function Answers() {
           <nav className="mt-14 pt-10 border-t border-[#2E1065]/10 max-w-3xl">
             <h2 className="text-xl font-black mb-5">Ready to book?</h2>
             <div className="grid sm:grid-cols-3 gap-4">
-              <Link href="/locations" className="rounded-2xl border-2 border-[#2E1065]/12 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors"><span className="font-black">Find a location</span></Link>
-              <Link href="/prepare" className="rounded-2xl border-2 border-[#2E1065]/12 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors"><span className="font-black">How to prepare</span></Link>
-              <Link href="/faq" className="rounded-2xl border-2 border-[#2E1065]/12 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors"><span className="font-black">Full FAQ</span></Link>
+              <Link href="/locations" className="rounded-2xl border-2 border-[#7C3AED]/30 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors"><span className="font-black">Find a location</span></Link>
+              <Link href="/prepare" className="rounded-2xl border-2 border-[#7C3AED]/30 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors"><span className="font-black">How to prepare</span></Link>
+              <Link href="/faq" className="rounded-2xl border-2 border-[#7C3AED]/30 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors"><span className="font-black">Full FAQ</span></Link>
             </div>
           </nav>
         </div>

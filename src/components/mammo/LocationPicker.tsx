@@ -102,7 +102,7 @@ export default function LocationPicker({
         <input id="zip" inputMode="numeric" maxLength={5} value={zip}
           onChange={(e) => setZip(e.target.value.replace(/\D/g, "").slice(0, 5))}
           placeholder="75201"
-          className="w-full rounded-2xl border-2 border-[#2E1065]/15 focus:border-[#7C3AED] focus:outline-none px-5 py-4 text-lg font-bold tabular-nums text-[#2E1065]" />
+          className="w-full rounded-2xl border-2 border-[#7C3AED]/30 focus:border-[#7C3AED] focus:outline-none px-5 py-4 text-lg font-bold tabular-nums text-[#2E1065]" />
         <p className="text-xs text-[#2E1065]/55 mt-2">Closest first. You can pick any of them.</p>
 
         {ordered.length === 0 ? (
@@ -117,7 +117,7 @@ export default function LocationPicker({
             {ordered.map((l) => (
               <li key={l.id}>
                 <button type="button" onClick={() => setOpen(l)}
-                  className="w-full text-left rounded-2xl border-2 border-[#2E1065]/12 hover:border-[#7C3AED]/60 hover:shadow-md bg-white p-4 transition-all flex gap-4">
+                  className="w-full text-left rounded-2xl border-2 border-[#7C3AED]/30 hover:border-[#7C3AED]/60 hover:shadow-md bg-white p-4 transition-all flex gap-4">
                   {l.imageUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={l.imageUrl} alt="" className="w-20 h-20 rounded-xl object-cover shrink-0" />
@@ -142,7 +142,7 @@ export default function LocationPicker({
 
       <div className="lg:sticky lg:top-24">
         {mappable.length > 0 ? (
-          <div ref={mapEl} className="w-full h-[520px] rounded-3xl overflow-hidden border-2 border-[#2E1065]/12 bg-[#F3EEFF]"
+          <div ref={mapEl} className="w-full h-[520px] rounded-3xl overflow-hidden border-2 border-[#7C3AED]/30 bg-[#F3EEFF]"
             role="application" aria-label="Map of screening locations" />
         ) : (
           <div className="w-full rounded-3xl border-2 border-dashed border-[#2E1065]/15 bg-[#F3EEFF] p-10 text-center">
@@ -191,7 +191,7 @@ export default function LocationPicker({
               )}
 
               {open.requiresOrder && (
-                <p className="mt-5 rounded-xl bg-[#F3EEFF] border border-[#7C3AED]/30 px-4 py-3 text-sm font-bold text-[#5B21B6]">
+                <p className="mt-5 rounded-xl bg-white border-2 border-[#7C3AED]/50 px-4 py-3 text-sm font-bold text-[#5B21B6]">
                   This state requires a written order even for screening. Call ahead — the facility’s
                   radiologist can often write it.
                 </p>

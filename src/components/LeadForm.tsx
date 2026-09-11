@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { TOLLFREE } from "@/lib/format";
 
-export default function LeadForm({ vertical = "medicare", compact = false }: { vertical?: string; compact?: boolean }) {
+export default function LeadForm({ vertical = "medicare", compact = false, redirectTo }: { vertical?: string; compact?: boolean; redirectTo?: string }) {
   const [state, setState] = useState<"idle" | "loading" | "done">("idle");
   const [form, setForm] = useState({ name: "", phone: "", email: "", dob: "", zip: "" });
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, [k]: e.target.value });
@@ -16,6 +16,8 @@ export default function LeadForm({ vertical = "medicare", compact = false }: { v
       const leadId = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("lead") : null;
       await fetch("/api/leads", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, vertical, source: "organic", ...(leadId ? { leadId } : {}) }) });
     } catch {}
+    // After the lead is in the CRM, redirect to the quoting tool if requested; else show the thanks card.
+    if (redirectTo && typeof window !== "undefined") { window.location.href = redirectTo; return; }
     setState("done");
   }
 
@@ -33,11 +35,11 @@ export default function LeadForm({ vertical = "medicare", compact = false }: { v
       <div className="text-sm font-semibold mb-1">See what you qualify for — free</div>
       <p className="text-xs text-[var(--muted)] mb-4">No obligation. Takes 30 seconds.</p>
       <div className={`grid gap-3 ${compact ? "" : "sm:grid-cols-2"}`}>
-        <input required placeholder="Full name" value={form.name} onChange={set("name")} />
-        <input required placeholder="Phone" value={form.phone} onChange={set("phone")} />
-        <input placeholder="Email" type="email" value={form.email} onChange={set("email")} />
-        <input placeholder="Date of birth" value={form.dob} onChange={set("dob")} />
-        <input required placeholder="ZIP code" value={form.zip} onChange={set("zip")} className={compact ? "" : "sm:col-span-2"} />
+        <input required placeholder="Full name" value={form.name} onChange={set("name")} className="lf-in" />
+        <input required placeholder="Phone" value={form.phone} onChange={set("phone")} className="lf-in" />
+        <input placeholder="Email" type="email" value={form.email} onChange={set("email")} className="lf-in" />
+        <input placeholder="Date of birth" value={form.dob} onChange={set("dob")} className="lf-in" />
+        <input required placeholder="ZIP code" value={form.zip} onChange={set("zip")} className={`lf-in ${compact ? "" : "sm:col-span-2"}`} />
       </div>
       <button disabled={state === "loading"} className="btn btn-brand w-full mt-4 justify-center">
         {state === "loading" ? "Submitting…" : "Get My Free Quote →"}

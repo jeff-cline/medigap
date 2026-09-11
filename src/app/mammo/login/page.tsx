@@ -23,7 +23,7 @@ export default function MammoLogin() {
     window.location.assign("/account");
   }
 
-  const input = "w-full rounded-xl border-2 border-[#2E1065]/15 px-4 py-3 text-[#2E1065] focus:outline-none focus:border-[#7C3AED]";
+  const input = "w-full rounded-xl border-2 border-[#7C3AED]/30 px-4 py-3 text-[#2E1065] focus:outline-none focus:border-[#7C3AED]";
 
   return (
     <>

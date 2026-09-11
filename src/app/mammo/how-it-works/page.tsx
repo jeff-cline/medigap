@@ -44,7 +44,7 @@ export default function HowItWorks() {
               </li>
             ))}
           </ol>
-          <div className="rounded-3xl bg-[#F3EEFF] p-7 mb-10">
+          <div className="rounded-3xl bg-white border-2 border-[#7C3AED]/35 p-7 mb-10">
             <h2 className="font-black mb-3">What we are, and what we are not</h2>
             <p className="text-sm text-[#2E1065]/80 leading-relaxed">{MEDICAL_DISCLAIMER}</p>
           </div>
@@ -60,15 +60,15 @@ export default function HowItWorks() {
           <nav className="mt-14 pt-10 border-t border-[#2E1065]/10">
             <h2 className="text-xl font-black mb-5">Read next</h2>
             <div className="grid sm:grid-cols-2 gap-4">
-              <Link href="/locations" className="rounded-2xl border-2 border-[#2E1065]/12 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors">
+              <Link href="/locations" className="rounded-2xl border-2 border-[#7C3AED]/30 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors">
                 <span className="font-black">Find a location near you</span>
               </Link>
-              <Link href="/prepare" className="rounded-2xl border-2 border-[#2E1065]/12 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors">
+              <Link href="/prepare" className="rounded-2xl border-2 border-[#7C3AED]/30 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors">
                 <span className="font-black">How to prepare</span>
               </Link>
               {SEO_PAGES.slice(0, 2).map((p) => (
                 <Link key={p.slug} href={`/answers/${p.slug}`}
-                  className="rounded-2xl border-2 border-[#2E1065]/12 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors">
+                  className="rounded-2xl border-2 border-[#7C3AED]/30 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors">
                   <span className="font-black">{p.h1}</span>
                 </Link>
               ))}

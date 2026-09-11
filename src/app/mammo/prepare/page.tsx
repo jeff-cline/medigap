@@ -61,7 +61,7 @@ export default function Prepare() {
             ))}
           </ol>
 
-          <div className="mt-14 rounded-3xl bg-[#F3EEFF] p-7">
+          <div className="mt-14 rounded-3xl bg-white border-2 border-[#7C3AED]/35 p-7">
             <h2 className="font-black text-lg mb-3">If you have noticed a change</h2>
             <p className="text-[#2E1065]/80 leading-relaxed">
               A lump, pain, discharge, or a change in the skin or nipple means you need a{' '}
@@ -90,12 +90,12 @@ export default function Prepare() {
           <nav className="mt-14 pt-10 border-t border-[#2E1065]/10">
             <h2 className="text-xl font-black mb-5">Read next</h2>
             <div className="grid sm:grid-cols-2 gap-4">
-              <Link href="/locations" className="rounded-2xl border-2 border-[#2E1065]/12 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors">
+              <Link href="/locations" className="rounded-2xl border-2 border-[#7C3AED]/30 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors">
                 <span className="font-black">Find a location and book</span>
               </Link>
               {SEO_PAGES.filter((p) => ['how-to-prepare-for-a-mammogram', 'dense-breasts-what-it-means', 'walk-in-mammogram-near-me'].includes(p.slug)).slice(0, 3).map((p) => (
                 <Link key={p.slug} href={`/answers/${p.slug}`}
-                  className="rounded-2xl border-2 border-[#2E1065]/12 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors">
+                  className="rounded-2xl border-2 border-[#7C3AED]/30 hover:border-[#7C3AED]/50 bg-white p-5 transition-colors">
                   <span className="font-black">{p.h1}</span>
                 </Link>
               ))}

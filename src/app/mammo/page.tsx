@@ -95,7 +95,7 @@ export default async function MammoHome() {
 
             {/* the three-step card — the whole proposition in one glance */}
             <div className="relative">
-              <div className="rounded-[2rem] bg-white border border-[#2E1065]/10 shadow-2xl shadow-[#2E1065]/10 p-8">
+              <div className="rounded-[2rem] bg-white border-2 border-[#7C3AED]/35 shadow-2xl shadow-[#2E1065]/10 p-8">
                 <div className="text-xs font-black uppercase tracking-widest text-[#6D28D9] mb-6">
                   The whole process
                 </div>
@@ -145,7 +145,7 @@ export default async function MammoHome() {
 
             <div className="grid lg:grid-cols-[1fr_auto_1fr] gap-6 lg:gap-4 items-center">
               {/* the usual way */}
-              <div className="rounded-[2rem] bg-[#F3EEFF] border-2 border-[#2E1065]/8 p-8 md:p-10">
+              <div className="rounded-[2rem] bg-white border-2 border-[#7C3AED]/35 p-8 md:p-10">
                 <div className="text-sm font-black uppercase tracking-widest text-[#2E1065]/45 mb-2">The usual way</div>
                 <div className="flex items-baseline gap-2 mb-8">
                   <span className="text-5xl md:text-6xl font-black text-[#2E1065]/35 tabular-nums leading-none">6</span>
@@ -314,7 +314,7 @@ export default async function MammoHome() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
               {SEO_PAGES.map((p) => (
                 <Link key={p.slug} href={`/answers/${p.slug}`}
-                  className="rounded-2xl border border-[#2E1065]/12 bg-[#FFFFFF] hover:border-[#7C3AED]/50 hover:shadow-md p-6 transition-all">
+                  className="rounded-2xl border-2 border-[#7C3AED]/30 bg-[#FFFFFF] hover:border-[#7C3AED]/50 hover:shadow-md p-6 transition-all">
                   <div className="font-black leading-snug mb-2">{p.h1}</div>
                   <p className="text-sm text-[#2E1065]/60 line-clamp-3">{p.description}</p>
                 </Link>

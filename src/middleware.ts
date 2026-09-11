@@ -19,7 +19,10 @@ export function middleware(req: NextRequest) {
   // mammo.express — the whole host is its own site, so everything that is not
   // shared infrastructure rewrites into /mammo.
   if (host === "mammo.express" || host === "www.mammo.express") {
-    const SHARED = ["/api", "/_next", "/favicon", "/dashboard", "/login", "/logout"];
+    // /login and /logout are NOT shared: mammo.express has its own consumer
+    // login at /mammo/login. Leaving them shared sent a woman booking a
+    // mammogram to the Core's staff sign-in. The God account uses medigap.plus.
+    const SHARED = ["/api", "/_next", "/favicon", "/dashboard"];
     if (!SHARED.some((p) => path === p || path.startsWith(p))) {
       const url = req.nextUrl.clone();
       url.pathname = path === "/" ? "/mammo" : `/mammo${path}`;

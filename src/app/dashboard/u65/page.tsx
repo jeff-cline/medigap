@@ -8,7 +8,7 @@ import U65Controls from "@/components/u65/U65Controls";
 
 export const dynamic = "force-dynamic";
 
-type SP = { range?: string; from?: string; to?: string };
+type SP = { range?: string; from?: string; to?: string; show?: string };
 
 // A wall-clock date (UTC-6) → UTC ms at that day's midnight (+addDays).
 function parseLocalDate(s: string | undefined, addDays = 0): number | null {
@@ -47,8 +47,28 @@ export default async function U65Page({ searchParams }: { searchParams: Promise<
   const paidCents = calls.filter((c) => c.reconciled && c.ringbaPaid).length * 7500;
   const ringbaConnected = calls.some((c) => c.reconciled);
 
+  // Unbilled transfers = calls forwarded to the buyer that didn't earn the $75.
+  // Split them so a buyer that stops answering jumps right out.
+  const unbilled = total - billableCount;
+  const noAnswer = calls.filter((c) => !c.billable && c.transferSec === 0).length;   // buyer never picked up
+  const shortConn = calls.filter((c) => !c.billable && c.transferSec > 0 && c.transferSec < 121).length; // answered but < 2 min
+
+  // Clickable filter: show all / only billable / only unbilled. Preserves the current date range.
+  const show = sp.show === "unbilled" || sp.show === "billable" ? sp.show : "";
+  const shown = show === "unbilled" ? calls.filter((c) => !c.billable) : show === "billable" ? calls.filter((c) => c.billable) : calls;
+  const rangeQs = sp.from || sp.to ? `from=${sp.from || ""}&to=${sp.to || ""}` : `range=${range}`;
+
   const fmt = (d: Date) => new Date(d.getTime() - 6 * 3600_000).toISOString().slice(5, 16).replace("T", " ");
   const presets: [string, string][] = [["week", "This week"], ["last7", "Last 7 days"], ["last30", "Last 30 days"], ["all", "All time"]];
+
+  // A direct call's source encodes the dial-in (QR) number it came from: "direct_<last10>".
+  // Show the actual tracking number so A/B/C lines are distinguishable in the report;
+  // legacy "direct_220" rows are the original 346-220-3471 line. Anything else = AI screener.
+  const sourceLabel = (source: string): string => {
+    if (source === "direct_220") return fmtPhone("+13462203471");
+    const m = /^direct_(\d{10})$/.exec(source || "");
+    return m ? fmtPhone("+1" + m[1]) : "AI";
+  };
 
   return (
     <>
@@ -65,10 +85,26 @@ export default async function U65Page({ searchParams }: { searchParams: Promise<
         </Link>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4 mb-6">
+      {(noAnswer > 0 || shortConn > 0) && (
+        <Card className="mb-6 border-l-4 border-[#ef4444] bg-[#ef4444]/5">
+          <div className="text-sm font-bold text-[#ef4444]">
+            ⚠ {num(noAnswer)} forwarded call{noAnswer === 1 ? "" : "s"} got NO ANSWER{shortConn > 0 ? ` · ${num(shortConn)} answered but dropped under 2 min` : ""} — {label}
+          </div>
+          <div className="text-xs text-[var(--muted)] mt-1">
+            These transferred to your SET buyer <b>{fmtPhone(cfg.setNumber)}</b> but didn&rsquo;t connect long enough to bill — likely lost revenue. Confirm the buyer line is staffed and answering, then follow up with the callers below (their real numbers are in the list).
+          </div>
+        </Card>
+      )}
+
+      <div className="grid gap-4 md:grid-cols-5 mb-6">
         <Stat label="Total U65 calls" value={num(total)} sub={label} tone="default" />
         <Stat label="Over 121s (ours)" value={num(over121)} sub="transfer leg" tone="up" />
-        <Stat label="Billable (ours)" value={usd2(billableCents)} sub={`${num(billableCount)} × $75`} tone="gold" />
+        <Link href={`/dashboard/u65?${rangeQs}&show=billable`} className={`block rounded-2xl ${show === "billable" ? "ring-2 ring-[var(--gold)]" : ""}`}>
+          <Stat label="Billable (ours) ›" value={usd2(billableCents)} sub={`${num(billableCount)} × $75 — click to list`} tone="gold" />
+        </Link>
+        <Link href={`/dashboard/u65?${rangeQs}&show=unbilled`} className={`block rounded-2xl ${show === "unbilled" ? "ring-2 ring-[#ef4444]" : ""}`}>
+          <Stat label="Unbilled transfers ›" value={num(unbilled)} sub={`${num(noAnswer)} no-answer · ${num(shortConn)} short — click to list`} tone={noAnswer > 0 ? "down" : "default"} />
+        </Link>
         <Stat label="Actually paid (Ringba)" value={ringbaConnected ? usd2(paidCents) : "—"} sub={ringbaConnected ? "reconciled" : "connect Ringba"} tone={ringbaConnected ? "up" : "down"} />
       </div>
 
@@ -118,40 +154,57 @@ export default async function U65Page({ searchParams }: { searchParams: Promise<
             <button className="rounded border border-[var(--border)] px-3 py-1 hover:text-[var(--brand)]">Apply</button>
           </form>
         </div>
+        {show && (
+          <div className="mb-3 text-xs">
+            <span className={`rounded-full px-2 py-1 font-semibold ${show === "unbilled" ? "bg-[#ef4444]/15 text-[#ef4444]" : "bg-[var(--gold)]/15 text-[var(--gold)]"}`}>
+              Filtered: {show === "unbilled" ? "unbilled transfers only" : "billable only"} ({num(shown.length)})
+            </span>{" "}
+            <Link href={`/dashboard/u65?${rangeQs}`} className="text-[var(--muted)] underline">clear filter</Link>
+          </div>
+        )}
         <Card className="!p-0 overflow-hidden">
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-[10px] uppercase tracking-wide text-[var(--muted)] border-b border-[var(--border)]">
                 <th className="text-left p-3">When (UTC-6)</th>
-                <th className="text-left p-3">Age</th>
-                <th className="text-left p-3">Name</th>
-                <th className="text-left p-3">Source</th>
-                <th className="text-left p-3">State</th>
-                <th className="text-left p-3">Answer</th>
+                <th className="text-left p-3">Inbound (caller)</th>
+                <th className="text-left p-3">Called into</th>
+                <th className="text-left p-3">→ Sent to buyer</th>
+                <th className="text-left p-3">Caller ID → buyer</th>
+                <th className="text-left p-3">Result</th>
                 <th className="text-left p-3">Transfer</th>
                 <th className="text-left p-3">Billable</th>
                 <th className="text-left p-3">Ringba</th>
               </tr>
             </thead>
             <tbody>
-              {calls.map((c) => (
+              {shown.map((c) => {
+                const callerCid = c.fromNumber ? fmtPhone(c.fromNumber) : "";
+                return (
                 <tr key={c.id} className="border-b border-[var(--border)] last:border-0">
                   <td className="p-3 whitespace-nowrap text-xs text-[var(--muted)]">{fmt(c.createdAt)}{c.afterHours ? " · AH" : ""}</td>
-                  <td className="p-3 whitespace-nowrap text-xs">{typeof c.age === "number" ? c.age : <span className="text-[var(--muted)]">—</span>}</td>
-                  <td className="p-3">{c.callId
-                    ? <Link href={`/dashboard/calls/${c.callId}`} className="text-[var(--brand)] hover:underline" title="View AI conversation, caller info & appended data">{c.name || (c.fromNumber ? fmtPhone(c.fromNumber) : "View call")}</Link>
-                    : (c.name || <span className="text-[var(--muted)]">{c.fromNumber ? fmtPhone(c.fromNumber) : "—"}</span>)}</td>
-                  <td className="p-3 text-xs">{c.source === "direct_220" ? "Direct" : "AI"}</td>
-                  <td className="p-3 text-xs">{c.state || "—"}</td>
+                  <td className="p-3 whitespace-nowrap">{c.callId
+                    ? <Link href={`/dashboard/calls/${c.callId}`} className="text-[var(--brand)] hover:underline" title="View AI conversation, caller info & appended data">{c.fromNumber ? fmtPhone(c.fromNumber) : "View call"}</Link>
+                    : <span>{c.fromNumber ? fmtPhone(c.fromNumber) : "—"}</span>}
+                    <div className="text-[11px] text-[var(--muted)]">{[c.name, typeof c.age === "number" ? `age ${c.age}` : "", c.state].filter(Boolean).join(" · ") || "—"}</div>
+                  </td>
+                  <td className="p-3 text-xs whitespace-nowrap">{sourceLabel(c.source)}</td>
+                  <td className="p-3 text-xs whitespace-nowrap">{c.forwardedTo ? fmtPhone(c.forwardedTo) : <span className="text-[var(--muted)]">not sent</span>}</td>
+                  <td className="p-3 text-xs whitespace-nowrap">{callerCid
+                    ? <span className="text-[#22c55e]" title="The buyer sees the caller's own number">✓ {callerCid}</span>
+                    : <span className="text-[#f59e0b]" title="Caller withheld number — fell back to toll-free">⚠ toll-free</span>}</td>
                   <td className="p-3 text-xs">{c.answer || "—"}</td>
                   <td className="p-3 text-xs">{c.transferSec ? `${c.transferSec}s` : "—"}</td>
                   <td className="p-3">{c.billable ? <Badge tone="brand">$75</Badge> : <span className="text-[var(--muted)] text-xs">—</span>}</td>
                   <td className="p-3">{c.reconciled ? <Badge tone={c.ringbaPaid ? "brand" : "default"}>{c.ringbaPaid ? "paid" : "no"}</Badge> : <span className="text-[var(--muted)] text-xs">—</span>}</td>
                 </tr>
-              ))}
-              {calls.length === 0 && <tr><td colSpan={9} className="p-6 text-center text-[var(--muted)]">No U65 calls in this range. <Link href="/dashboard/u65?range=all" className="text-[var(--brand)] hover:underline">View all time →</Link></td></tr>}
+                );
+              })}
+              {shown.length === 0 && <tr><td colSpan={9} className="p-6 text-center text-[var(--muted)]">No {show || "U65"} calls in this range. <Link href="/dashboard/u65?range=all" className="text-[var(--brand)] hover:underline">View all time →</Link></td></tr>}
             </tbody>
           </table>
+          </div>
         </Card>
       </Section>
     </>

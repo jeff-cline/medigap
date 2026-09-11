@@ -28,7 +28,7 @@ export default function MammoSignup() {
     window.location.assign("/account");
   }
 
-  const input = "w-full rounded-xl border-2 border-[#2E1065]/15 px-4 py-3 text-[#2E1065] focus:outline-none focus:border-[#7C3AED]";
+  const input = "w-full rounded-xl border-2 border-[#7C3AED]/30 px-4 py-3 text-[#2E1065] focus:outline-none focus:border-[#7C3AED]";
   const label = "block text-sm font-black text-[#2E1065] mb-1.5";
 
   return (
@@ -81,7 +81,7 @@ export default function MammoSignup() {
               <p className="mt-1.5 text-xs text-[#2E1065]/55">At least 9 characters.</p>
             </div>
 
-            <div className="rounded-2xl bg-[#F3EEFF] p-5 space-y-4">
+            <div className="rounded-2xl bg-white border-2 border-[#7C3AED]/35 p-5 space-y-4">
               <p className="text-sm font-black">Reminders — entirely your choice</p>
               <label className="flex items-start gap-3 cursor-pointer">
                 <input type="checkbox" checked={emailOptIn} onChange={(e) => setEmail(e.target.checked)}

@@ -37,7 +37,7 @@ export default async function Account() {
           </p>
 
           {past.length > 0 && (
-            <div className="rounded-2xl bg-[#F3EEFF] p-5 mb-10 max-w-2xl">
+            <div className="rounded-2xl bg-white border-2 border-[#7C3AED]/35 p-5 mb-10 max-w-2xl">
               <div className="text-xs font-black uppercase tracking-widest text-[#6D28D9] mb-3">Your history</div>
               <ul className="space-y-2">
                 {past.map((b) => (

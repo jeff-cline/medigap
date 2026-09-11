@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MEDIGAP } from "@/lib/medigap-brand";
 import { siloGroups } from "@/lib/silos";
 import { qrImage, trackingUrl, pageCode } from "@/lib/qr";
+import WelcomePopover from "@/components/silo/WelcomePopover";
 
 const lightVars = {
   "--bg": MEDIGAP.colors.bg, "--text": MEDIGAP.colors.ink, "--brand": MEDIGAP.colors.brand,
@@ -16,6 +17,7 @@ export default function SiloShell({ path, children }: { path: string; children: 
   const qr = qrImage(trackingUrl(pageCode(path)), 120);
   return (
     <div style={lightVars} className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col">
+      <WelcomePopover />
       {/* trust bar */}
       <div className="bg-[var(--ink,#0b2348)] text-white text-[12px]" style={{ background: MEDIGAP.colors.ink }}>
         <div className="mx-auto max-w-6xl px-5 h-9 flex items-center justify-between">
@@ -29,9 +31,17 @@ export default function SiloShell({ path, children }: { path: string; children: 
           <Link href="/" className="font-extrabold text-xl tracking-tight" style={{ color: MEDIGAP.colors.brand }}>
             1-800-<span style={{ color: MEDIGAP.colors.gold }}>MEDIGAP</span>
           </Link>
-          <a href={`tel:${MEDIGAP.tel}`} className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white" style={{ background: MEDIGAP.colors.brand }}>
-            📞 Call {MEDIGAP.telDisplay}
-          </a>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <a href="/private-health-insurance" className="inline-flex items-center gap-1 rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold text-white shadow" style={{ background: "#ea580c" }}>
+              <span className="hidden sm:inline">Under 64 — </span>Private Health Insurance
+            </a>
+            <a href="https://www.sunfirematrix.com/app/consumer/emp/7837904/#/" className="inline-flex items-center gap-1 rounded-full border-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold text-white shadow" style={{ background: "#dc2626", borderColor: "#2563eb" }}>
+              <span className="hidden sm:inline">Over 64 — </span>Medigap Insurance
+            </a>
+            <a href={`tel:${MEDIGAP.tel}`} className="inline-flex items-center gap-2 rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white" style={{ background: MEDIGAP.colors.brand }}>
+              📞 <span className="hidden sm:inline">Call </span>{MEDIGAP.telDisplay}
+            </a>
+          </div>
         </div>
       </header>
 

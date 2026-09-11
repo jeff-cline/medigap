@@ -33,7 +33,9 @@ async function transfer(callId: string, voice: string, moneyWordId?: string, aff
   const dest = normalizePhone(r.forwardedTo) || r.forwardedTo;
   if (!dest) return `<Say voice="${voice}">All our specialists are busy. We'll call you right back. Goodbye.</Say><Hangup/>`;
   const numberEl = s.callWhisper ? `<Number url="${BASE}/api/calls/whisper">${dest}</Number>` : `<Number>${dest}</Number>`;
-  return `<Dial timeout="25" callerId="${s.raw["tollFreeCallerId"] || "+18006334427"}" record="record-from-answer-dual" action="${BASE}/api/calls/status">${numberEl}</Dial>`;
+  // Pass the caller's real number so the buyer accepts/pays it (never the toll-free line).
+  const callerId = normalizePhone(call.fromNumber || "") || s.raw["tollFreeCallerId"] || "+18006334427";
+  return `<Dial timeout="25" callerId="${callerId}" record="record-from-answer-dual" action="${BASE}/api/calls/status">${numberEl}</Dial>`;
 }
 
 // Money-word hot transfer: ring the word's chosen rep/number and book the partner payout.
@@ -47,8 +49,11 @@ async function transferMoneyWord(callId: string, voice: string, mw: { id: string
   await db.call.update({ where: { id: callId }, data: { disposition: "moneyword", realized: true, forwardedTo: dest, priceCents: mw.payoutCents, moneyWord: mw.word, status: "transferring" } }).catch(() => {});
   await db.ledgerEntry.create({ data: { type: "revenue", category: "moneyword", channel: mw.partner || "partner", amountCents: mw.payoutCents, realized: true, note: `Money word "${mw.word}" → ${dest}` } }).catch(() => {});
   const s = await getSettings();
+  const mwCall = await db.call.findUnique({ where: { id: callId }, select: { fromNumber: true } });
   const numberEl = s.callWhisper ? `<Number url="${BASE}/api/calls/whisper">${dest}</Number>` : `<Number>${dest}</Number>`;
-  return `<Dial timeout="25" callerId="${s.raw["tollFreeCallerId"] || "+18006334427"}" record="record-from-answer-dual" action="${BASE}/api/calls/status">${numberEl}</Dial>`;
+  // Pass the caller's real number so the buyer accepts/pays it (never the toll-free line).
+  const callerId = normalizePhone(mwCall?.fromNumber || "") || s.raw["tollFreeCallerId"] || "+18006334427";
+  return `<Dial timeout="25" callerId="${callerId}" record="record-from-answer-dual" action="${BASE}/api/calls/status">${numberEl}</Dial>`;
 }
 
 // U65 hot transfer: bridge the caller straight to the buyer's SET number and record

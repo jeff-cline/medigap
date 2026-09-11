@@ -43,7 +43,7 @@ export default function FaqBlock({
       {intro && <p className="text-lg text-[#2E1065]/65 mb-8 max-w-2xl">{intro}</p>}
       <div className="space-y-3">
         {faqs.map((f, i) => (
-          <details key={f.q} className="group rounded-2xl border-2 border-[#2E1065]/12 bg-white open:border-[#7C3AED]/45 open:shadow-lg transition-all"
+          <details key={f.q} className="group rounded-2xl border-2 border-[#7C3AED]/30 bg-white open:border-[#7C3AED]/45 open:shadow-lg transition-all"
             {...(i === 0 ? { open: true } : {})}>
             <summary className="flex items-start justify-between gap-4 cursor-pointer list-none p-5 sm:p-6 font-black text-lg leading-snug select-none">
               <span className="min-w-0">{f.q}</span>
