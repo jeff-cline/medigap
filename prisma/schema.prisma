@@ -1981,3 +1981,51 @@ model EqVisitor {
   @@index([slug, createdAt])
   @@map("eq_visitor")
 }
+
+/// A homeowner who completed the form and became an account holder.
+///
+/// Created in the same transaction as the lead. There is no password: the
+/// qualification form is the signup, and demanding a password at that moment
+/// costs conversions for no security benefit — the account holds their own
+/// submitted figures and a set of calculators, nothing sensitive. Returning
+/// later uses a magic-link token instead.
+model EqAccount {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  firstName      String    @default("")
+  lastName       String    @default("")
+  phone          String    @default("")
+  zip            String    @default("")
+  /// The lead this account was created from.
+  leadId         String    @default("")
+
+  /// Single-use-ish magic link token for signing back in without a password.
+  /// Rotated each time one is issued.
+  token          String    @unique
+  tokenExpiresAt DateTime?
+
+  createdAt      DateTime  @default(now())
+  lastLoginAt    DateTime?
+
+  @@map("eq_account")
+}
+
+/// Every email equity.direct tries to send, and whether it actually went.
+///
+/// Exists because SMTP failures are otherwise invisible: the send is
+/// best-effort so a mail outage never costs a lead, which means a broken
+/// mailbox looks exactly like everything working. This makes it visible in the
+/// back office instead of silently dropping welcome emails for weeks.
+model EqEmailLog {
+  id        String   @id @default(cuid())
+  to        String   @default("")
+  kind      String   @default("")   // welcome | lead_alert | partner_invite | magic_link
+  subject   String   @default("")
+  ok        Boolean  @default(false)
+  error     String   @default("")
+  createdAt DateTime @default(now())
+
+  @@index([kind, createdAt])
+  @@index([ok, createdAt])
+  @@map("eq_email_log")
+}

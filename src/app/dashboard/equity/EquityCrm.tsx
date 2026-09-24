@@ -20,6 +20,13 @@ type Partner = {
   referrals: number; createdAt: string;
 };
 type Invite = { id: string; email: string; expiresAt: string; url: string };
+type EmailRow = {
+  id: string; to: string; kind: string; subject: string;
+  ok: boolean; error: string; createdAt: string;
+};
+type Settings = {
+  redirectUrl: string; redirectDelay: number; phone: string; alertEmails: string;
+};
 
 const STAGES = ["lead", "contacted", "qualified", "submitted", "funded", "declined", "lost"] as const;
 const money = (c: number) =>
@@ -29,13 +36,15 @@ const day = (s: string | null) => (s ? DAY.format(new Date(s)) : "—");
 
 export default function EquityCrm({
   leads, partners, pendingInvites, topPages, byCategory,
+  accountCount, settings, emails, failedEmails,
 }: {
   leads: Lead[]; partners: Partner[]; pendingInvites: Invite[];
   topPages: { slug: string; n: number; reason: string }[];
   byCategory: { key: string; label: string; n: number }[];
+  accountCount: number; settings: Settings; emails: EmailRow[]; failedEmails: number;
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<"leads" | "partners" | "pages">("leads");
+  const [tab, setTab] = useState<"leads" | "partners" | "pages" | "settings">("leads");
   const [open, setOpen] = useState<string | null>(null);
   const [stageFilter, setStageFilter] = useState("");
   const [q, setQ] = useState("");
@@ -72,7 +81,7 @@ export default function EquityCrm({
       <div className="grid gap-3 sm:grid-cols-4 mb-6">
         {[
           ["Total leads", leads.length],
-          ["New", count("lead")],
+          ["Accounts", accountCount],
           ["Qualified", count("qualified")],
           ["Funded", count("funded")],
         ].map(([label, n]) => (
@@ -84,11 +93,17 @@ export default function EquityCrm({
       </div>
 
       <div className="flex gap-2 mb-5">
-        {(["leads", "partners", "pages"] as const).map((t) => (
+        {(["leads", "partners", "pages", "settings"] as const).map((t) => (
           <button key={t} type="button" onClick={() => setTab(t)}
                   className={`rounded-lg px-4 py-2 text-sm font-bold ${
                     tab === t ? "bg-brand text-bg" : "bg-panel text-muted border border-border"}`}>
-            {t === "leads" ? "Leads" : t === "partners" ? "Partners" : "Page performance"}
+            {t === "leads" ? "Leads" : t === "partners" ? "Partners"
+              : t === "pages" ? "Page performance" : "Settings & email"}
+            {t === "settings" && failedEmails > 0 && (
+              <span className="ml-2 rounded-full bg-danger/20 px-1.5 text-[10px] text-danger">
+                {failedEmails}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -343,6 +358,135 @@ export default function EquityCrm({
                 </p>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── settings & email ──────────────────────────────────────── */}
+      {tab === "settings" && (
+        <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
+          <form className="rounded-xl border border-border bg-panel p-5 h-fit"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const f = new FormData(e.currentTarget);
+                  const r = await post({
+                    action: "settings",
+                    redirectUrl: f.get("redirectUrl"),
+                    redirectDelay: f.get("redirectDelay"),
+                    phone: f.get("phone"),
+                    alertEmails: f.get("alertEmails"),
+                  }, "settings", "Saved.");
+                  if (r?.settings && f.get("redirectUrl") && !r.settings.redirectUrl) {
+                    setMsg("Saved, but the redirect URL was rejected — it must start with http:// or https://");
+                  }
+                }}>
+            <h2 className="font-black text-text">Settings</h2>
+            <p className="mt-1 text-xs text-muted">
+              Changes take effect immediately. No deploy needed.
+            </p>
+            <div className="mt-4 grid gap-4">
+              <label className="block">
+                <span className="text-[11px] uppercase tracking-wide text-muted font-bold">
+                  Where to send them after the form
+                </span>
+                <input name="redirectUrl" defaultValue={settings.redirectUrl}
+                       placeholder="https://your-affiliate-link.com/..."
+                       className="mt-1 w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text" />
+                <span className="mt-1 block text-[11px] text-muted">
+                  Your affiliate or application link. We capture the lead and create the
+                  account first, then send them here. Leave blank to keep them on the site.
+                  Must be http:// or https://
+                </span>
+              </label>
+
+              <label className="block">
+                <span className="text-[11px] uppercase tracking-wide text-muted font-bold">
+                  Seconds before the redirect
+                </span>
+                <input name="redirectDelay" type="number" min="0" max="30"
+                       defaultValue={settings.redirectDelay}
+                       className="mt-1 w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text" />
+                <span className="mt-1 block text-[11px] text-muted">
+                  They see their reference number first. 0 redirects instantly, which
+                  reads as a hijack — 3 to 5 is kinder and converts the same.
+                </span>
+              </label>
+
+              <label className="block">
+                <span className="text-[11px] uppercase tracking-wide text-muted font-bold">
+                  Phone shown on the site
+                </span>
+                <input name="phone" defaultValue={settings.phone}
+                       className="mt-1 w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text" />
+              </label>
+
+              <label className="block">
+                <span className="text-[11px] uppercase tracking-wide text-muted font-bold">
+                  Lead alerts go to
+                </span>
+                <input name="alertEmails" defaultValue={settings.alertEmails}
+                       placeholder="you@example.com, someone@else.com"
+                       className="mt-1 w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text" />
+                <span className="mt-1 block text-[11px] text-muted">
+                  Comma-separated. Blank sends to every active God account.
+                </span>
+              </label>
+
+              <button disabled={busy === "settings"}
+                      className="rounded-lg bg-brand px-4 py-2 font-bold text-bg disabled:opacity-50">
+                {busy === "settings" ? "Saving…" : "Save settings"}
+              </button>
+            </div>
+          </form>
+
+          <div>
+            {failedEmails > 0 && (
+              <div className="mb-4 rounded-xl border border-danger/40 bg-danger/10 p-4">
+                <p className="font-bold text-danger">
+                  {failedEmails} of the last {emails.length} emails failed to send.
+                </p>
+                <p className="mt-1 text-xs text-muted">
+                  Welcome emails and lead alerts are both affected. Check the SMTP
+                  credentials at Dashboard → Integrations. Leads are still captured
+                  normally — only the notifications are lost.
+                </p>
+              </div>
+            )}
+
+            <div className="overflow-x-auto rounded-xl border border-border">
+              <table className="w-full min-w-[620px] text-sm">
+                <thead className="bg-panel2 text-left">
+                  <tr>
+                    {["Sent", "Kind", "To", "Result"].map((h) => (
+                      <th key={h} className="px-4 py-2 text-[11px] uppercase tracking-wide text-muted font-bold">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {emails.length === 0 && (
+                    <tr><td colSpan={4} className="px-4 py-8 text-center text-muted">
+                      No email attempts yet.
+                    </td></tr>
+                  )}
+                  {emails.map((e) => (
+                    <tr key={e.id} className="border-t border-border">
+                      <td className="px-4 py-3 text-xs text-muted">{day(e.createdAt)}</td>
+                      <td className="px-4 py-3 text-xs text-text">{e.kind}</td>
+                      <td className="px-4 py-3 text-xs text-muted">{e.to}</td>
+                      <td className="px-4 py-3">
+                        {e.ok ? (
+                          <span className="rounded-full bg-brand/15 px-2 py-0.5 text-[10px] font-bold text-brand">sent</span>
+                        ) : (
+                          <span className="text-[11px] text-danger" title={e.error}>
+                            failed — {e.error.slice(0, 60)}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

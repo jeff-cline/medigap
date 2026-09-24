@@ -32,6 +32,7 @@ export const PUBLIC_FORM_ENDPOINTS = [
   "/api/equity/lead",           // equity.direct — the qualification form on all 100 pages
   "/api/equity/partner-login",  // equity.direct — partner sign-in
   "/api/equity/invite",         // equity.direct — partner invite acceptance
+  "/api/equity/signin",         // equity.direct — homeowner magic-link request
 ] as const;
 
 /** Does this URL path point at a public form endpoint? */

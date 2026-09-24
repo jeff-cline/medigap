@@ -3,7 +3,9 @@ import { db } from "@/lib/db";
 import { guardForm } from "@/lib/form-guard";
 import { bySlug } from "@/lib/equity";
 import { CONSENT_TEXT } from "@/lib/equity/consent";
-import { notifyNewLead } from "@/lib/equity/notify";
+import { notifyNewLead, sendWelcome } from "@/lib/equity/notify";
+import { upsertAccount, createAccountSession } from "@/lib/equity/account";
+import { getEquitySettings } from "@/lib/equity/settings";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -130,23 +132,60 @@ export async function POST(req: NextRequest) {
       },
     }).catch(() => null);
 
-    // Tell the owners. Queried by role rather than hardcoded, and best-effort
-    // so a mail failure never costs us the lead we just captured.
+    // They become an account holder here, not in a second step. The form was
+    // the signup; asking again would lose most of them.
+    const account = email
+      ? await upsertAccount({
+          email,
+          firstName: clean(b.firstName, 80),
+          lastName: clean(b.lastName, 80),
+          phone, zip, leadId: lead.id,
+        })
+      : null;
+
+    // Sign them straight in so the account area is available immediately —
+    // waiting on an email to arrive before they can use anything is where
+    // these flows usually lose people.
+    if (account) {
+      await createAccountSession({
+        id: account.id, email: account.email, firstName: account.firstName,
+      }).catch(() => null);
+    }
+
+    const settings = await getEquitySettings();
+
+    // Both emails are fired without blocking the response. Every attempt is
+    // logged to EqEmailLog, so a broken mailbox shows up in the back office
+    // rather than silently swallowing welcome emails.
     void (async () => {
-      const owners = await db.user
-        .findMany({ where: { role: "god", status: "active" }, select: { email: true } })
-        .catch(() => [] as { email: string }[]);
+      if (account) {
+        await sendWelcome({
+          to: account.email,
+          firstName: account.firstName,
+          ref: lead.ref,
+          reason: use?.reason ?? "",
+          zip, estEquity,
+          token: account.token,
+        }).catch(() => null);
+      }
       await notifyNewLead({
-        to: owners.map((o) => o.email),
         ref: lead.ref,
         name: [clean(b.firstName, 80), clean(b.lastName, 80)].filter(Boolean).join(" "),
         email, phone, zip,
         reason: use?.reason ?? "",
-        consented,
+        consented, estEquity,
       }).catch(() => null);
     })();
 
-    return NextResponse.json({ ok: true, ref: lead.ref });
+    return NextResponse.json({
+      ok: true,
+      ref: lead.ref,
+      hasAccount: Boolean(account),
+      // Where to send them next, and how long to let them read the
+      // confirmation first. Blank means stay on the page.
+      redirectUrl: settings.redirectUrl,
+      redirectDelay: settings.redirectDelay,
+    });
   } catch {
     return NextResponse.json(
       { ok: false, error: "Something went wrong saving that. Please try again." },

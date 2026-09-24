@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getSession, isGod } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { bySlug, CATEGORIES } from "@/lib/equity";
+import { getEquitySettings } from "@/lib/equity/settings";
 import EquityCrm from "./EquityCrm";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ export default async function EquityDashboard() {
   if (!session) redirect("/login");
   if (!isGod(session)) redirect("/dashboard");
 
-  const [leads, partners, invites] = await Promise.all([
+  const [leads, partners, invites, accounts, emails, settings] = await Promise.all([
     db.eqLead.findMany({
       orderBy: { createdAt: "desc" },
       take: 500,
@@ -26,7 +27,14 @@ export default async function EquityDashboard() {
       where: { usedAt: null, expiresAt: { gt: new Date() } },
       orderBy: { createdAt: "desc" }, take: 50,
     }).catch(() => []),
+    db.eqAccount.count().catch(() => 0),
+    db.eqEmailLog.findMany({ orderBy: { createdAt: "desc" }, take: 40 }).catch(() => []),
+    getEquitySettings(),
   ]);
+
+  // If mail is failing, that needs to be the first thing seen — welcome emails
+  // and lead alerts both go silent and nothing else looks wrong.
+  const failedEmails = emails.filter((e) => !e.ok).length;
 
   // Which keyword pages actually produce leads. This is the number that should
   // drive where content effort goes next.
@@ -99,6 +107,13 @@ export default async function EquityDashboard() {
         }))}
         topPages={topPages}
         byCategory={byCategoryCount}
+        accountCount={accounts}
+        settings={settings}
+        emails={emails.map((e) => ({
+          id: e.id, to: e.to, kind: e.kind, subject: e.subject,
+          ok: e.ok, error: e.error, createdAt: e.createdAt.toISOString(),
+        }))}
+        failedEmails={failedEmails}
       />
     </div>
   );

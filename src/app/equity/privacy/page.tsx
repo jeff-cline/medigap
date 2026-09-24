@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { SITE_DISCLOSURE } from "@/lib/equity/consent";
+import { getEquitySettings, telHref } from "@/lib/equity/settings";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | Equity Direct",
@@ -18,7 +19,9 @@ export const metadata: Metadata = {
 // It has not been reviewed by counsel, and state privacy laws (CCPA/CPRA and
 // equivalents) impose specific disclosure and rights language that should be
 // checked before launch.
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const { phone } = await getEquitySettings();
+
   return (
     <main className="eq-wrap eq-narrow" style={{ padding: "64px 24px 90px" }}>
       <h1 className="eq-h1" style={{ fontSize: "clamp(1.9rem,4vw,2.7rem)" }}>Privacy Policy</h1>
@@ -80,7 +83,7 @@ export default function PrivacyPage() {
           We only call or text you if you ticked the consent box, and we store the exact
           wording you agreed to along with the time and IP address. Consent is never a
           condition of anything. You can withdraw it at any time by replying STOP to a
-          text, telling us on a call, or emailing us. If you did not consent, we will
+          text or telling us on a call. If you did not consent, we will
           only contact you by email.
         </p>
 
@@ -105,7 +108,7 @@ export default function PrivacyPage() {
           You can ask us what we hold about you, ask us to correct it, ask us to delete
           it, and ask us to stop contacting you. Depending on where you live you may have
           additional statutory rights, including the right to opt out of the sharing of
-          your personal information. Email us and we will act on it.
+          your personal information. Call us and we will act on it.
         </p>
 
         <h2>Children</h2>
@@ -129,8 +132,11 @@ export default function PrivacyPage() {
 
         <h2>Contact</h2>
         <p>
-          Questions, requests, or complaints: <a href="mailto:privacy@equity.direct"
-          style={{ color: "var(--gold)", textDecoration: "underline" }}>privacy@equity.direct</a>.
+          Questions, requests, or complaints — including asking us to delete your
+          information or stop contacting you — call{" "}
+          <a href={telHref(phone)} style={{ color: "var(--gold)", textDecoration: "underline" }}>
+            {phone}
+          </a>.
         </p>
 
         <p style={{ marginTop: 34, paddingTop: 22, borderTop: "1px solid var(--line)", fontSize: "0.85rem", color: "var(--slate)" }}>

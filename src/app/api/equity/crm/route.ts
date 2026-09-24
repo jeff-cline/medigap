@@ -3,6 +3,7 @@ import { getSession, isGod } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { invitePartner } from "@/lib/equity/partner-auth";
 import { sendPartnerInvite } from "@/lib/equity/notify";
+import { saveEquitySettings, getEquitySettings } from "@/lib/equity/settings";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -97,6 +98,20 @@ export async function POST(req: Request) {
       where: { id: String(b.id ?? "") }, data: { active: b.active === true },
     }).catch(() => null);
     return NextResponse.json({ ok: true });
+  }
+
+  // ── settings ────────────────────────────────────────────────────────
+  if (b.action === "settings") {
+    await saveEquitySettings({
+      redirectUrl: b.redirectUrl === undefined ? undefined : String(b.redirectUrl),
+      redirectDelay: b.redirectDelay === undefined ? undefined : Number(b.redirectDelay),
+      phone: b.phone === undefined ? undefined : String(b.phone),
+      alertEmails: b.alertEmails === undefined ? undefined : String(b.alertEmails),
+    });
+    const saved = await getEquitySettings();
+    // Echo back what was stored: a redirect URL that failed validation is
+    // silently blanked, and the operator needs to see that it did.
+    return NextResponse.json({ ok: true, settings: saved });
   }
 
   return NextResponse.json({ ok: false, error: "Unknown action." }, { status: 400 });

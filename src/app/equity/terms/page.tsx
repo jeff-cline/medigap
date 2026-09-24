@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { SITE_DISCLOSURE, SPEED_FOOTNOTE } from "@/lib/equity/consent";
+import { getEquitySettings, telHref } from "@/lib/equity/settings";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Terms of Use | Equity Direct",
@@ -14,7 +15,9 @@ export const metadata: Metadata = {
 // litigation over whether they are disguised credit — the disclaimers below are
 // written conservatively for that reason, but they are not a substitute for a
 // lawyer reading them.
-export default function TermsPage() {
+export default async function TermsPage() {
+  const { phone } = await getEquitySettings();
+
   return (
     <main className="eq-wrap eq-narrow" style={{ padding: "64px 24px 90px" }}>
       <h1 className="eq-h1" style={{ fontSize: "clamp(1.9rem,4vw,2.7rem)" }}>Terms of Use</h1>
@@ -96,9 +99,10 @@ export default function TermsPage() {
 
         <h2>Contact</h2>
         <p>
-          <a href="mailto:hello@equity.direct" style={{ color: "var(--gold)", textDecoration: "underline" }}>
-            hello@equity.direct
-          </a>
+          Call us on{" "}
+          <a href={telHref(phone)} style={{ color: "var(--gold)", textDecoration: "underline" }}>
+            {phone}
+          </a>.
         </p>
 
         <p style={{ marginTop: 34, paddingTop: 22, borderTop: "1px solid var(--line)", fontSize: "0.85rem", color: "var(--slate)" }}>
