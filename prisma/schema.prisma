@@ -1826,3 +1826,158 @@ model MammoLead {
   @@index([stage, createdAt])
   @@map("mammo_lead")
 }
+
+// ---------------------------------------------------------------------------
+// equity.direct — home equity access marketing + lead-gen portal
+//
+// Site-scoped tables, the same separation mammo.express uses: a homeowner
+// enquiring about their equity is not a Core staff User, and mixing the two
+// would mean a bug in one login surface could expose the other.
+//
+// The thing that makes this CRM worth having is `slug` on EqLead — the keyword
+// page the person started on. Every page is one reason, so the landing page is
+// the stated reason for wanting the money, captured before anyone asks.
+// ---------------------------------------------------------------------------
+
+/// A homeowner who started the qualification form.
+///
+/// Created on first submission even if they never finish, because an abandoned
+/// form is still a lead — we know the reason and the property. `stage` tracks
+/// how far they got so the funnel is lead -> contacted -> qualified -> funded
+/// rather than a single yes/no.
+model EqLead {
+  id           String   @id @default(cuid())
+  /// Sequential human reference, e.g. ED-000123. Assigned on create.
+  ref          String   @unique @default("")
+
+  firstName    String   @default("")
+  lastName     String   @default("")
+  email        String   @default("")
+  phone        String   @default("")
+
+  /// Property. ZIP is the minimum we need to be useful.
+  zip          String   @default("")
+  propertyType String   @default("")
+  estValue     Int      @default(0)  // cents
+  mortgageBal  Int      @default(0)  // cents
+  /// Derived at capture so a stale estimate never silently changes history.
+  estEquity    Int      @default(0)  // cents
+
+  /// WHY they want it — the keyword page they landed on, and its category.
+  slug         String   @default("")
+  category     String   @default("")
+  /// Free text if they told us something the page did not cover.
+  reasonNote   String   @default("")
+  amountWanted Int      @default(0)  // cents
+  timeline     String   @default("")
+
+  /// lead | contacted | qualified | submitted | funded | declined | lost
+  stage        String   @default("lead")
+  /// Who owns follow-up. A Core User id, or empty.
+  ownerId      String   @default("")
+
+  /// Attribution.
+  partnerId    String   @default("")
+  vid          String   @default("")  // rocket_vid, ties to the Core CDP
+  referer      String   @default("")
+  utm          String   @default("{}")
+  ip           String   @default("")
+  userAgent    String   @default("")
+
+  /// TCPA consent has to be provable, so the exact wording, time and IP are
+  /// stored rather than a bare boolean. Calling someone who did not agree to
+  /// be called is the expensive mistake in lead gen.
+  consentText  String   @default("")
+  consentAt    DateTime?
+  consentIp    String   @default("")
+
+  /// Follow-up scheduling.
+  nextFollowUp DateTime?
+  lastContact  DateTime?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+
+  notes        EqLeadNote[]
+
+  @@index([stage, createdAt])
+  @@index([slug])
+  @@index([partnerId])
+  @@index([email])
+  @@index([phone])
+  @@map("eq_lead")
+}
+
+/// CRM activity against a lead. Append-only in practice — an edited history is
+/// not a history.
+model EqLeadNote {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      EqLead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  /// note | call | email | sms | stage_change | system
+  kind      String   @default("note")
+  body      String   @default("")
+  /// Core User id or partner id who wrote it.
+  authorId  String   @default("")
+  authorName String  @default("")
+  createdAt DateTime @default(now())
+
+  @@index([leadId, createdAt])
+  @@map("eq_lead_note")
+}
+
+/// A referral partner — the professional who sent the homeowner to us.
+///
+/// Added by email from the God account, which issues an invite rather than
+/// mailing a password in clear text.
+model EqPartner {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String    @default("")
+  company      String    @default("")
+  phone        String    @default("")
+  /// Which of the 100 categories they work in, for routing and reporting.
+  vertical     String    @default("")
+  /// Short public code: /?p=<code> and their own landing links.
+  code         String    @unique @default("")
+  passwordHash String    @default("")
+  active       Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([active])
+  @@map("eq_partner")
+}
+
+/// One-time invite so a partner sets their own password rather than having one
+/// emailed to them in clear text.
+model EqInvite {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  email     String    @default("")
+  name      String    @default("")
+  partnerId String    @default("")
+  usedAt    DateTime?
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+
+  @@index([email])
+  @@map("eq_invite")
+}
+
+/// Page views, so we know which of the 100 keywords actually produce leads.
+model EqVisitor {
+  id        String   @id @default(cuid())
+  vid       String   @default("")
+  path      String   @default("")
+  slug      String   @default("")
+  referer   String   @default("")
+  utm       String   @default("{}")
+  ip        String   @default("")
+  userAgent String   @default("")
+  createdAt DateTime @default(now())
+
+  @@index([vid, createdAt])
+  @@index([slug, createdAt])
+  @@map("eq_visitor")
+}

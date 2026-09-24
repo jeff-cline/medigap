@@ -156,6 +156,17 @@ export function middleware(req: NextRequest) {
           path: "/", maxAge: 63072000, sameSite: "lax",
         });
       }
+      // Partner attribution. A referral link is ?p=<code>, and the code has to
+      // survive the homeowner browsing several of the hundred pages before they
+      // fill anything in — so it goes in a cookie rather than being read off
+      // the URL at submit time. First touch wins: whoever actually sent them
+      // keeps the credit even if they later arrive again from somewhere else.
+      const p = req.nextUrl.searchParams.get("p");
+      if (p && /^[a-z0-9]{4,16}$/.test(p) && !req.cookies.get("eq_ref")?.value) {
+        res.cookies.set("eq_ref", p, {
+          path: "/", maxAge: 60 * 60 * 24 * 90, sameSite: "lax",
+        });
+      }
       return res;
     }
   }
