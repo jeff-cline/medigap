@@ -87,6 +87,7 @@ export const CORE_ACCESS: { href: string; label: string }[] = [
   { href: "/dashboard/marketing", label: "Marketing / Ads" },
   { href: "/dashboard/integrations", label: "Integrations" },
   { href: "/dashboard/mammo", label: "Mammo Express" },
+  { href: "/dashboard/equity", label: "equity.direct" },
   { href: "/dashboard/form-spam", label: "Form Spam" },
   { href: "/core-api", label: "CORE API & SDK" },
   { href: "/dashboard/users", label: "User Management" },
