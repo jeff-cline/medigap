@@ -14,6 +14,7 @@ const roleTone: Record<string, "default" | "up" | "down" | "gold" | "brand"> = {
   moneywords: "brand",
   marketing_partner: "up",
   risk: "down",
+  developer: "brand",
   consumer: "default",
 };
 
@@ -30,6 +31,7 @@ const ROLE_ACCESS: { role: string; sees: string }[] = [
   { role: "investor", sees: "Allocation, waterfall, profit share, payout statements — read-only." },
   { role: "marketing", sees: "Sites, channels, creative, money-words, conversion analytics." },
   { role: "accounting", sees: "Ledger, fees, payouts, reconciliation — no editorial controls." },
+  { role: "developer", sees: "Only the Developer onboarding guide by default. God grants extra Core sections per account, and the global switch (Developer page) turns all developer access on/off." },
 ];
 
 export default async function UsersPage() {
@@ -112,6 +114,7 @@ export default async function UsersPage() {
                     { value: "moneywords", label: "Money Words" },
                     { value: "marketing_partner", label: "Marketing Partner (white-label site owner)" },
                     { value: "risk", label: "Risk" },
+                    { value: "developer", label: "Developer (Claude Code onboarding + granted Core sections)" },
                   ],
                 },
               ]}

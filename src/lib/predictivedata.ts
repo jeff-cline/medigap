@@ -44,6 +44,38 @@ export async function lookupByPhone(phone: string) {
 export async function lookupByEmail(email: string) {
   return email ? lookup("GetDataByEmail", { email }) : null;
 }
+export async function lookupByIP(ip: string) {
+  const clean = String(ip || "").trim();
+  return clean ? lookup("GetDataByIp", { ip: clean }) : null;
+}
+// Reverse-IP identity append for an anonymous network visitor — curated fields or null.
+export async function appendByIP(ip: string): Promise<Record<string, string> | null> {
+  const id = await lookupByIP(ip);
+  return id ? flattenIdentity(id) : null;
+}
+// Comprehensive flatten for reverse-IP appends — pulls the rich nested `data` block
+// (income, net worth, home value, credit, education, household, investments, etc.) + email/phone.
+function flattenIdentity(id: Identity): Record<string, string> {
+  const a = id as Record<string, unknown> & Record<string, any>;
+  const out: Record<string, string> = {};
+  const put = (k: string, v: unknown) => {
+    if (v === undefined || v === null) return;
+    if (typeof v === "object") { const o = v as Record<string, unknown>; const cand = o.value ?? o.description ?? o.name ?? o.label ?? o.midpoint ?? o.text ?? o.range; if (cand != null && String(cand).trim() !== "") out[k] = String(cand); return; }
+    if (String(v).trim() !== "") out[k] = String(v);
+  };
+  put("name", [a.firstName, a.lastName].filter(Boolean).join(" "));
+  for (const k of ["address", "city", "state", "zip", "age", "birthYear"]) put(k, a[k]);
+  const emails = (Array.isArray(a.emails) ? a.emails : []).map((e: unknown) => typeof e === "string" ? e : ((e as { email?: string; value?: string })?.email || (e as { value?: string })?.value)).filter(Boolean) as string[];
+  if (emails.length) { out.email = emails[0]; if (emails.length > 1) out.emails = emails.join(", "); }
+  const phones = (Array.isArray(a.phones) ? a.phones : []).map((x: unknown) => (typeof x === "string" || typeof x === "number") ? String(x) : ((x as { phone?: string; number?: string; value?: string }) && ((x as { phone?: string }).phone || (x as { number?: string }).number || (x as { value?: string }).value))).filter(Boolean) as string[];
+  let mobile = ""; const bm = a.bestMobile; if (bm) mobile = typeof bm === "object" ? String((bm as { phone?: string; number?: string; value?: string }).phone || (bm as { number?: string }).number || (bm as { value?: string }).value || "") : String(bm);
+  const allPhones = Array.from(new Set([mobile, ...phones].filter(Boolean)));
+  if (allPhones.length) out.phone = allPhones.join(", ");
+  const d = (a.data || {}) as Record<string, unknown>;
+  for (const [k, v] of Object.entries(d)) put(k, v);
+  if (Array.isArray(a.devices) && a.devices.length) out.devicesSeen = String(a.devices.length);
+  return out;
+}
 
 // Pull every email out of the upstream identity (it may be string[] or {email}[]).
 function extractEmails(emails: Identity["emails"]): string[] {

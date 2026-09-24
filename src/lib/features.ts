@@ -52,3 +52,73 @@ export function enabledSet(featuresJson: string | null | undefined): FeatureKey[
   const list = parseFeatures(featuresJson);
   return list === null ? [...ALL_KEYS] : Array.from(new Set([...ALWAYS_ON, ...list]));
 }
+
+// ---------------------------------------------------------------------------
+// CORE DASHBOARD ACCESS — which left-nav sections a restricted account (e.g. a
+// Developer) may see. Stored in the SAME User.features JSON, but each entry is
+// namespaced "nav:<href>" so it never collides with the partner FeatureKeys
+// above (parseFeatures filters those to ALL_KEYS and ignores nav: entries).
+// ---------------------------------------------------------------------------
+export const NAV_PREFIX = "nav:";
+
+// Grantable Core sections, mirroring the dashboard left navigation. The God
+// account toggles these per user in User Management. Developer is first.
+export const CORE_ACCESS: { href: string; label: string }[] = [
+  { href: "/dashboard/developer", label: "Developer" },
+  { href: "/dashboard", label: "Overview" },
+  { href: "/dashboard/unified", label: "Unified" },
+  { href: "/dashboard/jv", label: "JV / PE / VC" },
+  { href: "/dashboard/leads", label: "Leads CRM" },
+  { href: "/dashboard/calls", label: "Calls" },
+  { href: "/dashboard/social", label: "Social & Creators" },
+  { href: "/dashboard/playbook", label: "Playbook Funnel" },
+  { href: "/dashboard/voice-agent", label: "Train Agent" },
+  { href: "/dashboard/ai-spend", label: "AI Spend" },
+  { href: "/dashboard/tv", label: "TV Commercials" },
+  { href: "/dashboard/medigapp", label: "Medig.app" },
+  { href: "/dashboard/sites", label: "Marketing Sites" },
+  { href: "/dashboard/seo-plan", label: "SEO Silo Plan" },
+  { href: "/dashboard/qr", label: "QR Tracking" },
+  { href: "/dashboard/partners", label: "Affiliate Partners" },
+  { href: "/dashboard/affiliates", label: "Affiliate Network" },
+  { href: "/dashboard/u65", label: "U65" },
+  { href: "/dashboard/followup", label: "Follow-Up" },
+  { href: "/dashboard/payouts", label: "Partner Payouts" },
+  { href: "/dashboard/marketing", label: "Marketing / Ads" },
+  { href: "/dashboard/integrations", label: "Integrations" },
+  { href: "/dashboard/mammo", label: "Mammo Express" },
+  { href: "/dashboard/form-spam", label: "Form Spam" },
+  { href: "/core-api", label: "CORE API & SDK" },
+  { href: "/dashboard/users", label: "User Management" },
+  { href: "/dashboard/settings", label: "Settings" },
+];
+
+function rawFeatureList(featuresJson?: string | null): string[] {
+  if (!featuresJson || !featuresJson.trim()) return [];
+  try {
+    const a = JSON.parse(featuresJson);
+    return Array.isArray(a) ? a.map((k) => String(k)) : [];
+  } catch {
+    return [];
+  }
+}
+
+// Set of nav hrefs a restricted account may see.
+export function grantedNavHrefs(featuresJson?: string | null): Set<string> {
+  return new Set(rawFeatureList(featuresJson).filter((k) => k.startsWith(NAV_PREFIX)).map((k) => k.slice(NAV_PREFIX.length)));
+}
+
+// Save nav grants while preserving any partner features, and vice versa —
+// both live in the one User.features string.
+export function withNavGrants(featuresJson: string | null | undefined, hrefs: string[]): string {
+  const nonNav = rawFeatureList(featuresJson).filter((k) => !k.startsWith(NAV_PREFIX));
+  return JSON.stringify([...nonNav, ...hrefs.map((h) => NAV_PREFIX + h)]);
+}
+export function withPartnerFeatures(featuresJson: string | null | undefined, keys: string[]): string {
+  const navOnly = rawFeatureList(featuresJson).filter((k) => k.startsWith(NAV_PREFIX));
+  return JSON.stringify([...keys, ...navOnly]);
+}
+
+// A brand-new Developer account sees only the Developer section until the God
+// account grants more.
+export const DEFAULT_DEVELOPER_FEATURES = JSON.stringify([NAV_PREFIX + "/dashboard/developer"]);

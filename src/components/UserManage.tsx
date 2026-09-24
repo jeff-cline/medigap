@@ -1,10 +1,13 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PARTNER_FEATURES, ALWAYS_ON, enabledSet, type FeatureKey } from "@/lib/features";
+import { PARTNER_FEATURES, ALWAYS_ON, enabledSet, CORE_ACCESS, grantedNavHrefs, type FeatureKey } from "@/lib/features";
 
-const ROLES = ["agent", "advertiser", "investor", "marketing", "marketing_partner", "accounting", "moneywords", "risk", "god"];
+const ROLES = ["agent", "advertiser", "investor", "marketing", "marketing_partner", "accounting", "moneywords", "risk", "developer", "god"];
 const PORTAL_ROLES = ["marketing_partner", "agent"];
+// Roles whose dashboard is scoped to the Core sections the God account grants.
+const NAV_SCOPED_ROLES = ["developer"];
+const DEV_HREF = "/dashboard/developer";
 
 export default function UserManage({ user }: { user: { id: string; name: string; phone: string; role: string; status: string; features?: string } }) {
   const router = useRouter();
@@ -17,6 +20,7 @@ export default function UserManage({ user }: { user: { id: string; name: string;
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
   const [feats, setFeats] = useState<FeatureKey[]>(() => enabledSet(user.features));
+  const [navGrants, setNavGrants] = useState<string[]>(() => Array.from(grantedNavHrefs(user.features)));
 
   function toggleFeat(k: FeatureKey) {
     if (ALWAYS_ON.includes(k)) return; // base CRM always on
@@ -25,6 +29,13 @@ export default function UserManage({ user }: { user: { id: string; name: string;
   async function saveFeatures() {
     const d = await call({ id: user.id, action: "features", features: feats });
     if (!d.error) setNote("Features saved");
+  }
+  function toggleNav(href: string) {
+    setNavGrants((cur) => (cur.includes(href) ? cur.filter((x) => x !== href) : [...cur, href]));
+  }
+  async function saveNav() {
+    const d = await call({ id: user.id, action: "nav", nav: navGrants });
+    if (!d.error) setNote("Access saved");
   }
 
   async function call(body: object) {
@@ -84,6 +95,26 @@ export default function UserManage({ user }: { user: { id: string; name: string;
                 })}
               </div>
               <button onClick={saveFeatures} disabled={busy} className="btn btn-brand text-xs !py-1.5 mt-2">Save features</button>
+            </div>
+          )}
+
+          {NAV_SCOPED_ROLES.includes(role) && (
+            <div className="mt-2 border-t border-[var(--border)] pt-3">
+              <div className="text-[10px] uppercase text-[var(--muted)] mb-2">Core sections this account can see <span className="text-[var(--muted)]">(left navigation across the Core)</span></div>
+              <div className="grid grid-cols-2 gap-1.5">
+                {CORE_ACCESS.map((s) => {
+                  const on = navGrants.includes(s.href);
+                  const isDev = s.href === DEV_HREF;
+                  return (
+                    <label key={s.href} className={`flex items-start gap-2 rounded-lg border px-2 py-1.5 cursor-pointer ${on ? "border-[var(--brand)] bg-[var(--panel)]" : "border-[var(--border)]"}`}>
+                      <input type="checkbox" checked={on} onChange={() => toggleNav(s.href)} className="mt-0.5" />
+                      <span><span className="text-xs font-medium">{s.label}</span><span className="block text-[10px] text-[var(--muted)]">{isDev ? "the Developer onboarding guide" : s.href}</span></span>
+                    </label>
+                  );
+                })}
+              </div>
+              <button onClick={saveNav} disabled={busy} className="btn btn-brand text-xs !py-1.5 mt-2">Save access</button>
+              <p className="text-[10px] text-[var(--muted)] mt-1">Developer also needs the global switch ON (top of the Developer page) to see that section.</p>
             </div>
           )}
         </div>

@@ -22,7 +22,7 @@ export function middleware(req: NextRequest) {
     // /login and /logout are NOT shared: mammo.express has its own consumer
     // login at /mammo/login. Leaving them shared sent a woman booking a
     // mammogram to the Core's staff sign-in. The God account uses medigap.plus.
-    const SHARED = ["/api", "/_next", "/favicon", "/dashboard"];
+    const SHARED = ["/api", "/_next", "/favicon", "/dashboard", "/brand"];
     if (!SHARED.some((p) => path === p || path.startsWith(p))) {
       const url = req.nextUrl.clone();
       url.pathname = path === "/" ? "/mammo" : `/mammo${path}`;
@@ -102,6 +102,61 @@ export function middleware(req: NextRequest) {
       const url = req.nextUrl.clone();
       url.pathname = path === "/" ? "/medigapp/directory" : `/medigapp${path}`;
       return NextResponse.rewrite(url);
+    }
+  }
+
+  // quuik.com — Trusted GPT answer box (host-routed to /quuik). Assets + api pass through.
+  if (host === "quuik.com" || host === "www.quuik.com") {
+    if (!/^\/(api|_next|favicon|quuik-assets)/i.test(path)) {
+      const url = req.nextUrl.clone();
+      url.pathname = path === "/" ? "/quuik" : `/quuik${path}`;
+      { const res = NextResponse.rewrite(url); if (!req.cookies.get("rocket_vid")?.value) res.cookies.set("rocket_vid", crypto.randomUUID(), { path: "/", maxAge: 63072000, sameSite: "lax" }); return res; }
+    }
+  }
+
+  // siimpler.com — email-consolidation platform (host-routed to /siimpler).
+  if (host === "siimpler.com" || host === "www.siimpler.com") {
+    if (!/^\/(api|_next|favicon|siimpler-assets|robots\.txt|sitemap\.xml)/i.test(path)) {
+      const url = req.nextUrl.clone();
+      url.pathname = path === "/" ? "/siimpler" : `/siimpler${path}`;
+      { const res = NextResponse.rewrite(url); if (!req.cookies.get("rocket_vid")?.value) res.cookies.set("rocket_vid", crypto.randomUUID(), { path: "/", maxAge: 63072000, sameSite: "lax" }); return res; }
+    }
+  }
+
+  // equity.direct — home-equity access marketing + lead-gen portal, host-routed
+  // to /equity. The whole host is its own site, so everything that is not shared
+  // Core infrastructure rewrites in.
+  //
+  // /login and /logout are deliberately NOT shared: equity.direct has its own
+  // homeowner and partner sign-ins under /equity. The God account administers it
+  // from medigap.plus, the same split mammo.express uses.
+  //
+  // robots.txt and sitemap.xml pass through so the host can serve its own — the
+  // 100 keyword pages are the point of the site and have to be crawlable.
+  if (host === "equity.direct" || host === "www.equity.direct") {
+    const SHARED = ["/api", "/_next", "/favicon", "/dashboard", "/brand", "/uploads"];
+    const OWN = /^\/(robots\.txt|sitemap\.xml|sitemap-.*\.xml)$/i.test(path);
+    if (OWN) {
+      const url = req.nextUrl.clone();
+      url.pathname = `/equity${path}`;
+      return NextResponse.rewrite(url);
+    }
+    if (!SHARED.some((p) => path === p || path.startsWith(p))) {
+      const url = req.nextUrl.clone();
+      url.pathname = path === "/" ? "/equity" : `/equity${path}`;
+      const h = new Headers(req.headers);
+      // Pages read this to know which keyword page a lead started on — the
+      // attribution the CRM is built around.
+      h.set("x-pathname", path);
+      const res = NextResponse.rewrite(url, { request: { headers: h } });
+      // First-party visitor id, same cookie the rest of the network uses, so a
+      // homeowner's journey across sites stays one person.
+      if (!req.cookies.get("rocket_vid")?.value) {
+        res.cookies.set("rocket_vid", crypto.randomUUID(), {
+          path: "/", maxAge: 63072000, sameSite: "lax",
+        });
+      }
+      return res;
     }
   }
 

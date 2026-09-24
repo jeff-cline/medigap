@@ -45,7 +45,7 @@ export async function destroyMammoSession() {
 export async function registerMammo(input: {
   email: string; password: string; firstName: string; lastName: string;
   phone: string; zip: string; smsOptIn: boolean; smsOptInText: string;
-  emailOptIn: boolean; ip: string;
+  emailOptIn: boolean; ip: string; outOfArea?: boolean;
 }) {
   const email = input.email.trim().toLowerCase();
   const existing = await db.mammoAccount.findUnique({ where: { email } });
@@ -67,6 +67,7 @@ export async function registerMammo(input: {
       smsOptInText: smsOptIn ? input.smsOptInText : "",
       smsOptInIp: smsOptIn ? input.ip : "",
       emailOptIn: Boolean(input.emailOptIn),
+      outOfArea: Boolean(input.outOfArea),
     },
   });
   return { account: acct };

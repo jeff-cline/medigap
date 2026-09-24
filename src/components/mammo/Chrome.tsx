@@ -8,16 +8,16 @@ export function MammoHeader() {
   return (
     <header className="sticky top-0 z-40 bg-[#FFFFFF]/95 backdrop-blur border-b border-[#2E1065]/10">
       <div className="max-w-6xl mx-auto px-4 h-[72px] flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2.5 min-w-0 group">
-          <span className="w-10 h-10 rounded-2xl bg-[#7C3AED] text-white grid place-items-center font-black shrink-0 group-hover:scale-105 transition-transform">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
+        <Link href="/" className="flex items-center gap-3 min-w-0 group">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/mark.png" alt="" aria-hidden
+            className="h-11 w-auto shrink-0 group-hover:scale-105 transition-transform" />
           <span className="min-w-0">
-            <span className="block font-black text-lg tracking-tight text-[#2E1065] leading-none">Mammo Express</span>
-            <span className="hidden sm:block text-[11px] font-bold text-[#2E1065]/55 leading-none mt-1">
-              Book it yourself. Walk in, walk out.
+            <span className="block font-black text-lg tracking-tight text-[#2E1065] leading-none">
+              Mammo<span className="font-light">Express</span>
+            </span>
+            <span className="hidden sm:block text-[10px] font-bold tracking-[0.18em] uppercase text-[#7C3AED] leading-none mt-1.5">
+              Fast · Friendly · For you
             </span>
           </span>
         </Link>
@@ -40,6 +40,15 @@ export function MammoFooter() {
   return (
     <footer className="bg-[#2E1065] text-white/85">
       <div className="max-w-6xl mx-auto px-4 py-14">
+        {/* The full lockup, on white so the purple artwork keeps its contrast
+            against the dark footer. */}
+        <div className="mb-12">
+          <span className="inline-block rounded-2xl bg-white px-6 py-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/logo.png" alt="Mammo Express — Mammograms made easier"
+              className="h-20 w-auto" />
+          </span>
+        </div>
         {/* opt-in to the wider network — the Core's standard footer slot */}
         <div className="rounded-3xl bg-white/5 border border-white/10 p-6 sm:p-8 mb-12">
           <h2 className="font-black text-white text-xl mb-2">Stay on top of the rest of your health</h2>

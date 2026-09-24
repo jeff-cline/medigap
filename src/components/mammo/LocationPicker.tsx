@@ -11,6 +11,16 @@ export type PickerLoc = {
 const full = (l: PickerLoc) =>
   [l.address1, l.city, [l.state, l.zip].filter(Boolean).join(" ")].filter(Boolean).join(", ");
 
+const RADIUS_MILES = 60;   // beyond this we do not claim to serve the area
+
+/** Great-circle miles. */
+function miles(aLat: number, aLng: number, bLat: number, bLng: number): number {
+  const R = 3958.8, rad = (d: number) => (d * Math.PI) / 180;
+  const dLat = rad(bLat - aLat), dLng = rad(bLng - aLng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(aLat)) * Math.cos(rad(bLat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
 function rank(locs: PickerLoc[], zip: string): PickerLoc[] {
   const z = zip.replace(/\D/g, "").slice(0, 5);
   if (!z) return locs;
@@ -34,11 +44,50 @@ export default function LocationPicker({
   const [signup, setSignup] = useState({ firstName: "", lastName: "", email: "", phone: "", password: "" });
   const [emailOptIn, setEmailOptIn] = useState(true);
   const [smsOptIn, setSmsOptIn] = useState(false);
+  const [zipPoint, setZipPoint] = useState<{ lat: number; lng: number; city: string; state: string } | null>(null);
+  const [zipUnknown, setZipUnknown] = useState(false);
+  const [waitlisted, setWaitlisted] = useState(false);
   const mapEl = useRef<HTMLDivElement>(null);
   const mapRef = useRef<unknown>(null);
   const markers = useRef<Record<string, unknown>>({});
 
-  const ordered = useMemo(() => rank(locations, zip), [locations, zip]);
+  // Look up the typed ZIP once it is complete, then move the map to it. This
+  // is what makes the map feel like it is responding to you rather than
+  // sitting on a fixed view of everything.
+  useEffect(() => {
+    const z = zip.replace(/\D/g, "");
+    if (z.length !== 5) { setZipPoint(null); setZipUnknown(false); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/mammo/zip?z=${z}`);
+        if (cancelled) return;
+        if (!res.ok) { setZipPoint(null); setZipUnknown(true); return; }
+        const j = await res.json();
+        setZipUnknown(false);
+        setZipPoint({ lat: j.lat, lng: j.lng, city: j.city, state: j.state });
+      } catch { if (!cancelled) { setZipPoint(null); setZipUnknown(true); } }
+    })();
+    return () => { cancelled = true; };
+  }, [zip]);
+
+  // Distances from the typed ZIP, when we know where it is.
+  const withDistance = useMemo(() => {
+    if (!zipPoint) return null;
+    return locations
+      .filter((l) => l.lat != null && l.lng != null)
+      .map((l) => ({ loc: l, mi: miles(zipPoint.lat, zipPoint.lng, l.lat as number, l.lng as number) }))
+      .sort((a, b) => a.mi - b.mi);
+  }, [locations, zipPoint]);
+
+  const nearest = withDistance?.[0] ?? null;
+  const outOfArea = Boolean(zipPoint && (!nearest || nearest.mi > RADIUS_MILES));
+
+  const ordered = useMemo(
+    () => (withDistance ? withDistance.map((d) => d.loc) : rank(locations, zip)),
+    [locations, zip, withDistance],
+  );
+  const milesFor = (id: string) => withDistance?.find((d) => d.loc.id === id)?.mi ?? null;
   const mappable = useMemo(() => locations.filter((l) => l.lat != null && l.lng != null), [locations]);
 
   // Leaflet + OpenStreetMap: free, no API key, no usage terms to breach. The
@@ -76,6 +125,24 @@ export default function LocationPicker({
     return () => { cancelled = true; };
   }, [mappable]);
 
+  // Move the map to the typed ZIP. If we serve the area, frame the ZIP and its
+  // nearest locations; if not, just show where they are.
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const map = mapRef.current as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const L = (window as any).L;
+    if (!map || !L || !zipPoint) return;
+
+    if (outOfArea || !withDistance?.length) {
+      map.setView([zipPoint.lat, zipPoint.lng], 9);
+      return;
+    }
+    const near = withDistance.filter((d) => d.mi <= RADIUS_MILES).slice(0, 5);
+    const pts = [[zipPoint.lat, zipPoint.lng], ...near.map((d) => [d.loc.lat as number, d.loc.lng as number])];
+    map.fitBounds(L.latLngBounds(pts).pad(0.3));
+  }, [zipPoint, outOfArea, withDistance]);
+
   // Close on Escape — a modal that traps you is worse than no modal.
   useEffect(() => {
     if (!open) return;
@@ -100,6 +167,26 @@ export default function LocationPicker({
     // Booking is recorded before we hand over, so a lead that reaches the
     // clinic's portal is always counted even if they never come back.
     window.location.href = j.calendarUrl;
+  }
+
+  /** Out-of-area signup: no booking to make, so record the ZIP as demand. */
+  async function joinWaitlist(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true); setErr("");
+    const res = await fetch("/api/mammo/register", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ...signup, zip, emailOptIn, smsOptIn, outOfArea: true }),
+    });
+    const j = await res.json().catch(() => ({}));
+    setBusy(false);
+    if (!res.ok) {
+      setErr(j.existing
+        ? "You already have an account — we will let you know when a location opens near you."
+        : (j.error ?? "Could not create your account."));
+      if (j.existing) setWaitlisted(true);
+      return;
+    }
+    setWaitlisted(true);
   }
 
   /** Create the account, then book, then hand off — one submit, no detour. */
@@ -130,6 +217,67 @@ export default function LocationPicker({
           className="w-full rounded-2xl border-2 border-[#7C3AED]/30 focus:border-[#7C3AED] focus:outline-none px-5 py-4 text-lg font-bold tabular-nums text-[#2E1065]" />
         <p className="text-xs text-[#2E1065]/55 mt-2">Closest first. You can pick any of them.</p>
 
+        {zipUnknown && (
+          <p className="mt-3 text-sm font-bold text-[#B8391A]">
+            We could not find that ZIP code. Check the digits and try again.
+          </p>
+        )}
+
+        {/* --- out of area: no booking to offer, so capture the demand --- */}
+        {outOfArea && !waitlisted && (
+          <div className="mt-6 rounded-2xl bg-white border-2 border-[#7C3AED]/50 p-6">
+            <h3 className="text-xl font-black mb-2">
+              No locations available in {zipPoint?.city ? zipPoint.city : "that area"} yet.
+            </h3>
+            <p className="text-[#2E1065]/75 mb-1">
+              We are opening locations state by state. Create an account and we will tell you the
+              moment one opens near {zip}.
+            </p>
+            {nearest && (
+              <p className="text-sm text-[#2E1065]/55 mb-5">
+                Your nearest is currently <strong>{nearest.loc.name}</strong>, about{" "}
+                {Math.round(nearest.mi)} miles away — you are welcome to book there if that works.
+              </p>
+            )}
+
+            <form onSubmit={joinWaitlist} className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <input required placeholder="First name" autoComplete="given-name"
+                  value={signup.firstName} onChange={(e) => setSignup({ ...signup, firstName: e.target.value })} />
+                <input required placeholder="Last name" autoComplete="family-name"
+                  value={signup.lastName} onChange={(e) => setSignup({ ...signup, lastName: e.target.value })} />
+              </div>
+              <input required type="email" placeholder="Email" autoComplete="email"
+                value={signup.email} onChange={(e) => setSignup({ ...signup, email: e.target.value })} />
+              <input placeholder="Mobile number (optional)" autoComplete="tel"
+                value={signup.phone} onChange={(e) => setSignup({ ...signup, phone: e.target.value })} />
+              <input required type="password" minLength={9} placeholder="Password (9+ characters)" autoComplete="new-password"
+                value={signup.password} onChange={(e) => setSignup({ ...signup, password: e.target.value })} />
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input type="checkbox" checked={smsOptIn} onChange={(e) => setSmsOptIn(e.target.checked)} />
+                <span className="text-xs text-[#2E1065]/80">
+                  Text me when a location opens. Reply STOP to cancel. Message and data rates may apply.
+                </span>
+              </label>
+              {err && <p className="rounded-xl bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm font-bold">{err}</p>}
+              <button type="submit" disabled={busy}
+                className="w-full rounded-2xl bg-[#7C3AED] hover:bg-[#5B21B6] disabled:opacity-60 text-white font-black py-4 text-lg transition-colors">
+                {busy ? "One moment…" : "Create an account & notify me →"}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {outOfArea && waitlisted && (
+          <div className="mt-6 rounded-2xl bg-white border-2 border-[#7C3AED]/50 p-6 text-center">
+            <div className="text-3xl mb-2">✓</div>
+            <h3 className="text-xl font-black mb-2">You are on the list.</h3>
+            <p className="text-[#2E1065]/75">
+              We will let you know the moment a screening location opens near {zip}.
+            </p>
+          </div>
+        )}
+
         {ordered.length === 0 ? (
           <div className="mt-6 rounded-2xl border-2 border-dashed border-[#2E1065]/15 p-8 text-center">
             <p className="font-bold text-[#2E1065]/70">No locations yet.</p>
@@ -138,6 +286,12 @@ export default function LocationPicker({
             </p>
           </div>
         ) : (
+          <>
+          {outOfArea && (
+            <p className="mt-8 mb-3 text-sm font-black uppercase tracking-widest text-[#2E1065]/45">
+              Nearest locations, further afield
+            </p>
+          )}
           <ul className="mt-6 space-y-3 max-h-[520px] overflow-y-auto pr-1">
             {ordered.map((l) => (
               <li key={l.id}>
@@ -151,6 +305,11 @@ export default function LocationPicker({
                     <span className="block font-black text-[#2E1065] leading-tight">{l.name}</span>
                     {l.title && <span className="block text-xs font-bold text-[#7C3AED] mt-0.5">{l.title}</span>}
                     <span className="block text-sm text-[#2E1065]/65 mt-1">{full(l)}</span>
+                    {milesFor(l.id) !== null && (
+                      <span className="block text-xs font-bold text-[#6D28D9] mt-1">
+                        {Math.round(milesFor(l.id) as number)} miles away
+                      </span>
+                    )}
                     {l.requiresOrder && (
                       <span className="inline-block mt-2 text-[10px] font-black uppercase bg-[#F3EEFF] text-[#5B21B6] rounded px-2 py-0.5">
                         written order required
@@ -162,6 +321,7 @@ export default function LocationPicker({
               </li>
             ))}
           </ul>
+          </>
         )}
       </div>
 

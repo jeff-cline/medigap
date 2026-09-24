@@ -30,6 +30,7 @@ export default function MammoLogin() {
       <MammoHeader />
       <main className="bg-white text-[#2E1065] min-h-[70vh]">
         <div className="max-w-md mx-auto px-4 py-14 md:py-20">
+
           <h1 className="text-4xl font-black tracking-tight mb-2">Sign in</h1>
           <p className="text-lg text-[#2E1065]/70 mb-8">Welcome back.</p>
           <form onSubmit={submit} className="space-y-5">

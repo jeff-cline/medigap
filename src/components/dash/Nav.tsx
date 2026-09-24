@@ -1,8 +1,10 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { grantedNavHrefs } from "@/lib/features";
 
 export const LEFT_NAV: [string, string, string][] = [
+  ["Developer", "/dashboard/developer", "🧑‍💻"],
   ["Overview", "/dashboard", "▦"],
   ["Unified", "/dashboard/unified", "💬"],
   ["JV / PE / VC", "/dashboard/jv", "💼"],
@@ -55,13 +57,25 @@ export const UNIT_TABS: [string, string][] = [
   ["Accounting", "/dashboard/accounting"],
 ];
 
-export function Sidebar({ email, role }: { email: string; role: string }) {
+export function Sidebar({ email, role, features = "", devEnabled = false }: { email: string; role: string; features?: string; devEnabled?: boolean }) {
   const path = usePathname();
-  // Assistants run the founder's JV space only — they don't see the rest of the dash.
-  const nav = role === "assistant" ? LEFT_NAV.filter(([, href]) => href === "/dashboard/jv" || href === "/dashboard/playbook") : LEFT_NAV;
+  const isGodRole = role === "god";
+  const granted = grantedNavHrefs(features);
+  let nav: [string, string, string][];
+  if (role === "assistant") {
+    // Assistants run the founder's JV space only — they don't see the rest of the dash.
+    nav = LEFT_NAV.filter(([, href]) => href === "/dashboard/jv" || href === "/dashboard/playbook");
+  } else if (role === "developer") {
+    // Developers see only the sections the God account granted them (default: Developer),
+    // and the Developer section only while the global switch is on.
+    nav = LEFT_NAV.filter(([, href]) => (href === "/dashboard/developer" ? devEnabled && granted.has(href) : granted.has(href)));
+  } else {
+    // Staff/God: full nav. The Developer section is management-only — God only.
+    nav = LEFT_NAV.filter(([, href]) => (href === "/dashboard/developer" ? isGodRole : true));
+  }
   return (
     <aside className="w-60 shrink-0 border-r border-[var(--border)] bg-[var(--panel)] min-h-screen sticky top-0 hidden lg:flex flex-col">
-      <Link href={role === "assistant" ? "/dashboard/jv" : "/dashboard"} className="px-5 h-16 flex items-center text-xl font-bold text-gradient">medigap.plus</Link>
+      <Link href={role === "assistant" ? "/dashboard/jv" : role === "developer" ? "/dashboard/developer" : "/dashboard"} className="px-5 h-16 flex items-center text-xl font-bold text-gradient">medigap.plus</Link>
       <nav className="flex-1 px-3 py-3 space-y-1">
         {nav.map(([label, href, icon]) => {
           const active = path === href;
@@ -88,7 +102,7 @@ export function Sidebar({ email, role }: { email: string; role: string }) {
 
 export function UnitTabs({ role }: { role?: string } = {}) {
   const path = usePathname();
-  if (role === "assistant") return null;
+  if (role === "assistant" || role === "developer") return null;
   return (
     <div className="flex gap-1 overflow-x-auto border-b border-[var(--border)] px-2">
       {UNIT_TABS.map(([label, href]) => {

@@ -407,4 +407,4 @@ export const MEDICAL_DISCLAIMER =
   'Mammo Express is a scheduling service, not a medical provider. We do not provide medical advice, perform imaging or interpret results. Screening is carried out by independent FDA-certified facilities. If you have noticed a lump or any change in your breast, contact a clinician — that needs a diagnostic exam, not a screening appointment.'
 
 export const SMS_CONSENT_TEXT =
-  'I agree to receive appointment and annual screening reminders from Mammo Express by text at the number I provided, including messages sent by an automated system. Consent is not a condition of any purchase or service. Message and data rates may apply; message frequency varies. Reply STOP to cancel or HELP for help.'
+  'I agree to receive appointment reminders, annual screening reminders and other timely health and wellness reminders from Mammo Express by text at the number I provided, including messages sent by an automated system. Consent is not a condition of any purchase or service. Message and data rates may apply; message frequency varies. Reply STOP to cancel or HELP for help.'

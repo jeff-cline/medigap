@@ -47,6 +47,8 @@ export async function POST(req: NextRequest) {
   // Google Workspace rather than the Zapmail pool: this is a transactional
   // notification to the owner and needs to land in an inbox, not a cold-outreach
   // mailbox that trains spam filters.
+  await db.mammoLead.updateMany({ where: { email: s.email }, data: { stage: "booked" } }).catch(() => {});
+
   sendEmail(
     NOTIFY,
     "Mammo Express — someone picked a location",

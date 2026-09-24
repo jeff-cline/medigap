@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { notifyNewAccount } from "@/lib/email";
+import { withNavGrants, withPartnerFeatures, DEFAULT_DEVELOPER_FEATURES } from "@/lib/features";
 
 const TEMP_PASSWORD = "TEMP!234";
 
@@ -29,15 +30,24 @@ export async function POST(req: NextRequest) {
       refCode = base;
       for (let i = 2; await db.user.findFirst({ where: { refCode } }); i++) refCode = `${base}${i}`;
     }
+    // A new Developer sees only the Developer section until the God account grants more.
+    const features = role === "developer" ? DEFAULT_DEVELOPER_FEATURES : "";
     try {
       const user = await db.user.create({
-        data: { email, name, role, passwordHash, mustChangePassword: true, status: "active", source: "Admin (created in dashboard)", refCode },
+        data: { email, name, role, passwordHash, mustChangePassword: true, status: "active", source: "Admin (created in dashboard)", refCode, features },
       });
       notifyNewAccount({ name: user.name, email: user.email, role: user.role, phone: user.phone, source: user.source, id: user.id }).catch(() => {});
       return NextResponse.json({ ok: true, id: user.id, tempPassword: TEMP_PASSWORD, refCode });
     } catch {
       return NextResponse.json({ error: `A user with ${email} already exists.` }, { status: 409 });
     }
+  }
+
+  // Global kill switch for the Developer section — no user id needed.
+  if (action === "devGlobal") {
+    const on = !!body.on;
+    await db.setting.upsert({ where: { key: "developer.enabled" }, update: { value: on ? "1" : "0" }, create: { key: "developer.enabled", value: on ? "1" : "0" } });
+    return NextResponse.json({ ok: true, enabled: on });
   }
 
   const id = String(body.id || "");
@@ -67,8 +77,18 @@ export async function POST(req: NextRequest) {
   }
   if (action === "features") {
     // God toggles which partner-portal features this account can see.
+    // Preserve any Core nav grants stored in the same field.
     const list = Array.isArray(body.features) ? body.features.map((k: unknown) => String(k)) : [];
-    await db.user.update({ where: { id }, data: { features: JSON.stringify(list) } });
+    const cur = await db.user.findUnique({ where: { id }, select: { features: true } });
+    await db.user.update({ where: { id }, data: { features: withPartnerFeatures(cur?.features, list) } });
+    return NextResponse.json({ ok: true });
+  }
+  if (action === "nav") {
+    // God toggles which Core left-nav sections this account can see (developer/restricted accounts).
+    // Preserve any partner-portal features stored in the same field.
+    const hrefs = Array.isArray(body.nav) ? body.nav.map((k: unknown) => String(k)) : [];
+    const cur = await db.user.findUnique({ where: { id }, select: { features: true } });
+    await db.user.update({ where: { id }, data: { features: withNavGrants(cur?.features, hrefs) } });
     return NextResponse.json({ ok: true });
   }
   if (action === "deposit") {

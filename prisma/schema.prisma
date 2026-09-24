@@ -1736,6 +1736,10 @@ model MammoAccount {
   smsOptInText  String   @default("")
   smsOptInIp    String   @default("")
   emailOptIn    Boolean  @default(false)
+  // Signed up from a ZIP with no location nearby — a waitlist entry, and the
+  // clearest demand signal for where to open next.
+  outOfArea     Boolean  @default(false)
+  notifiedAt    DateTime?
   createdAt     DateTime @default(now())
 
   @@map("mammo_account")
@@ -1784,4 +1788,41 @@ model MammoInvite {
   createdAt DateTime  @default(now())
 
   @@map("mammo_invite")
+}
+
+// Cache of ZIP -> coordinates. Geocoded once on first use and kept, so the map
+// can move to a typed ZIP without hitting an external service on every
+// keystroke (and without tripping Nominatim's rate limit).
+model MammoZip {
+  zip       String   @id
+  lat       Float
+  lng       Float
+  city      String   @default("")
+  state     String   @default("")
+  createdAt DateTime @default(now())
+
+  @@map("mammo_zip")
+}
+
+// Step one of the signup form, captured before the password exists.
+//
+// The point is that an abandoned signup is still a lead: we know who they are
+// and where they are, even if they never finish. Stage tracks how far they got
+// so the funnel is lead -> account -> booked rather than a single yes/no.
+model MammoLead {
+  id        String   @id @default(cuid())
+  firstName String   @default("")
+  lastName  String   @default("")
+  email     String   @unique
+  phone     String   @default("")
+  zip       String   @default("")
+  stage     String   @default("lead") // lead | account | booked
+  accountId String   @default("")
+  outOfArea Boolean  @default(false)
+  ip        String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([stage, createdAt])
+  @@map("mammo_lead")
 }
